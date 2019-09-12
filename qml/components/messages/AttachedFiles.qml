@@ -38,12 +38,11 @@ Repeater {
         id: filesModel
         mattermost: context.mattermost
         maxWidth: filesRepeater.maxWidth
-        Component.onCompleted: {
-            if(filesRepeater.enabled) {
-                init(server_index,team_index,channel_type,channel_index,rowIndex)
-                maxWidth = filesRepeater.maxWidth
-            }
-        }
+        serverIndex: messagesPage.server_index
+        teamIndex: messagesPage.team_index
+        channelType:messagesPage.channel_type
+        channelIndex: messagesPage.channel_index
+        messageRow: messageLabel.rowIndex
     }
 
     Component {
@@ -59,6 +58,11 @@ Repeater {
         }
     }
 
+//    delegate: Label {
+//        text: role_file_name
+//    }
+
+    // / *
     delegate: Loader {//for different file types
         id: fileitemloader
         //anchors.fill: parent
@@ -76,7 +80,7 @@ Repeater {
         property size   itemSize       : role_item_size
         property real   maxWidth       : filesRepeater.maxWidth
         property real   realBlobWidth  : inBlobContent.realBlobContentWidth
-        property real   componentHeight: 5
+        property real   componentHeight
         property point  sizeCoef        // coeficient for right computing size of preview
 
         onImageSizeChanged: {
@@ -109,6 +113,6 @@ Repeater {
             fileDocument
             break;
         }
-    }// Loader for files
+    }// Loader for files */
 }//Repeater of attached files
 

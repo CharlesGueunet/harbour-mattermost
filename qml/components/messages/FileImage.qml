@@ -9,7 +9,7 @@ import QtGraphicalEffects 1.0
 
 MouseArea {
     id: attachedImage
-    height: imageWithName.height
+    height: fileNameRow.height + inBlobContent.spacing + pictureMaxWidth * sizeCoef.y
     width: Math.min(Math.max(imageWithName.width,realBlobWidth),maxWidth)
     property int _fileStatus: currentStatus
     property real pictureMaxWidth: maxWidth //* 0.9
@@ -18,6 +18,24 @@ MouseArea {
         componentHeight = height
     }
 
+
+//    Image {
+//        id: thumbImage
+
+//        width: pictureMaxWidth * sizeCoef.x
+//        height: pictureMaxWidth * sizeCoef.y
+
+//        fillMode: Image.PreserveAspectFit
+//        source: fileThumbnail
+//        sourceSize: imageSize
+//        anchors.fill: parent
+//        asynchronous: true
+//        layer.enabled: true
+//        layer.effect: OpacityMask {
+//            maskSource: maskRect
+//        }
+//    }
+    // *
     on_FileStatusChanged: {
         switch(currentStatus)
         {
@@ -41,10 +59,9 @@ MouseArea {
         pageStack.push( imageViewPage,
                        {
                            imagePath: filePath,
-                           previewPath: filePreview,
-                           animatedImage: fileType == MattermostQt.FileAnimatedImage,
+                           previewPath: filePreview,//fileThumbnail,
+                           animatedImage: fileType === MattermostQt.FileAnimatedImage,
                            imageSize: imageSize
-//                           width: Screen.width
                        })
     }
 
@@ -62,14 +79,7 @@ MouseArea {
             progressCircle.visible = true;
             break;
         case MattermostQt.FileDownloaded:
-            pageStack.push( imageViewPage,
-                           {
-                               imagePath: filePath,
-                               previewPath: filePreview,//fileThumbnail,
-                               animatedImage: fileType === MattermostQt.FileAnimatedImage,
-                               imageSize: imageSize
-//                               width: Screen.width
-                           })
+                openImageViewer()
             break;
         }
     }
@@ -77,7 +87,7 @@ MouseArea {
     Column {
         id: imageWithName
         spacing: inBlobContent.spacing
-        height: fileNameRow.height + spacing + imageComponentLoader.height
+        height: fileNameRow.height + spacing + pictureMaxWidth * sizeCoef.y
         Row {
             id: fileNameRow
             width:
@@ -135,14 +145,35 @@ MouseArea {
                     id: image
 
                     fillMode: Image.PreserveAspectFit
-                    source: filePreview === "" ? fileThumbnail : filePreview
+                    source: filePreview
+//                    visible: filePreview.length > 0
                     sourceSize: imageSize
                     anchors.fill: parent
+                    asynchronous: true
                     layer.enabled: true
                     layer.effect: OpacityMask {
                         maskSource: maskRect
                     }
+
+                    onStatusChanged: {
+                        if( status == Image.Ready )
+                            thumbImage.visible = false
+                    }
                 }//image
+
+                Image {
+                    id: thumbImage
+
+                    fillMode: Image.PreserveAspectFit
+                    source: fileThumbnail
+                    sourceSize: imageSize
+                    anchors.fill: parent
+                    asynchronous: true
+                    layer.enabled: true
+                    layer.effect: OpacityMask {
+                        maskSource: maskRect
+                    }
+                }
             }
         }
 
@@ -185,6 +216,7 @@ MouseArea {
                         source: fileThumbnail
                         sourceSize: imageSize
                         anchors.fill: parent
+                        asynchronous: true
                         visible: opacity > 0
                         Behavior on opacity {
                             NumberAnimation { duration: 200 }
@@ -202,6 +234,8 @@ MouseArea {
         Loader {
             id: imageComponentLoader
             sourceComponent: fileType === MattermostQt.FileAnimatedImage ? animatedImage : staticImage
+            width: pictureMaxWidth * sizeCoef.x
+            height: pictureMaxWidth * sizeCoef.y
         }
     }
 
@@ -222,6 +256,6 @@ MouseArea {
                 }
             )
         }
-    }
+    }//*/
 }
 

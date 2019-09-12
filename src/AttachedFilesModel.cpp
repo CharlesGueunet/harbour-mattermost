@@ -1,8 +1,33 @@
 #include "AttachedFilesModel.h"
 
+
+#define AF_DEFAULT_INT -1
+#define AF_SET_DEFAULT_INT(_name) CONCAT2(m_,_name) = AF_DEFAULT_INT
+#define AF_CHECK_DEF(_name) if( CONCAT2(m_,_name) == AF_DEFAULT_INT ) return;
+
+
+AF_SET_PROPERTY(int, serverIndex);
+AF_SET_PROPERTY(int, teamIndex);
+AF_SET_PROPERTY(int, channelType);
+AF_SET_PROPERTY(int, channelIndex);
+AF_SET_PROPERTY(int, messageRow);
+
+//void AttachedFilesModel:: CONCAT2(set_,channelType) ( int value )
+//{
+//	CONCAT2(m_,channelType) = value;
+//	emit AttachedFilesModel:: AF_INDEX_SIGNAL ();
+//}
+
 AttachedFilesModel::AttachedFilesModel(QObject *parent)
 {
 	m_init = false;
+	AF_SET_DEFAULT_INT(serverIndex);
+	AF_SET_DEFAULT_INT(teamIndex);
+	AF_SET_DEFAULT_INT(channelType);
+	AF_SET_DEFAULT_INT(channelIndex);
+	AF_SET_DEFAULT_INT(messageRow);
+
+	connect( this, &AttachedFilesModel:: AF_INDEX_SIGNAL, this, &AttachedFilesModel::slot_onIndexChanged );
 }
 
 int AttachedFilesModel::rowCount(const QModelIndex &parent) const
@@ -157,11 +182,11 @@ void AttachedFilesModel::init(int server_index, int team_index, int channel_type
 	}
 
 	// becuse message row inverted from message index
-	int message_index = message_row;
+//	int message_index = message_row;
 //	qDebug() << QString("This messages.size(%0)  index(%2)").arg(m_channel->m_message.size()).arg(message_index);
-	m_message = m_channel->messageAt(message_index);
+	m_message = m_channel->messageAt(message_row);
 	if(!m_message) {
-		qCritical() << "Cant find message mi:" << message_index << "from mr:" << message_row;
+		qCritical() << "Cant find message mi:" << message_row << "from mr:" << message_row;
 		return;
 	}
 
@@ -173,7 +198,7 @@ void AttachedFilesModel::init(int server_index, int team_index, int channel_type
 		for( int i = 0; i < m_message->m_file_ids.size(); i++ )
 		{
 			QString file_id = m_message->m_file_ids.at(i);
-			m_mattermost->get_file_info(server_index,team_index,channel_type,channel_index,message_index, file_id);
+			m_mattermost->get_file_info(server_index,team_index,channel_type,channel_index,message_row, file_id);
 		}
 	}
 	endResetModel();
@@ -245,6 +270,16 @@ void AttachedFilesModel::slot_attachedFilesChanged(MattermostQt::MessagePtr m, Q
 //	dataChanged(topLeft, bottomRight, roles);
 	beginResetModel();
 	endResetModel();
+}
+
+void AttachedFilesModel::slot_onIndexChanged()
+{
+	AF_CHECK_DEF(serverIndex);
+	AF_CHECK_DEF(teamIndex);
+	AF_CHECK_DEF(channelType);
+	AF_CHECK_DEF(channelIndex);
+	AF_CHECK_DEF(messageRow);
+	init(m_serverIndex,m_teamIndex,m_channelType,m_channelIndex,m_messageRow);
 }
 
 //void AttachedFilesModel::slot_attachedFileStatusChanged(QString id, MattermostQt::FileStatus status)

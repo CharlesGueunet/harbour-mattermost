@@ -2,13 +2,14 @@
 #include <sailfishapp.h>
 #include <libsailfishsilica/silicatheme.h>
 
+#define SET_SETTINGS_PROPERTY(_t, _n) MT_SET_PROPERTY_2(SettingsContainer, _t, _n, settingsChanged)
 
-MT_SET_PROPERTY(int,   autoDownloadImageSize)
-MT_SET_PROPERTY(bool,  showBlobs)
-MT_SET_PROPERTY(float, blobOpacity)
-MT_SET_PROPERTY(float, pageMargin)
-MT_SET_PROPERTY(bool, formatedText)
-MT_SET_PROPERTY(bool,  debug)
+SET_SETTINGS_PROPERTY(int,   autoDownloadImageSize)
+SET_SETTINGS_PROPERTY(bool,  showBlobs)
+SET_SETTINGS_PROPERTY(float, blobOpacity)
+SET_SETTINGS_PROPERTY(float, pageMargin)
+SET_SETTINGS_PROPERTY(bool, formatedText)
+SET_SETTINGS_PROPERTY(bool,  debug)
 
 SettingsContainer::SettingsContainer(QObject *parent) : QObject(parent)
 {

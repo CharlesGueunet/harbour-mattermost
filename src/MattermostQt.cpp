@@ -4432,7 +4432,7 @@ MattermostQt::MessageContainer::MessageContainer(QJsonObject object)
 		m_file_ids.append( file_ids.at(i).toString() );
 
 	QJsonValue v = object["metadata"];
-	if( !v.isUndefined()) {
+	if( !v.isNull() ) {
 		if(v.isObject())
 		{
 			QJsonObject metadata =v.toObject();

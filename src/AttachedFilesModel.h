@@ -8,6 +8,13 @@
 #include <QList>
 #include <QImage>
 #include "MattermostQt.h"
+#include "MattermostQt_gobal.h"
+
+#define AF_INDEX_SIGNAL indexChanged
+#define AF_PROPERTY(_type,_name) \
+	MT_PROPERTY_NO_SIGNAL(_type,_name, AF_INDEX_SIGNAL)
+
+#define AF_SET_PROPERTY(_type,_name) MT_SET_PROPERTY_SIGNAL(AttachedFilesModel, _type, _name, AF_INDEX_SIGNAL)
 
 /** List of attached to message files */
 class AttachedFilesModel : public QAbstractListModel
@@ -16,6 +23,13 @@ class AttachedFilesModel : public QAbstractListModel
 
 	Q_PROPERTY(MattermostQt *mattermost READ getMattermost WRITE setMattermost)
 	Q_PROPERTY(qreal maxWidth READ getMaxWidth WRITE setMaxWidth )
+	AF_PROPERTY(int, serverIndex);
+	AF_PROPERTY(int, teamIndex);
+	AF_PROPERTY(int, channelType);
+	AF_PROPERTY(int, channelIndex);
+	AF_PROPERTY(int, messageRow);
+
+	Q_SIGNAL void AF_INDEX_SIGNAL ();
 public:
 	enum DataRoles {
 		FileType = 0,
@@ -56,7 +70,7 @@ protected:
 protected Q_SLOTS:
 	void slot_attachedFilesChanged(MattermostQt::MessagePtr m, QVector<QString> file_ids, QVector<int> roles);
 //	void slot_attachedFileStatusChanged(QString id, MattermostQt::FileStatus status);
-
+	void slot_onIndexChanged();
 protected:
 	MattermostQt::ChannelPtr           m_channel;
 	MattermostQt::MessagePtr           m_message;
