@@ -34,6 +34,9 @@ Repeater {
 //        console.log("Repeater height changed: " + String(height))
     }
 
+    /*
+    model: filesCount // */
+    // *
     model: AttachedFilesModel {
         id: filesModel
         mattermost: context.mattermost
@@ -43,7 +46,7 @@ Repeater {
         channelType:messagesPage.channel_type
         channelIndex: messagesPage.channel_index
         messageRow: messageLabel.rowIndex
-    }
+    } //*/
 
     Component {
         id: fileDocument
@@ -59,10 +62,10 @@ Repeater {
     }
 
 //    delegate: Label {
-//        text: role_file_name
+//        text: "role_file_name"
 //    }
 
-    // / *
+     // *
     delegate: Loader {//for different file types
         id: fileitemloader
         //anchors.fill: parent

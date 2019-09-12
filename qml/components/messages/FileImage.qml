@@ -66,9 +66,8 @@ MouseArea {
     }
 
     onClicked: {
-        switch(currentStatus) {
+        switch(_fileStatus) {
         case MattermostQt.FileRemote:
-        case MattermostQt.FileRequested:
             context.mattermost.get_file(
                         server_index,
                         team_index,
@@ -77,6 +76,9 @@ MouseArea {
                         rowIndex,
                         fileIndex)
             progressCircle.visible = true;
+            break;
+        case MattermostQt.FileRequested:
+        case MattermostQt.FileDownloading:
             break;
         case MattermostQt.FileDownloaded:
                 openImageViewer()

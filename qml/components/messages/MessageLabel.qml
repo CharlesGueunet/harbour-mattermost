@@ -230,7 +230,7 @@ ListItem {
                     spacing:       inBlobContent.spacing
                     visible:       messageLabel.filesCount > 0
                     enabled:       visible
-                }// files repeater
+                }// files repeater */
             }
         }
     }

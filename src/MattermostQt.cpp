@@ -738,6 +738,12 @@ void MattermostQt::get_file(int server_index, int team_index,
 
 	file->m_file_status = FileStatus::FileDownloading;
 	emit fileStatusChanged(file->m_id, file->m_file_status);
+	QVector<QString> file_ids;
+	QVector<int> roles;
+	file_ids << file->m_id;
+	roles << AttachedFilesModel::FileStatus;
+	attachedFilesChanged(message, file_ids, roles);
+
 	QNetworkReply *reply = m_networkManager->get(request);
 	reply->setProperty(P_TRUST_CERTIFICATE, QVariant(sc->m_trust_cert) );
 	reply->setProperty(P_REPLY_TYPE, QVariant(ReplyType::rt_get_file) );
