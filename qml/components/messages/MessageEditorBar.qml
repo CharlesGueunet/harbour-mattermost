@@ -186,6 +186,7 @@ BackgroundItem {
             placeholderText: qsTr("Message...")
             textMargin: Theme.paddingSmall
             height: Math.min(Theme.itemSizeHuge,implicitHeight)
+            Behavior on height { NumberAnimation { duration : 200 } }
 
             onFocusChanged: {
                 if(focus)

@@ -173,7 +173,7 @@ QVariant MessagesModel::data(const QModelIndex &index, int role) const
 			QDateTime time;
 			QString result;
 			time = QDateTime::fromMSecsSinceEpoch(message->m_create_at);
-			result = time.toString("dd.MM.YYYY");
+			result = time.toString("dd.MM.yyyy"/*Qt::DefaultLocaleShortDate*/);
 			return result;
 		}
 		break;

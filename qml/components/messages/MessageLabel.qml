@@ -106,12 +106,20 @@ ListItem {
         radius: Theme.paddingLarge
     }
 
+    // Rectangle {
+    //     id: debugSizeRect
+    //     x: messageContent.x
+    //     y: messageContent.y
+    //     width: messageContent.width
+    //     height: messageContent.height
+    //     color: Qt.rgba(1.0,0.5,0.5,0.5)
+    // }
+
     Row {
         id: messageRow
-//        anchors.leftMargin: cc/ćSettings.pageMargin
-        //rightPadding: Settings.pageMargin
-        anchors.leftMargin: Settings.pageMargin
-        anchors.rightMargin: Settings.pageMargin
+
+        leftPadding: Settings.pageMargin
+        rightPadding: Settings.pageMargin
 
         anchors {
             left: parent.left
@@ -120,13 +128,9 @@ ListItem {
         spacing: Theme.paddingMedium
         height: Math.max(messageContent.height,userAvatar.height)
 
-//        onHeightChanged: {
-//            role_item_size = height;
-//        }
-
         // TODO make change direction possible
-//        layoutDirection: Qt.RightToLeft //( messageLabel.messageOwner == MattermostQt.MessageMine ) ?
-                         //    Qt.RightToLeft : Qt.LeftToRight
+        // layoutDirection: Qt.RightToLeft //( messageLabel.messageOwner == MattermostQt.MessageMine ) ?
+        //    Qt.RightToLeft : Qt.LeftToRight
 
         UserAvatar {
             id: userAvatar
@@ -139,13 +143,14 @@ ListItem {
         Column {
             id: messageContent
             spacing: 0//Theme.paddingSmall
-//            anchors.rightMargin: messageRow.rightPadding
-            width: messageLabel.width - messageRow.spacing - userAvatar.width - Settings.pageMargin
+            width: ( messageRow.width - messageRow.spacing - userAvatar.width
+                - (messageRow.leftPadding + messageRow.rightPadding) )
 
             Row {
                 id: labelHeader
                 spacing: Theme.paddingMedium
                 visible: messageLabel.isMessageMineOrOther
+                width: messageContent.width
 //                layoutDirection: Qt.RightToLeft
                 Label {
                     id: userNameLabel
@@ -163,6 +168,16 @@ ListItem {
                     elide: Text.ElideRight
                     horizontalAlignment: Text.AlignLeft
                 }// Label timestamp
+                Label {
+                    id: messageCreateDateLabel
+                    text: role_create_date
+                    width: labelHeader.width - labelHeader.spacing*2 - userNameLabel.width - messageTimestampLabel.width
+                    font.pixelSize: Theme.fontSizeTiny
+                    font.family: Theme.fontFamilyHeading
+                    color: messageLabel.textSecondaryColor
+                    elide: Text.ElideRight
+                    horizontalAlignment: Text.AlignRight
+                }
             }
 
             Column
@@ -170,8 +185,8 @@ ListItem {
                 id: inBlobContent
                 padding:
                     (messageLabel.isMessageMineOrOther && Settings.showBlobs) ? Theme.paddingMedium : 0
-                anchors.rightMargin: Theme.paddingMedium
-                anchors.leftMargin: Theme.paddingMedium
+                // anchors.rightMargin: Theme.paddingMedium
+                // anchors.leftMargin: Theme.paddingMedium
                 spacing: Theme.paddingMedium
                 property real inBlobMargins:
                     (Settings.showBlobs) ?

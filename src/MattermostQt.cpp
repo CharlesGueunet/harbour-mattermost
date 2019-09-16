@@ -3715,7 +3715,7 @@ void MattermostQt::replyFinished(QNetworkReply *reply)
 	}
 	else {
 		//failure
-		qDebug() << "Failure: " << reply->error() << reply->errorString();
+		qWarning() << "Failure: " << reply->error() << reply->errorString();
 		qDebug() << reply;
 //		qDebug() << "Reply: " << reply->readAll();
 		reply_error(reply);
@@ -3723,6 +3723,23 @@ void MattermostQt::replyFinished(QNetworkReply *reply)
 		{// need authentification
 			// TODO show error in LoginPage about bad authetificaation
 			//qWarning() << reply->;
+		}
+		else if( reply->error() == QNetworkReply::TimeoutError )
+		{
+			qDebug() << "Reply: " << reply->readAll();
+
+			for(int i = 0; i < m_server.size(); i++)
+			{
+				ServerPtr server = m_server[i];
+	//			server->m_socket->st
+				server->m_state = ServerState::ServerUnconnected;
+				if(server->m_socket)
+					server->m_socket->close(QWebSocketProtocol::CloseCodeAbnormalDisconnection, QString("Client closing") );
+				emit serverStateChanged(i, server->m_state);
+				server->m_ping_timer.stop();
+				m_user_status_timer.stop();
+				m_reconnect_server.start();
+			}
 		}
 		else
 		{
@@ -3923,16 +3940,32 @@ void MattermostQt::onWebSocketSslError(QList<QSslError> errors)
 
 void MattermostQt::onWebSocketError(QAbstractSocket::SocketError error)
 {
-	qWarning() << error;
+	qWarning() << "WebSocket error: " << error;
 	QWebSocket * socket = qobject_cast<QWebSocket*>(sender());
 	if(!socket) // strange situation, if it happens
 		return;
 
-	qWarning() << socket->errorString();
+	qWarning() <<"SocetErrorString:" << socket->errorString();
 	switch(error)
 	{
 	case QAbstractSocket::SocketTimeoutError :
 		// sgoud i reconnect by my self, or its automatically ?
+		{
+			QVariant sId = socket->property(P_SERVER_INDEX);
+			if(!sId.isValid()) // that too strange!!! that cant be!
+				break;
+			int server_index = sId.toInt();
+			if( server_index < 0 || server_index >= m_server.size() )
+				break;
+			ServerPtr server = m_server[server_index];
+
+			server->m_state = ServerState::ServerUnconnected;
+			server->m_socket->close(QWebSocketProtocol::CloseCodeAbnormalDisconnection, QString("Client closing") );
+			emit serverStateChanged(server_index, server->m_state);
+			server->m_ping_timer.stop();
+			m_user_status_timer.stop();
+			m_reconnect_server.stop();
+		}
 		break;
 	}
 }
