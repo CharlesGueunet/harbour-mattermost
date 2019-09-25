@@ -204,6 +204,7 @@ public:
 		int              m_team_index;
 		int              m_channel_index;
 		int              m_self_index;
+		qreal            m_item_height;
 		// data for reply message
 		QString          m_root_message;
 		QString          m_root_user_name;
@@ -491,6 +492,10 @@ public:
 
 	/** Markdown support */
 	Q_INVOKABLE QString parseMD(const QString &input) const;
+
+	/** Compute cache size */
+	Q_INVOKABLE QString cacheSize() const;
+	Q_INVOKABLE void    clearCache();
 
 	/** settings  fucntions */
 	bool save_settings();

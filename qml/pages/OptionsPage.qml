@@ -18,6 +18,7 @@ Page {
     id: optionsPage
     layer.enabled: true
     property Context context
+    property string cacheSize: context.mattermost.cacheSize()
 
     allowedOrientations: Orientation.All
 
@@ -132,6 +133,22 @@ Page {
 
             }
         }// Page padding size
+
+        Label {
+            id: cacheLabel
+            text: qsTr("Cache size: ") + cacheSize;
+            anchors.horizontalCenter: parent
+        }
+
+        Button {
+            id: clearCache
+            text: qsTr("Clear cache")
+            anchors.horizontalCenter: parent
+            onClicked: {
+                context.mattermost.clearCache()
+                cacheSize = context.mattermost.cacheSize()
+            }
+        }
     }
 
     SilicaListView {

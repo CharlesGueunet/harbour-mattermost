@@ -93,16 +93,6 @@ Page {
                     }
                 }
                 width: parent.width
-//                height:switch(m_type)
-//                       {
-//                       case ChannelsModel.HeaderPublic:
-//                       case ChannelsModel.HeaderPrivate:
-//                       case ChannelsModel.HeaderDirect:
-//                           channellabel.height;
-//                           break;
-//                       default:
-//                           Math.max(Theme.itemSizeSmall,channellabel.height)
-//                       }
 
                 ChannelLabel {
                     id: channellabel

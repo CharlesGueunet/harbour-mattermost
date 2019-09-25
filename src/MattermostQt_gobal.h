@@ -40,4 +40,6 @@
 	    emit add_signal_ (); \
 	} \
 
+
+
 #endif // MATTERMOSTQT_GOBAL_H

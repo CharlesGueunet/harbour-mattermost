@@ -103,6 +103,20 @@ Page {
             }// MenuItem
         }// PullDownMenu
 
+        /*delegate: ListItem {
+            id: listItem
+            contentHeight: richTextLabel.height
+            ListView.onRemove: animateRemoval(listItem)
+            Label {
+                id: richTextLabel
+                text: "<style>a:link { color: " + Theme.highlightColor + "; }</style>" + role_formated_text
+                wrapMode: Text.Wrap
+                textFormat: Text.RichText
+                width: messagesListView.width
+            }
+        }*/
+
+
         delegate: MessageLabel {
             id: messageLabel
             messagesModel:    messagesPage.messagesModel
@@ -117,13 +131,9 @@ Page {
             rootMessage:      role_root_message
             rootUser:         role_root_username
             messageTimestamp: role_message_create_at
+
             property string rootId:  role_root_id
             property real messagesListHeight: messagesListView.height
-
-            onContentHeightChanged: {
-                role_item_height = contentHeight;
-//                messagesModel.setData(index,contentHeight, MessagesModel.ItemSize)
-            }
 
             context: messagesPage.context
             width: messagesListView.width
@@ -185,7 +195,7 @@ Page {
                     }
                 }
             }
-        }
+        }//*/
     }
 
     MessageEditorBar {

@@ -372,6 +372,14 @@
         <source>Page padding</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Cache size: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Clear cache</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>QObject</name>
@@ -401,6 +409,30 @@
     </message>
     <message>
         <source>(edited)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Bytes</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>KB</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>MB</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>GB</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>TB</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>PB</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

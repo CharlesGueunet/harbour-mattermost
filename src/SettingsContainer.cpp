@@ -19,7 +19,8 @@ SettingsContainer::SettingsContainer(QObject *parent) : QObject(parent)
 SettingsContainer *SettingsContainer::getInstance()
 {
 	static SettingsContainer *singleton = new SettingsContainer();
-	qDebug()<< "Get instance" << qlonglong(singleton);
+//	if(singleton->debug())
+//		qDebug()<< "Get instance" << qlonglong(singleton);
 	return singleton;
 }
 

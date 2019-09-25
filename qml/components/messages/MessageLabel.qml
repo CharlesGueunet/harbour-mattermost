@@ -31,6 +31,8 @@ ListItem {
     property string rootMessage
     /** username if message is answer */
     property string rootUser
+    /** compute Height */
+    property real currentHeight
 
     property bool showBlobs: Settings.showBlobs
     property real blobsOpacity: Settings.blobOpacity
@@ -39,7 +41,7 @@ ListItem {
     property color textColor: Theme.highlightColor
     property color textSecondaryColor: Theme.secondaryHighlightColor
     property color linkColor: Theme.primaryColor
-    property color blobColor:  Theme.rgba(Theme.primaryColor,Theme.highlightBackgroundOpacity * blobsOpacity)
+    property color blobColor:  Theme.rgba(Theme.darkPrimaryColor,Theme.highlightBackgroundOpacity * blobsOpacity)
 
     property bool  isMessageEditable   : messageOwner === MattermostQt.MessageMine
     property bool  isMessageDeletable  : messageOwner === MattermostQt.MessageMine
@@ -76,19 +78,19 @@ ListItem {
         }
         else {
             switch(messageLabel.messageOwner) {
+                //TODO check if theme is dark or light, and set properly BG color
             case MattermostQt.MessageMine:
-                messageLabel.blobColor = Theme.rgba(Theme.primaryColor,Theme.highlightBackgroundOpacity * blobsOpacity)
+                messageLabel.blobColor = Theme.rgba(Theme.darkPrimaryColor,Theme.highlightBackgroundOpacity * blobsOpacity)
                 break
             case MattermostQt.MessageOther:
             default:
-                messageLabel.blobColor = Theme.rgba(Theme.highlightColor,Theme.highlightBackgroundOpacity * blobsOpacity)
+                messageLabel.blobColor = Theme.rgba(Theme.darkSecondaryColor,Theme.highlightBackgroundOpacity * blobsOpacity)
                 break
             }
         }
     }
 
 //    height: messageRow.height + contextmenu.height
-    contentHeight: messageRow.height
 
     property variant blobPos: mapFromItem(messageContent,0,0)
 
@@ -114,6 +116,7 @@ ListItem {
     //     height: messageContent.height
     //     color: Qt.rgba(1.0,0.5,0.5,0.5)
     // }
+    contentHeight: role_item_height
 
     Row {
         id: messageRow
@@ -127,6 +130,11 @@ ListItem {
         }
         spacing: Theme.paddingMedium
         height: Math.max(messageContent.height,userAvatar.height)
+
+        onHeightChanged: {
+            if( role_item_height < height)
+                role_item_height =height
+        }
 
         // TODO make change direction possible
         // layoutDirection: Qt.RightToLeft //( messageLabel.messageOwner == MattermostQt.MessageMine ) ?

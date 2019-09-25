@@ -50,6 +50,9 @@ QVariant MessagesModel::data(const QModelIndex &index, int role) const
 	case MessagesModel::MessageIndex:
 		return QVariant(message->m_self_index);
 		break;
+	case MessagesModel::ItemHeight:
+		return QVariant(message->m_item_height);
+		break;
 	case MessagesModel::Owner:
 		{
 			return QVariant( (int)message->m_type );
@@ -98,10 +101,13 @@ QVariant MessagesModel::data(const QModelIndex &index, int role) const
 			}
 			else
 			{
-				qWarning() << QString("Cant find USER name  message->m_user_index(%0) < size(%1) uid(%3)")
-				              .arg( message->m_user_index)
-				              .arg(m_mattermost->m_server[message->m_server_index]->m_user.size())
-				              .arg( message->m_user_id);
+				if(m_mattermost->settings()->debug())
+				{
+					qWarning() << QString("Cant find USER name  message->m_user_index(%0) < size(%1) uid(%3)")
+					              .arg( message->m_user_index)
+					              .arg(m_mattermost->m_server[message->m_server_index]->m_user.size())
+					        .arg( message->m_user_id);
+				}
 				return QVariant("error!");
 			}
 		}
@@ -206,6 +212,8 @@ bool MessagesModel::setData(const QModelIndex &index, const QVariant &value, int
 	case MessagesModel::ItemHeight:
 		if(m_mattermost->settings()->debug())
 			qDebug() << "Item size changed " << value.toDouble();
+		message->m_item_height = value.toDouble();
+		dataChanged(index,index, QVector<int>() << role);
 		break;
 	default:
 		return false;
@@ -549,11 +557,14 @@ void MessagesModel::slot_updateMessage(MattermostQt::MessagePtr message, int rol
 
 	QVector<int> roles;
 	roles << role;
-	QHash<int, QByteArray> names = roleNames();
-	if( names.contains(role) )
-		qDebug() << QStringLiteral("Message %0 [%1] updated by role %2").arg(row).arg(message->m_self_index).arg(QString::fromUtf8(names[role]));
-	else
-		qCritical() << QStringLiteral("Undefined role %0").arg(role);
+	if(m_mattermost->settings()->debug())
+	{
+		QHash<int, QByteArray> names = roleNames();
+		if( names.contains(role) )
+			qDebug() << QStringLiteral("Message %0 [%1] updated by role %2").arg(row).arg(message->m_self_index).arg(QString::fromUtf8(names[role]));
+		else
+			qCritical() << QStringLiteral("Undefined role %0").arg(role);
+	}
 	QModelIndex i = index(row);
 	dataChanged(i,i,roles);
 

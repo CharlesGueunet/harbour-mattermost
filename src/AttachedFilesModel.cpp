@@ -79,6 +79,9 @@ QVariant AttachedFilesModel::data(const QModelIndex &index, int role) const
 
 	else if ( file->m_file_type == MattermostQt::FileImage ||  file->m_file_type == MattermostQt::FileAnimatedImage ) {
 		if( role == FileThumbnailPath ) {
+			// TODO that request is no need here? because its requested in reply_get_file_info
+//			if(file->m_thumb_path.isNull())
+//				m_mattermost->get_file_thumbnail(file->m_server_index, file->m_self_sc_index);
 			return QVariant(file->m_thumb_path);
 		}
 		else if( role == FilePreviewPath ) {
@@ -177,13 +180,11 @@ void AttachedFilesModel::init(int server_index, int team_index, int channel_type
 
 	m_channel = m_mattermost->channelAt(server_index,team_index,channel_type,channel_index);
 	if(!m_channel) {
-		qWarning() << "Cant find channel";
+//		qWarning() << "Cant find channel";
 		return;
 	}
 
 	// becuse message row inverted from message index
-//	int message_index = message_row;
-//	qDebug() << QString("This messages.size(%0)  index(%2)").arg(m_channel->m_message.size()).arg(message_index);
 	m_message = m_channel->messageAt(message_row);
 	if(!m_message) {
 		qCritical() << "Cant find message mi:" << message_row << "from mr:" << message_row;

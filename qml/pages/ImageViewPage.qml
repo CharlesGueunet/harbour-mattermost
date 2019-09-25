@@ -24,6 +24,8 @@ Page {
     property string previewPath
     property bool   animatedImage
     property size   imageSize
+    property bool   showOverlay: true
+
     allowedOrientations: Orientation.All
 
     property bool showBackground: true
@@ -95,10 +97,10 @@ Page {
                 width: image_preview.width
                 height: image_preview.height
 
-                onSourceSizeChanged: {
-                    if(sourceSize != imageSize)
-                        sourceSize = imageSize;
-                }
+//                onSourceSizeChanged: {
+//                    if(sourceSize != imageSize)
+//                        sourceSize = imageSize;
+//                }
 
                 onStatusChanged: {
                     if(status == Image.Ready)
@@ -142,7 +144,7 @@ Page {
                 source: previewPath
 //                visible: (opacity > 0 && previewPath.length != 0)
                 opacity: 1
-                Behavior on opacity { FadeAnimation{ duration: 200 } }
+                Behavior on opacity { NumberAnimation{ duration: 300 } }
                 anchors.centerIn: parent
                 autoTransform: true
                 sourceSize: imageview.imageSize
@@ -248,6 +250,10 @@ Page {
                         zoom_animator.start()
                     }
                 }
+
+                onClicked: {
+                    showOverlay = !showOverlay
+                }
             }
         }
     }// Flickable
@@ -260,6 +266,39 @@ Page {
         running: false
         duration: 200
         easing.type: Easing.InOutQuad
+    }
+
+    onShowOverlayChanged: {
+        buttonsRow.opacity = (showOverlay) ? 1.0 : 0.0
+    }
+
+    Rectangle {
+        color: Theme.darkPrimaryColor
+        anchors.fill: buttonsRow
+        opacity: buttonsRow.opacity * 0.4
+        radius: Theme.paddingMedium
+    }
+
+    Row {
+        id: buttonsRow
+        spacing: Theme.paddingMedium
+        visible: opacity > 0
+
+        Behavior on opacity { NumberAnimation { duration: 200 } }
+
+        anchors {
+            bottom: parent.bottom
+            horizontalCenter: parent.horizontalCenter
+            bottomMargin: Theme.paddingLarge
+        }
+
+        IconButton {
+            id: saveToDEvice
+            icon.source: "image://theme/icon-m-device-download"
+            onClicked: {
+                //TODO here we should save picture to gallery
+            }
+        }
     }
 
     /** some debug data */

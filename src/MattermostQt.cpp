@@ -66,17 +66,6 @@
 	if( !server->m_cookie.isEmpty() ) \
 	    request.setHeader(QNetworkRequest::CookieHeader, server->m_cookie); \
 	request.setRawHeader("Authorization", QString("Bearer %0").arg(server->m_token).toUtf8())
-//#else
-//#define request_set_headers(requset, server) \
-//	request.setHeader(QNetworkRequest::ServerHeader, "application/json"); \
-//	request.setHeader(QNetworkRequest::UserAgentHeader, QString("Matterfish v%0").arg(MATTERMOSTQT_VERSION) ); \
-//	if( server->m_cookie.isEmpty() ) \
-//	    qCritical() << "Cookie Header is missing!";\
-//	else \
-//	    request.setHeader(QNetworkRequest::CookieHeader, server->m_cookie); \
-//	request.setRawHeader("Authorization", QString("Bearer %0").arg(server->m_token).toUtf8()); \
-//	qDebug() << "Authorization " << QString("Bearer %0").arg(server->m_token)
-//#endif
 
 #define request_json(requset) \
 	request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json")
@@ -549,8 +538,12 @@ void MattermostQt::get_team(int server_index, int team_index)
 
 void MattermostQt::get_file_thumbnail(int server_index, int file_sc_index)
 {
+	if( server_index < 0 || server_index >= m_server.size() )
+		return;
 	// we think all indexes is right
 	ServerPtr sc = m_server[server_index];
+	if( file_sc_index < 0 || file_sc_index >= sc->m_file.size() )
+		return;
 	FilePtr file = sc->m_file[file_sc_index];
 	QString file_id = file->m_id;
 	//files/{file_id}/thumbnail
@@ -1357,6 +1350,79 @@ QString MattermostQt::parseMD(const QString &input) const
 	return m_mdParser->parse(input);
 }
 
+QString formatSize(qint64 size) {
+	QStringList units = {
+	    QObject::tr("Bytes"),
+	    QObject::tr("KB"),
+	    QObject::tr("MB"),
+	    QObject::tr("GB"),
+	    QObject::tr("TB"),
+	    QObject::tr("PB")
+	};
+	int i;
+	double outputSize = size;
+	for(i=0; i<units.size()-1; i++) {
+		if(outputSize<1024) break;
+		outputSize= outputSize/1024;
+	}
+	return QString("%0 %1").arg(outputSize, 0, 'f', 2).arg(units[i]);
+}
+
+qint64 dirSize(QString dirPath) {
+	qint64 size = 0;
+	QDir dir(dirPath);
+	//calculate total size of current directories' files
+	QDir::Filters fileFilters = QDir::Files|QDir::System|QDir::Hidden;
+	for(QString filePath : dir.entryList(fileFilters)) {
+		QFileInfo fi(dir, filePath);
+		size+= fi.size();
+	}
+	//add size of child directories recursively
+	QDir::Filters dirFilters = QDir::Dirs|QDir::NoDotAndDotDot|QDir::System|QDir::Hidden;
+	for(QString childDirPath : dir.entryList(dirFilters))
+		size+= dirSize(dirPath + QDir::separator() + childDirPath);
+	return size;
+}
+
+QString MattermostQt::cacheSize() const
+{
+	qint64 sz = 0;
+	for( int i = 0; i < m_server.size(); i++ )
+	{
+		sz += dirSize(m_server[i]->m_cache_path);
+	}
+	return formatSize(sz);
+}
+
+void MattermostQt::clearCache()
+{
+	for( int i = 0; i < m_server.size(); i++ )
+	{
+		QDir dir(m_server[i]->m_cache_path);
+		dir.removeRecursively();
+		for(int f = 0; f < m_server[i]->m_file.size(); f++)
+		{
+			FilePtr file = m_server[i]->m_file[f];
+			if(file->m_file_type != FileImage ||
+			        file->m_file_type != FileAnimatedImage )
+				continue;
+			// TODO check if file is on local storage
+			file->m_file_status = FileRemote;
+			file->m_thumb_path = QString::Null();
+			file->m_preview_path = QString::Null();
+//			emit fileStatusChanged(m_server[i]->m_file[f]->m_id, FileRemote); // not need
+			MessagePtr m = messageAt(i, file->m_team_index, file->m_channel_type, file->m_channel_index, file->m_message_index);
+			if(!m)
+				continue;
+//			QVector<QString>() << file->m_id;
+			QVector<int> roles;
+			roles << AttachedFilesModel::FileThumbnailPath
+			      << AttachedFilesModel::FilePreviewPath;
+			emit attachedFilesChanged(m, QVector<QString>() << file->m_id, roles);
+		}
+	}
+}
+
 QString MattermostQt::getUserName(int server_index, int user_index)
 {
 	if(server_index < 0 || server_index >= m_server.size()
@@ -1650,7 +1716,7 @@ MattermostQt::ChannelPtr MattermostQt::channelAt(int server_index, int team_inde
 	ChannelPtr channel;
 	if( server_index < 0 || server_index >= m_server.size() )
 	{
-		qCritical() << "Wrong server index";
+		qCritical() << "Wrong server index " << server_index << " servers count " << m_server.size();
 		return channel;
 	}
 	if(channel_index < 0)
@@ -2861,7 +2927,7 @@ void MattermostQt::reply_get_file_info(QNetworkReply *reply)
 		if( file->m_thumb_path.isEmpty() )
 			file->m_thumb_path = sc->m_cache_path + QString("/files/%0/thumb.jpeg").arg(file->m_id);
 		if( !QFile::exists(file->m_thumb_path) ) {
-			file->m_thumb_path.clear();
+			file->m_thumb_path = QString("");
 			get_file_thumbnail(server_index,file->m_self_sc_index);
 		}
 		else {
@@ -2884,8 +2950,6 @@ void MattermostQt::reply_get_file_info(QNetworkReply *reply)
 				isUpdateMessage = true;
 			}
 		}
-
-
 	}// file image
 	// TODO - download files to cahce? while user not request "save to gallery" or "download"
 //	QString file_path = m_documents_path + QDir::separator() + file->filename();
@@ -2935,7 +2999,6 @@ void MattermostQt::failed_get_file_info(QNetworkReply *reply)
 		qCritical() << "Something went wrong! File index is emty in failed_get_file_info()!";
 		return;
 	}
-
 
 	file->m_file_status = FileStatus::FileUninitialized;
 
@@ -3719,34 +3782,44 @@ void MattermostQt::replyFinished(QNetworkReply *reply)
 		qDebug() << reply;
 //		qDebug() << "Reply: " << reply->readAll();
 		reply_error(reply);
-		if( reply->error() == QNetworkReply::AuthenticationRequiredError)
-		{// need authentification
-			// TODO show error in LoginPage about bad authetificaation
-			//qWarning() << reply->;
-		}
-		else if( reply->error() == QNetworkReply::TimeoutError )
+		switch(reply->error() )
 		{
-			qDebug() << "Reply: " << reply->readAll();
-
-			for(int i = 0; i < m_server.size(); i++)
-			{
-				ServerPtr server = m_server[i];
-	//			server->m_socket->st
-				server->m_state = ServerState::ServerUnconnected;
-				if(server->m_socket)
-					server->m_socket->close(QWebSocketProtocol::CloseCodeAbnormalDisconnection, QString("Client closing") );
-				emit serverStateChanged(i, server->m_state);
-				server->m_ping_timer.stop();
-				m_user_status_timer.stop();
-				m_reconnect_server.start();
+		case QNetworkReply::AuthenticationRequiredError: {
+				// need authentification
+				// TODO show error in LoginPage about bad authetificaation
+				//qWarning() << reply->;
+				break;
 			}
-		}
-		else
-		{
-			for(int i = 0; i < server().size(); i ++ )
+		case QNetworkReply::TimeoutError:
 			{
-				if(server().at(i)->m_socket)
-					server().at(i)->m_socket->ping(QString("ping").toUtf8());
+				qDebug() << "Reply: " << reply->readAll();
+
+				for(int i = 0; i < m_server.size(); i++)
+				{
+					ServerPtr server = m_server[i];
+					server->m_state = ServerState::ServerUnconnected;
+					if(server->m_socket)
+						server->m_socket->close(QWebSocketProtocol::CloseCodeAbnormalDisconnection, QString("Client closing") );
+					emit serverStateChanged(i, server->m_state);
+					server->m_ping_timer.stop();
+					m_user_status_timer.stop();
+					m_reconnect_server.start();
+				}
+				break;
+			}
+		case QNetworkReply::UnknownNetworkError:
+		default:
+			{
+				for(int i = 0; i < server().size(); i ++ )
+				{
+					if(server().at(i)->m_socket)
+						server().at(i)->m_socket->ping(QString("ping").toUtf8());
+					else {
+						server().at(i)->m_state = ServerState::ServerUnconnected;
+						emit serverStateChanged(i, server().at(i)->m_state);
+					}
+				}
+				break;
 			}
 		}
 
@@ -3755,7 +3828,6 @@ void MattermostQt::replyFinished(QNetworkReply *reply)
 			switch(replyType.toInt())
 			{
 			case ReplyType::rt_get_file_info:
-
 				break;
 			}
 		}
@@ -3944,10 +4016,11 @@ void MattermostQt::onWebSocketError(QAbstractSocket::SocketError error)
 	QWebSocket * socket = qobject_cast<QWebSocket*>(sender());
 	if(!socket) // strange situation, if it happens
 		return;
-
 	qWarning() <<"SocetErrorString:" << socket->errorString();
+
 	switch(error)
 	{
+	case QAbstractSocket::NetworkError:
 	case QAbstractSocket::SocketTimeoutError :
 		// sgoud i reconnect by my self, or its automatically ?
 		{
@@ -4434,6 +4507,7 @@ MattermostQt::MessageContainer::MessageContainer() noexcept
 	m_channel_index  = -1;
 	m_team_index = -1;
 	m_root_user_index = -1;
+	m_item_height = 16;
 }
 
 MattermostQt::MessageContainer::MessageContainer(QJsonObject object)
@@ -4443,6 +4517,7 @@ MattermostQt::MessageContainer::MessageContainer(QJsonObject object)
 	m_channel_index  = -1;
 	m_team_index = -1;
 	m_root_user_index = -1;
+	m_item_height = 16;
 //	qDebug() << object;
 	m_id = object["id"].toString();
 	m_channel_id = object["channel_id"].toString();
