@@ -33,6 +33,7 @@ include(libs/discount.pri);
 
 debug: DEFINES += _DEBUG
 !debug: DEFINES += _RELEASE
+!debug: DEFINES -= _DEBUG
 
 SOURCES += src/harbour-mattermost.cpp \
     src/TeamsModel.cpp \
@@ -74,10 +75,13 @@ CONFIG += sailfishapp_i18n
 # planning to localize your app, remember to comment out the
 # following TRANSLATIONS line. And also do not forget to
 # modify the localized app name in the the .desktop file.
-TRANSLATIONS += translations/harbour-mattermost-de.ts \
-    translations/harbour-mattermost-ru.ts
+TRANSLATIONS += \
+    translations/harbour-mattermost.ts \
+    translations/harbour-mattermost-ru.ts \
+    translations/harbour-mattermost-de.ts
 
 HEADERS += \
+    src/MattermostQt_gobal.h \
     src/TeamsModel.h \
     src/MattermostQt.h \
     src/ChannelsModel.h \
