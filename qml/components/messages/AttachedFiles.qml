@@ -83,6 +83,8 @@ Repeater {
         property size   itemSize       : role_item_size
         property real   maxWidth       : filesRepeater.maxWidth
         property real   realBlobWidth  : inBlobContent.realBlobContentWidth
+        property bool   isInCache      : role_is_in_cache
+        property int    selfScIndex    : role_self_sc_index
         property real   componentHeight
         property point  sizeCoef        // coeficient for right computing size of preview
 

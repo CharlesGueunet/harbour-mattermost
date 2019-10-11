@@ -225,19 +225,16 @@
         <source>File: id(%0); </source>
         <translation type="unfinished"></translation>
     </message>
-</context>
-<context>
-    <name>MattermostQt::MessageContainer</name>
-    <message>
-        <source>Empty message</source>
-        <translation type="unfinished"></translation>
-    </message>
     <message>
         <source>Image: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <source>File: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Empty message</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

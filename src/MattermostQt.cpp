@@ -619,7 +619,7 @@ void MattermostQt::get_file_info(int server_index, int team_index, int channel_t
 		return;
 	}
 	FilePtr f; // create empty FilePtr , because we request it now
-	// search in requested? and downloaded files same id
+	// search in requested and downloaded files same id
 	for(int i = 0; i < m->m_file.size(); i++)
 	{
 		if(m->m_file[i]->m_id != file_id)
@@ -1421,6 +1421,40 @@ void MattermostQt::clearCache()
 			emit attachedFilesChanged(m, QVector<QString>() << file->m_id, roles);
 		}
 	}
+}
+
+bool MattermostQt::saveImageFileToGallery(int server_index, int file_sc_index)
+{
+	if( server_index < 0 || server_index >= m_server.size() )
+		return false;
+	if( file_sc_index < 0 || file_sc_index >= m_server[server_index]->m_file.size() )
+		return false;
+	FilePtr file = m_server[server_index]->m_file[file_sc_index];
+	QString new_file_path = m_pictures_path + QDir::separator();
+
+	QDir dir(new_file_path);
+	if( !dir.exists() )
+		if( !dir.mkpath(new_file_path) )
+			return false;
+
+	new_file_path += file->m_name;
+	if( QFile::rename( file->m_file_path, new_file_path ) ) {
+		file->m_file_path = new_file_path;
+		file->m_is_in_cache = 0;
+		file->save_json( m_server[file->m_server_index]->m_data_path );
+		MessagePtr m = messageAt(file->m_server_index,
+		                         file->m_team_index,
+		                         file->m_channel_type,
+		                         file->m_channel_index,
+		                         file->m_message_index );
+		if(m) {
+			attachedFilesChanged(m, QVector<QString>() << file->m_id,
+			                     QVector<int>() << AttachedFilesModel::FileIsInCache << AttachedFilesModel::FilePath );
+		}
+	}
+	else
+		return false;
+	return true;
 }
 
 QString MattermostQt::getUserName(int server_index, int user_index)
@@ -4609,6 +4643,7 @@ MattermostQt::FileContainer::FileContainer() noexcept
     , m_server_index(-1)
     , m_channel_index(-1)
     , m_message_index(-1)
+    , m_is_in_cache(2)
 {
 
 }
@@ -4620,6 +4655,7 @@ MattermostQt::FileContainer::FileContainer(QJsonObject object) noexcept
     , m_server_index(-1)
     , m_channel_index(-1)
     , m_message_index(-1)
+    , m_is_in_cache(2)
 {
 	parse_from_json(object);
 }

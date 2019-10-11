@@ -37,13 +37,14 @@ public:
 		FileThumbnailPath,
 		FilePreviewPath,
 		FilePath,
-		FileCachePath,
+		FileIsInCache,
 		FileStatus,
 		FileSize,
 		FileMimeType,
 		FileId,
 		FileImageSize,
 		FileItemSize,
+		FileSelfSCIndex,
 		FileCount,
 	};
 	Q_ENUM(DataRoles)

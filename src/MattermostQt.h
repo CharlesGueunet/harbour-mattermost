@@ -137,6 +137,13 @@ public:
 			return cache_path + QLatin1String("/files/") + m_id;
 		}
 
+		bool is_file_in_cache(QString cache_path) {
+			if(m_is_in_cache == 2) {
+				m_is_in_cache = (m_file_path.indexOf(filedir(cache_path)) == 0)?1:0;
+			}
+			return m_is_in_cache == 1;
+		}
+
 		// file info
 		QString m_id;
 		QString m_post_id; // message id
@@ -166,6 +173,7 @@ public:
 		int m_self_index; // in message files list
 		int m_self_sc_index; // in server files list
 //		MessagePtr m_message;// test
+		char m_is_in_cache;
 	};
 	typedef QSharedPointer<FileContainer> FilePtr;
 
@@ -496,6 +504,15 @@ public:
 	/** Compute cache size */
 	Q_INVOKABLE QString cacheSize() const;
 	Q_INVOKABLE void    clearCache();
+
+	/** File manipulations */
+	/**
+	 * @brief saveImageFileToGallery
+	 * @param server_index   index of server in servers list
+	 * @param file_sc_index  index of file in servers files list
+	 * @return  true if file saved succesfuly
+	 */
+	Q_INVOKABLE bool saveImageFileToGallery(int server_index, int file_sc_index);
 
 	/** settings  fucntions */
 	bool save_settings();

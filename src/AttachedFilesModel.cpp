@@ -49,14 +49,17 @@ QVariant AttachedFilesModel::data(const QModelIndex &index, int role) const
 	if( role == FileType ) {
 		return QVariant(file->m_file_type);
 	}
+	else if( role == FileSelfSCIndex ) {
+		return file->m_self_sc_index;
+	}
 	else if( role == FileName ) {
 		return QVariant(file->m_name);
 	}
 	else if( role == FilePath ) {
 		return file->m_file_path;
 	}
-	else if( role == FileCachePath ) {
-		return QVariant();
+	else if( role == FileIsInCache ) {
+		return file->is_file_in_cache(m_mattermost->server()[file->m_server_index]->m_cache_path);
 	}
 	else if( role == FileStatus ) {
 		return QVariant(file->m_file_status);
@@ -120,18 +123,19 @@ QHash<int, QByteArray> AttachedFilesModel::roleNames() const
 {
 	// thx to @Kaffeine for that optimization
 	static const QHash<int, QByteArray> names = {
-	{ FileType,          "role_file_type"  },
-	{ FileName,          "role_file_name"  },
-	{ FileThumbnailPath, "role_thumbnail"  },
-	{ FilePreviewPath,   "role_preview"    },
-	{ FilePath,          "role_file_path"  },
-	{ FileCachePath,     "role_cache_path" },
-	{ FileStatus,        "role_status"     },
-	{ FileSize,          "role_size"       },
-	{ FileMimeType,      "role_mime_type"  },
-	{ FileImageSize,     "role_image_size" },
-	{ FileItemSize,      "role_item_size"  },
-	{ FileId,            "role_file_id"   }};
+	{ FileType,          "role_file_type"     },
+	{ FileName,          "role_file_name"     },
+	{ FileThumbnailPath, "role_thumbnail"     },
+	{ FilePreviewPath,   "role_preview"       },
+	{ FilePath,          "role_file_path"     },
+	{ FileIsInCache,     "role_is_in_cache"   },
+	{ FileStatus,        "role_status"        },
+	{ FileSize,          "role_size"          },
+	{ FileMimeType,      "role_mime_type"     },
+	{ FileImageSize,     "role_image_size"    },
+	{ FileItemSize,      "role_item_size"     },
+	{ FileId,            "role_file_id"       },
+	{ FileSelfSCIndex,   "role_self_sc_index" }};
 	return names;
 }
 

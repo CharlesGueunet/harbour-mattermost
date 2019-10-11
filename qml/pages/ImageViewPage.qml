@@ -25,6 +25,8 @@ Page {
     property bool   animatedImage
     property size   imageSize
     property bool   showOverlay: true
+    property bool   isInCache
+    property int    selfScIndex
 
     allowedOrientations: Orientation.All
 
@@ -295,8 +297,10 @@ Page {
         IconButton {
             id: saveToDEvice
             icon.source: "image://theme/icon-m-device-download"
+            visible: isInCache
             onClicked: {
                 //TODO here we should save picture to gallery
+                var result = context.mattermost.saveImageFileToGallery(server_index,selfScIndex);
             }
         }
     }
