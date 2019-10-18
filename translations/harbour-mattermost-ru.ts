@@ -31,6 +31,10 @@
         <source>in Telegram for their help.</source>
         <translation>в Telegram за их помощь.</translation>
     </message>
+	<message>
+	    <source>And to users:</source>
+		<translation>А так же:</translation>
+		</message>
     <message>
         <source>Sources: </source>
         <translation>Исходный код: </translation>

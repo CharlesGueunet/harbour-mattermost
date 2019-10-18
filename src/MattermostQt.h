@@ -138,9 +138,9 @@ public:
 		}
 
 		bool is_file_in_cache(QString cache_path) {
-			if(m_is_in_cache == 2) {
+//			if(m_is_in_cache == 2) {
 				m_is_in_cache = (m_file_path.indexOf(filedir(cache_path)) == 0)?1:0;
-			}
+//			}
 			return m_is_in_cache == 1;
 		}
 
@@ -422,6 +422,7 @@ public:
 		bool                        m_enabled; /**< is server is enabled */
 
 		QTimer                      m_ping_timer;
+		QVector<QString>            m_requested_users; /** requested users id's */
 	};
 	typedef QSharedPointer<ServerContainer> ServerPtr;
 
@@ -507,6 +508,14 @@ public:
 
 	/** File manipulations */
 	/**
+	 * @brief isImageFileInGallery
+	 * @param server_index   index of server in servers list
+	 * @param file_sc_index  index of file in servers files list
+	 * @return  true if file already in gallery
+	 */
+	Q_INVOKABLE bool isImageFileInGallery(int server_index, int file_sc_index);
+
+	/**
 	 * @brief saveImageFileToGallery
 	 * @param server_index   index of server in servers list
 	 * @param file_sc_index  index of file in servers files list
@@ -561,6 +570,13 @@ Q_SIGNALS:
 	void fileStatusChanged(QString file_id, int status);
 	void fileUploaded(int server_index, int file_sc_index);
 
+	/**
+	 * @brief onImageFileSavedToGallery
+	 * when we save image to gallery from cache? this signal emmited if it success
+	 * @param server_index   server index
+	 * @param file_sc_index  file index in server's files list
+	 */
+	void onImageFileSavedToGallery(int server_index, int file_sc_index);
 
 	/// renew signals
 	void attachedFilesChanged(MattermostQt::MessagePtr message, QVector<QString> file_ids, QVector<int> roles);
@@ -599,7 +615,7 @@ protected:
 	 * @param server_index
 	 * @param message
 	 */
-	void prepare_user_index(int server_index, MessagePtr message);
+	void prepare_user_index(int server_index, MessagePtr message, int tean_index = -1);
 
 	/**
 	 * @brief find_team_by_id
@@ -627,6 +643,7 @@ protected:
 	void reply_get_channel(QNetworkReply *reply);
 	void reply_post_channel_view(QNetworkReply *reply);
 	void reply_get_user_info(QNetworkReply *reply);
+	void error_get_user_info(QNetworkReply *reply);
 	void reply_post_users_status(QNetworkReply *reply);
 	void reply_error(QNetworkReply *reply);
 	void reply_get_file_thumbnail(QNetworkReply *reply);

@@ -28,10 +28,6 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>in Telegram for their help.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Sources: </source>
         <translation type="unfinished"></translation>
     </message>
@@ -41,6 +37,14 @@
     </message>
     <message>
         <source>Yandex Money</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>in Telegram for their help.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>And to users:</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

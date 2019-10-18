@@ -37,7 +37,7 @@ public:
 		FileThumbnailPath,
 		FilePreviewPath,
 		FilePath,
-		FileIsInCache,
+//		FileIsInCache,
 		FileStatus,
 		FileSize,
 		FileMimeType,

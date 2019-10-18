@@ -58,9 +58,12 @@ QVariant AttachedFilesModel::data(const QModelIndex &index, int role) const
 	else if( role == FilePath ) {
 		return file->m_file_path;
 	}
+	/*
 	else if( role == FileIsInCache ) {
-		return file->is_file_in_cache(m_mattermost->server()[file->m_server_index]->m_cache_path);
+		MattermostQt::ServerPtr s = m_mattermost->server()[file->m_server_index];
+		return file->is_file_in_cache(s->m_cache_path);
 	}
+	*/
 	else if( role == FileStatus ) {
 		return QVariant(file->m_file_status);
 	}
@@ -128,7 +131,7 @@ QHash<int, QByteArray> AttachedFilesModel::roleNames() const
 	{ FileThumbnailPath, "role_thumbnail"     },
 	{ FilePreviewPath,   "role_preview"       },
 	{ FilePath,          "role_file_path"     },
-	{ FileIsInCache,     "role_is_in_cache"   },
+//	{ FileIsInCache,     "role_is_in_cache"   },
 	{ FileStatus,        "role_status"        },
 	{ FileSize,          "role_size"          },
 	{ FileMimeType,      "role_mime_type"     },

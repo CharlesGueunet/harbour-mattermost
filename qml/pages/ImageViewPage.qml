@@ -25,8 +25,17 @@ Page {
     property bool   animatedImage
     property size   imageSize
     property bool   showOverlay: true
-    property bool   isInCache
+    property bool   isInGallery: false
     property int    selfScIndex
+
+    onSelfScIndexChanged: {
+        isInGallery = context.mattermost.isImageFileInGallery(server_index, selfScIndex)
+
+//        context.mattermost.onImageFileSavedToGallery.connect( function foo(si, fsi) {
+//            console.debug("Image saved to Pictures folder")
+//            isInGallery = true;
+//        })
+    }
 
     allowedOrientations: Orientation.All
 
@@ -297,10 +306,20 @@ Page {
         IconButton {
             id: saveToDEvice
             icon.source: "image://theme/icon-m-device-download"
-            visible: isInCache
+            enabled: !isInGallery
+
+            Behavior on opacity {
+                NumberAnimation { duration: 200 }
+            }
+
             onClicked: {
                 //TODO here we should save picture to gallery
                 var result = context.mattermost.saveImageFileToGallery(server_index,selfScIndex);
+                if( result === true )
+                {
+//                    opacity = 0
+                    isInGallery = true;
+                }
             }
         }
     }

@@ -33,6 +33,7 @@
 #define P_SERVER_NAME        "server_name"
 #define P_SERVER_INDEX       "server_index"
 #define P_USER_INDEX         "user_index"
+#define P_USER_ID            "user_id"
 #define P_FILE_SC_INDEX      "file_sc_index"
 #define P_TEAM_INDEX         "team_index"
 #define P_MESSAGE_INDEX      "message_index"
@@ -1062,6 +1063,13 @@ void MattermostQt::get_user_info(int server_index, QString userId, int team_inde
 		return;
 	ServerPtr sc = m_server[server_index];
 
+	// first check if user requested allready
+	for(int u = 0; u < sc->m_requested_users.size(); u++ )
+	{
+		if( sc->m_requested_users[u] == userId )
+			return;
+	}
+
 	QString urlString = QLatin1String("/api/v")
 	        + QString::number(sc->m_api)
 	        + QLatin1String("/users/")
@@ -1083,6 +1091,7 @@ void MattermostQt::get_user_info(int server_index, QString userId, int team_inde
 	reply->setProperty(P_SERVER_INDEX, QVariant(server_index) );
 	reply->setProperty(P_TEAM_INDEX, QVariant(team_index) );
 	reply->setProperty(P_DIRECT_CHANNEL, QVariant(direct_channel) );
+	reply->setProperty(P_USER_ID, QVariant(userId));
 }
 
 void MattermostQt::get_teams_unread(int server_index)
@@ -1423,6 +1432,18 @@ void MattermostQt::clearCache()
 	}
 }
 
+bool MattermostQt::isImageFileInGallery(int server_index, int file_sc_index)
+{
+	if( server_index < 0 || server_index >= m_server.size() )
+		return false;
+	if( file_sc_index < 0 || file_sc_index >= m_server[server_index]->m_file.size() )
+		return false;
+	ServerPtr server = m_server[server_index];
+	FilePtr file = server->m_file[file_sc_index];
+
+	return !file->is_file_in_cache(server->m_cache_path);
+}
+
 bool MattermostQt::saveImageFileToGallery(int server_index, int file_sc_index)
 {
 	if( server_index < 0 || server_index >= m_server.size() )
@@ -1442,14 +1463,17 @@ bool MattermostQt::saveImageFileToGallery(int server_index, int file_sc_index)
 		file->m_file_path = new_file_path;
 		file->m_is_in_cache = 0;
 		file->save_json( m_server[file->m_server_index]->m_data_path );
+
+		emit onImageFileSavedToGallery(server_index, file_sc_index);
+
 		MessagePtr m = messageAt(file->m_server_index,
 		                         file->m_team_index,
 		                         file->m_channel_type,
 		                         file->m_channel_index,
 		                         file->m_message_index );
 		if(m) {
-			attachedFilesChanged(m, QVector<QString>() << file->m_id,
-			                     QVector<int>() << AttachedFilesModel::FileIsInCache << AttachedFilesModel::FilePath );
+			emit attachedFilesChanged(m, QVector<QString>() << file->m_id,
+			                     QVector<int>() << AttachedFilesModel::FilePath );
 		}
 	}
 	else
@@ -1695,7 +1719,7 @@ void MattermostQt::prepare_direct_channel(int server_index, int channel_index)
 	get_user_info(sc->m_self_index, user_id);
 }
 
-void MattermostQt::prepare_user_index(int server_index, MattermostQt::MessagePtr message)
+void MattermostQt::prepare_user_index(int server_index, MattermostQt::MessagePtr message, int tean_index)
 {
 	ServerPtr sc;
 	if( server_index < 0 || server_index >= m_server.size() )
@@ -1724,7 +1748,7 @@ void MattermostQt::prepare_user_index(int server_index, MattermostQt::MessagePtr
 	if( message->m_user_index == -1 )
 	{
 		sc->m_nouser_messages.append(message);
-		get_user_info(server_index, message->m_user_id);
+		get_user_info(server_index, message->m_user_id, tean_index);
 	}
 }
 
@@ -1807,7 +1831,7 @@ MattermostQt::UserPtr MattermostQt::userAt(int server_index, int user_index)
 {
 	if( server_index < 0 || server_index >= m_server.size() )
 		return UserPtr();
-	if( user_index < 0 && user_index >= m_server[server_index]->m_user.size() )
+	if( user_index < 0 || user_index >= m_server[server_index]->m_user.size() )
 		return UserPtr();
 	return m_server[server_index]->m_user[user_index];
 }
@@ -2138,6 +2162,9 @@ void MattermostQt::reply_get_post(QNetworkReply *reply)
 
 void MattermostQt::reply_get_posts(QNetworkReply *reply)
 {
+#ifdef MQT_TRACE
+	qInfo() << "MattermostQt::reply_get_posts()";
+#endif
 	int server_index = reply->property(P_SERVER_INDEX).toInt();
 	int team_index = reply->property(P_TEAM_INDEX).toInt();
 	int channel_index = reply->property(P_CHANNEL_INDEX).toInt();
@@ -2185,7 +2212,7 @@ void MattermostQt::reply_get_posts(QNetworkReply *reply)
 		}
 
 		// get user_index for post
-		prepare_user_index(sc->m_self_index, message);
+		prepare_user_index(sc->m_self_index, message, team_index);
 		// check if message is answer
 		if( !message->m_root_id.isEmpty() )
 		{
@@ -2194,6 +2221,7 @@ void MattermostQt::reply_get_posts(QNetworkReply *reply)
 
 		new_messages = true;
 	}
+
 	if(new_messages)
 	{
 		QVector<MessagePtr> &messages = channel->m_message;
@@ -2211,7 +2239,6 @@ void MattermostQt::reply_get_posts(QNetworkReply *reply)
 					messages[j2] = temp;
 					messages[j2]->m_self_index = j2;
 					messages[j]->m_self_index = j;
-
 					for(QList<MessagePtr>::iterator it = answers.begin(); it != answers.end(); it++)
 					{
 						MessagePtr ans = *it;
@@ -2261,6 +2288,9 @@ void MattermostQt::reply_get_posts(QNetworkReply *reply)
 		if(its_all < 60 )
 			emit messagesIsEnd(channel);
 	}
+#ifdef MQT_TRACE
+	qInfo() << "MattermostQt::reply_get_posts() end function";
+#endif
 }
 
 void MattermostQt::reply_get_posts_before(QNetworkReply *reply)
@@ -2574,6 +2604,7 @@ void MattermostQt::reply_get_user_info(QNetworkReply *reply)
 	int server_index = reply->property(P_SERVER_INDEX).toInt();
 	int team_index = reply->property(P_TEAM_INDEX).toInt();
 	bool direct_channel = reply->property(P_DIRECT_CHANNEL).toBool();
+	QString user_id = reply->property(P_USER_ID).toString();
 
 	if( server_index < 0 || server_index >= m_server.size() )
 	{
@@ -2581,6 +2612,16 @@ void MattermostQt::reply_get_user_info(QNetworkReply *reply)
 		return;
 	}
 	ServerPtr sc = m_server[server_index];
+
+	// first delete user from request list
+	for(int u = 0; u < sc->m_requested_users.size(); u++ )
+	{
+		if( sc->m_requested_users[u] == user_id )
+		{
+			sc->m_requested_users.remove(u);
+			break;
+		}
+	}
 
 	QJsonDocument json = QJsonDocument::fromJson(reply->readAll());
 
@@ -2683,6 +2724,29 @@ void MattermostQt::reply_get_user_info(QNetworkReply *reply)
 		}
 		if(user->m_image_path.isEmpty() && user_exists)
 			get_user_image(server_index,user->m_self_index);
+	}
+}
+
+void MattermostQt::error_get_user_info(QNetworkReply *reply)
+{
+	int server_index = reply->property(P_SERVER_INDEX).toInt();
+	QString user_id = reply->property(P_USER_ID).toString();
+
+	if( server_index < 0 || server_index >= m_server.size() )
+	{
+		qCritical() << "error_get_user_info():: Error! Wrong server index";
+		return;
+	}
+	ServerPtr sc = m_server[server_index];
+
+	// first delete user from request list
+	for(int u = 0; u < sc->m_requested_users.size(); u++ )
+	{
+		if( sc->m_requested_users[u] == user_id )
+		{
+			sc->m_requested_users.remove(u);
+			break;
+		}
 	}
 }
 
@@ -3716,6 +3780,9 @@ void MattermostQt::replyFinished(QNetworkReply *reply)
 {
 	QVariant replyType;
 	replyType = reply->property(P_REPLY_TYPE);
+#ifdef MQT_TRACE
+	qInfo() << "MattermostQt::replyFinished() " << replyType.toInt();
+#endif
 	if (reply->error() == QNetworkReply::NoError) {
 		//success
 		if(reply->header(QNetworkRequest::LastModifiedHeader).isValid())
@@ -3857,11 +3924,14 @@ void MattermostQt::replyFinished(QNetworkReply *reply)
 			}
 		}
 
+
 		if(replyType.isValid())
 		{
 			switch(replyType.toInt())
 			{
 			case ReplyType::rt_get_file_info:
+				break;
+			case ReplyType::rt_get_user_info:
 				break;
 			}
 		}
@@ -4595,6 +4665,7 @@ MattermostQt::MessageContainer::MessageContainer(QJsonObject object)
 
 bool MattermostQt::MessageContainer::updateRootMessage( MattermostQt *mattermost )
 {
+	qInfo() << "MattermostQt::MessageContainer::updateRootMessage";
 	if(m_root_ptr.isNull())
 	{
 		return false;
@@ -4626,6 +4697,7 @@ bool MattermostQt::MessageContainer::updateRootMessage( MattermostQt *mattermost
 			m_root_user_index = -1;
 		}
 	}
+	qInfo() << "MattermostQt::MessageContainer::updateRootMessage end";
 	return true;
 }
 

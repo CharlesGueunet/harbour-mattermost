@@ -62,7 +62,6 @@ MouseArea {
                            previewPath: filePreview,//fileThumbnail,
                            animatedImage: fileType === MattermostQt.FileAnimatedImage,
                            imageSize: imageSize,
-                           isInCache: isInCache,
                            selfScIndex: selfScIndex
                        })
     }
