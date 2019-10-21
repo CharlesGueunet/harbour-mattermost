@@ -21,7 +21,7 @@ typedef int (*stfu)(const void*,const void*);
 typedef void (*spanhandler)(MMIOT*,int);
 
 /* forward declarations */
-static void text(MMIOT *f);
+static void text(Paragraph *pp, MMIOT *f);
 static Paragraph *display(Paragraph*, MMIOT*);
 
 /* externals from markdown.c */
@@ -222,7 +222,7 @@ ___mkd_reparse(char *bfr, int size, int flags, MMIOT *f, char *esc)
     pushc(0, &sub);
     S(sub.in)--;
     
-    text(&sub);
+    text(0, &sub);
     ___mkd_emblock(&sub);
     
     Qwrite(T(sub.out), S(sub.out), f);
@@ -1297,7 +1297,7 @@ emoji(MMIOT *f)
 }
 
 static void
-text(MMIOT *f)
+text(Paragraph *pp, MMIOT *f)
 {
     int c, j, i;
     int rep;
@@ -1494,14 +1494,26 @@ text(MMIOT *f)
 					/** TODO put here path to smile from resources*/
 					// Qstring("<img src=\"qrc:/emoji/emoji.png\"/>", f);
 					/** and uncomment this*/
+					Qstring("<b>", f);
+					for(int s = 1; s < i; s++)
+						Qchar( T(f->in)[s + f->isp-1], f );
 					// mmiotseek(f, mmiottell(f) + i );
+					mmiotseek(f, mmiottell(f) + i );
+					f->last = '>';
+					if(pp) {
+//						Qstring("</b>", f);
+						Qprintf(f, "p=%d </b>", pp->hnumber);
+					}
+					else
+						Qstring("</b>", f);
 					i = -1;
 					break;
 				}
 			}
+			if( i != -1 ) {
 			f->last = c;
-			if( i != -1 )
 				Qchar(c, f);
+			}
 			break;
 		}
 	/* fall through to default */
@@ -1541,7 +1553,7 @@ printheader(Paragraph *pp, MMIOT *f)
 	Qprintf(f, "<h%d>", pp->hnumber);
     }
     push(T(pp->text->text), S(pp->text->text), f);
-    text(f);
+    text(pp, f);
     Qprintf(f, "</h%d>", pp->hnumber);
 }
 
@@ -1692,7 +1704,7 @@ printblock(Paragraph *pp, MMIOT *f)
 	t = t->next;
     }
     Qstring(Begin[align], f);
-    text(f);
+    text(pp, f);
     Qstring(End[align], f);
     return 1;
 }
