@@ -1494,18 +1494,17 @@ text(Paragraph *pp, MMIOT *f)
 					/** TODO put here path to smile from resources*/
 					// Qstring("<img src=\"qrc:/emoji/emoji.png\"/>", f);
 					/** and uncomment this*/
-					Qstring("<b>", f);
-					for(int s = 1; s < i; s++)
-						Qchar( T(f->in)[s + f->isp-1], f );
-					// mmiotseek(f, mmiottell(f) + i );
+					Qstring("<b>:", f);
+					for(rep = 1; rep < i; rep++)
+						Qchar( T(f->in)[rep + f->isp-1], f );
 					mmiotseek(f, mmiottell(f) + i );
 					f->last = '>';
 					if(pp) {
-//						Qstring("</b>", f);
-						Qprintf(f, "p=%d </b>", pp->hnumber);
+						Qstring(":</b>", f);
+//						Qprintf(f, "</b>", pp->hnumber); // pp->hnumber - this for size of text H1 H2 and other
 					}
 					else
-						Qstring("</b>", f);
+						Qstring(":</b>", f);
 					i = -1;
 					break;
 				}
