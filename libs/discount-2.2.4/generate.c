@@ -11,6 +11,8 @@
 #include <time.h>
 #include <ctype.h>
 
+#include <c_cpphash.h>
+
 #include "config.h"
 
 #include "cstring.h"
@@ -1302,6 +1304,8 @@ text(Paragraph *pp, MMIOT *f)
     int c, j, i;
     int rep;
     int smartyflags = 0;
+	char *picture_path = 0;
+	int path_size = 0;
 
     while (1) {
         if ( (f->flags & MKD_AUTOLINK) && isalpha(peek(f,1)) && !tag_text(f) )
@@ -1493,24 +1497,32 @@ text(Paragraph *pp, MMIOT *f)
 					// here is smile!
 					/** TODO put here path to smile from resources*/
 					// Qstring("<img src=\"qrc:/emoji/emoji.png\"/>", f);
-					/** and uncomment this*/
-					Qstring("<b>:", f);
-					for(rep = 1; rep < i; rep++)
-						Qchar( T(f->in)[rep + f->isp-1], f );
-					mmiotseek(f, mmiottell(f) + i );
-					f->last = '>';
-					if(pp) {
-						Qstring(":</b>", f);
-//						Qprintf(f, "</b>", pp->hnumber); // pp->hnumber - this for size of text H1 H2 and other
+					rep = (pp != 0) ? pp->hnumber : 0;
+					path_size = find_emoji(&(T(f->in)[f->isp]),i - 1, &picture_path, &rep );
+					if( path_size > 0 )
+					{
+						Qprintf(f,"<img width=%d height=%d src=\"",rep,rep);
+						Qwrite(picture_path, path_size, f);
+						Qstring("\">", f);
+						mmiotseek(f, mmiottell(f) + i );
+						f->last = '>';
+						Qstring("</img>", f);
 					}
 					else
-						Qstring(":</b>", f);
+					{
+						Qchar(':', f);
+						for(rep = 1; rep < i; rep++)
+							Qchar( T(f->in)[rep + f->isp-1], f );
+						mmiotseek(f, mmiottell(f) + i );
+						f->last = ':';
+						Qchar(':', f);
+					}
 					i = -1;
 					break;
 				}
 			}
 			if( i != -1 ) {
-			f->last = c;
+				f->last = c;
 				Qchar(c, f);
 			}
 			break;

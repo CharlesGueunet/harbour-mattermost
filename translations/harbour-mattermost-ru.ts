@@ -31,10 +31,10 @@
         <source>in Telegram for their help.</source>
         <translation>в Telegram за их помощь.</translation>
     </message>
-	<message>
-	    <source>And to users:</source>
-		<translation>А так же:</translation>
-		</message>
+    <message>
+        <source>And to users:</source>
+        <translation>А так же:</translation>
+    </message>
     <message>
         <source>Sources: </source>
         <translation>Исходный код: </translation>
@@ -101,6 +101,18 @@
     <message>
         <source>Add account ...</source>
         <translation>Добавить учетную запись ...</translation>
+    </message>
+    <message>
+        <source>Enable</source>
+		<translation>Включено</translation>
+    </message>
+    <message>
+        <source>Loggining</source>
+		<translation>Логирование</translation>
+    </message>
+    <message>
+        <source>Disabled</source>
+		<translation>Отключено</translation>
     </message>
 </context>
 <context>
@@ -207,22 +219,15 @@
     <name>MattermostQt</name>
     <message>
         <source>Cant open CA certificate file: &quot;%0&quot;</source>
-        <translation>Невозможно открыть файл центра сертификации: &quot;%0&quot</translation>
+        <translation>Невозможно открыть файл центра сертификации: &quot;%0&quot;</translation>
     </message>
     <message>
         <source>Cant open certificate file: &quot;%0&quot;</source>
-        <translation>Невозможно открыть файл сертификата &quot;%0&quot</translation>
+        <translation>Невозможно открыть файл сертификата &quot;%0&quot;</translation>
     </message>
     <message>
         <source>File: id(%0); </source>
         <translation>Файл: id(%0)</translation>
-    </message>
-</context>
-<context>
-    <name>MattermostQt::MessageContainer</name>
-    <message>
-        <source>Empty message</source>
-        <translation>Пустое сообщение</translation>
     </message>
     <message>
         <source>Image: </source>
@@ -231,6 +236,10 @@
     <message>
         <source>File: </source>
         <translation>Файл: </translation>
+    </message>
+    <message>
+        <source>Empty message</source>
+        <translation>Пустое сообщение</translation>
     </message>
 </context>
 <context>
@@ -364,6 +373,14 @@
         <source>Page padding</source>
         <translation>Отступы (от края экрана)</translation>
     </message>
+    <message>
+        <source>Cache size: </source>
+		<translation>Размер кэша</translation>
+    </message>
+    <message>
+        <source>Clear cache</source>
+		<translation>Очистить кэш</translation>
+    </message>
 </context>
 <context>
     <name>QObject</name>
@@ -394,6 +411,30 @@
     <message>
         <source>(edited)</source>
         <translation>(изменено)</translation>
+    </message>
+    <message>
+        <source>Bytes</source>
+		<translation>Байт</translation>
+    </message>
+    <message>
+        <source>KB</source>
+		<translation>КБ</translation>
+    </message>
+    <message>
+        <source>MB</source>
+		<translation>МБ</translation>
+    </message>
+    <message>
+        <source>GB</source>
+		<translation>ГБ</translation>
+    </message>
+    <message>
+        <source>TB</source>
+		<translation>ТБ</translation>
+    </message>
+    <message>
+        <source>PB</source>
+		<translation>ПБ</translation>
     </message>
 </context>
 <context>
