@@ -104,15 +104,15 @@
     </message>
     <message>
         <source>Enable</source>
-		<translation>Включено</translation>
+        <translation>Включено</translation>
     </message>
     <message>
         <source>Loggining</source>
-		<translation>Логирование</translation>
+        <translation>Логирование</translation>
     </message>
     <message>
         <source>Disabled</source>
-		<translation>Отключено</translation>
+        <translation>Отключено</translation>
     </message>
 </context>
 <context>
@@ -375,11 +375,11 @@
     </message>
     <message>
         <source>Cache size: </source>
-		<translation>Размер кэша</translation>
+        <translation>Размер кэша</translation>
     </message>
     <message>
         <source>Clear cache</source>
-		<translation>Очистить кэш</translation>
+        <translation>Очистить кэш</translation>
     </message>
 </context>
 <context>
@@ -414,27 +414,27 @@
     </message>
     <message>
         <source>Bytes</source>
-		<translation>Байт</translation>
+        <translation>Байт</translation>
     </message>
     <message>
         <source>KB</source>
-		<translation>КБ</translation>
+        <translation>КБ</translation>
     </message>
     <message>
         <source>MB</source>
-		<translation>МБ</translation>
+        <translation>МБ</translation>
     </message>
     <message>
         <source>GB</source>
-		<translation>ГБ</translation>
+        <translation>ГБ</translation>
     </message>
     <message>
         <source>TB</source>
-		<translation>ТБ</translation>
+        <translation>ТБ</translation>
     </message>
     <message>
         <source>PB</source>
-		<translation>ПБ</translation>
+        <translation>ПБ</translation>
     </message>
 </context>
 <context>

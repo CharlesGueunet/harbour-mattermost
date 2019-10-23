@@ -7,6 +7,6 @@
 #  define EXTERNC
 #endif
 
-EXTERNC int find_emoji(const char *emoji, int size, char **picture_path, int *header);
+EXTERNC int find_emoji(const char *emoji_short_name, int size, char **picture_path, int *header);
 
 #endif // C_CPPHASH_H

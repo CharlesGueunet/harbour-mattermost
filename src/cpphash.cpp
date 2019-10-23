@@ -20,7 +20,6 @@ public:
 
 public:
 	QByteArray              buffer; //for paste image path in discout lib
-protected:
 	QHash<QString, QString> emoji;  // emoji hash short_name - image_name
 };
 
@@ -28,6 +27,9 @@ protected:
 CppHash::CppHash()
 {
 	buffer = nullptr;
+
+	if(!parse_emoji_json( QString("%0/emoji.json").arg(EMOJI_PATH) ))
+		qCritical() << "Cant read emoji.json file! Path:" << QString("%0/emoji.json").arg(EMOJI_PATH);
 }
 
 CppHash *CppHash::instance()
@@ -39,6 +41,7 @@ CppHash *CppHash::instance()
 bool CppHash::parse_emoji_json(QString path)
 {// parse emoji json and add it to hash
 	qDebug() << "Start parse emoji.json file";
+//	path = QString().arg(EMOJI_PATH);
 	QFile file(path);
 	file.open(QFile::ReadOnly);
 	QJsonParseError error;
@@ -55,20 +58,18 @@ bool CppHash::parse_emoji_json(QString path)
 	for (int i = 0; i < ar.size(); i ++ )
 	{
 		QJsonObject current = ar[i].toObject();
-		QString unicode = current["unified"].toString();
-		//unicode.insert(0, "\\u");
-//		QString une = toUnicode(unicode);
-		//qrc:/emoji/64/0023.png
-//		QString short_name = current["short_name"].toString();
 		QString image_name = current["image"].toString();
-		QString image = image_name;
-//		emoji.insert( short_name, image );
-//		QByteArray utf8_name = short_name.toLatin1();
-//		QByteArray utf8_image = image_name.toLatin1();
+		QString image = image_name.replace(".png",".svg");
+		QRegExp re(".*[a-z]+\\-[a-z]+.*");
 		//short_names
 		QJsonArray short_names = current["short_names"].toArray();
 		for( int j = 0; j < short_names.size(); j++)
-			emoji.insert( short_names[j].toString(), image );
+		{
+			QString short_name = short_names[j].toString();
+			if( re.indexIn(short_name) != -1 )
+				short_name.replace("-","_");
+			emoji.insert( short_name, image );
+		}
 	}
 
 	qDebug() << "All done!";
@@ -77,7 +78,7 @@ bool CppHash::parse_emoji_json(QString path)
 
 
 // C part
-int find_emoji(const char *emoji, int size, char **picture_path, int *header)
+int find_emoji(const char *emoji_short_name, int size, char **picture_path, int *header)
 {
 	switch(*header) {
 	case 1:
@@ -100,15 +101,16 @@ int find_emoji(const char *emoji, int size, char **picture_path, int *header)
 		break;
 	}
 
-	QString comp("smile");
-	QString w( QByteArray(emoji,size) );
-	qDebug() << "CheckEmoji: " << w;
-	if( comp.compare(w) == 0 )
+	QString short_name( QByteArray(emoji_short_name,size) );
+	QHash<QString, QString>::iterator it =  CppHash::instance()->emoji.find(short_name);
+	if ( it != CppHash::instance()->emoji.end() )
 	{
-		QString path_pic = QString("%0/svg/1f604.svg").arg(EMOJI_PATH);
+		QString path_pic = QStringLiteral("%0/svg/%1").arg(EMOJI_PATH).arg(it.value());
 		CppHash::instance()->buffer = path_pic.toLocal8Bit();
 		*picture_path = CppHash::instance()->buffer.data();
 		return path_pic.size();
 	}
+	else
+		qDebug() << "No Emoji found: " << short_name;
 	return 0;
 }
