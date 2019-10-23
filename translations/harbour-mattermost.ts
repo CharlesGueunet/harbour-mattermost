@@ -47,6 +47,10 @@
         <source>And to users:</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Using Emoji from</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>AccountsPage</name>

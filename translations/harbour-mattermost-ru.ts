@@ -47,6 +47,10 @@
         <source>Yandex Money</source>
         <translation>Яндекс Деньги</translation>
     </message>
+    <message>
+        <source>Using Emoji from</source>
+        <translation>Emoji взяты отсюда:</translation>
+    </message>
 </context>
 <context>
     <name>AccountsPage</name>

@@ -54,7 +54,8 @@ Page {
 
         LinkedLabel {
             id: sourceslink
-            text: qsTr("Sources: ") + "<a href=\"https://gitlab.com/sashikknox/harbour-mattermost\">GitLab</a>"
+            text: qsTr("Sources: ") + "<a href=\"https://gitlab.com/sashikknox/harbour-mattermost\">GitLab</a><br>"
+                + qsTr("Using Emoji from") + " <a href=\"https://twemoji.twitter.com/\">Twemoji</a>"
             width: parent.width
             wrapMode: Text.Wrap
             horizontalAlignment: Text.AlignLeft

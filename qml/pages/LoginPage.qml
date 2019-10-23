@@ -20,7 +20,7 @@ Page {
     property int status_server_connecting: MattermostQt.ServerConnecting
     property int status_server_unconnected: MattermostQt.ServerUnconnected
 
-    property int connectionStatus
+    property int connectionStatus: 0
 
 
     property bool canAccept : server_name.isComplete &
