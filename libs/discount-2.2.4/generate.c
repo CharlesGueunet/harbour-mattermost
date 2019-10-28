@@ -1494,19 +1494,17 @@ text(Paragraph *pp, MMIOT *f)
 	case ':': if( (f->flags & MKD_GITHUBTAGS) && (peek(f,1) != ':') ) {
 			for( i = 0; (peek(f,i) != MKD_EOLN) &&  (peek(f,i) != EOF); i++ ) {
 				if ( i > 1 && peek(f,i) == ':' ) {
-					// here is smile!
-					/** TODO put here path to smile from resources*/
-					// Qstring("<img src=\"qrc:/emoji/emoji.png\"/>", f);
+					// get header number
 					rep = (pp != 0) ? pp->hnumber : 0;
+					// get path to emoji if it exists
 					path_size = find_emoji(&(T(f->in)[f->isp]),i - 1, &picture_path, &rep );
 					if( path_size > 0 )
 					{
-						Qprintf(f,"<img width=%d height=%d src=\"",rep,rep);
+						Qprintf(f,"<img width=\"%d\" height=\"%d\" src=\"",rep,rep);
 						Qwrite(picture_path, path_size, f);
-						Qstring("\">", f);
+						Qstring("\"/>", f);
 						mmiotseek(f, mmiottell(f) + i );
 						f->last = '>';
-						Qstring("</img>", f);
 					}
 					else
 					{

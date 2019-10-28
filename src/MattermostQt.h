@@ -264,7 +264,7 @@ public:
 		//"email": "string",
 		//"email_verified": true,
 		//"auth_service": "string",
-		//"roles": "string",
+		//"roles": "string", // TODO system_admin need catch
 		QString m_locale;
 		//"notify_props": {
 		//	"email": "string",

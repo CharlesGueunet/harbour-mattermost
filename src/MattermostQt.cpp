@@ -87,6 +87,7 @@ MattermostQt::MattermostQt(QObject *parent )
 
 	m_update_server_timeout = 5000; // in millisecs
 	m_reconnect_server.setInterval(m_update_server_timeout);
+	qDebug() << QStringLiteral("Recconect timer set interval ").arg(m_update_server_timeout);
 	m_user_status_timeout = 30000;  // half minute
 	m_user_status_timer.setInterval(m_user_status_timeout);
 	m_user_status_timer.setSingleShot(false);
@@ -203,6 +204,7 @@ void MattermostQt::set_server_enabled(int server_index, const bool enabled)
 	if(server->m_enabled )
 	{
 		server->m_ping_timer.stop();
+		qDebug() << QStringLiteral("Server[%0] (%1)  stop ping timer.").arg(server->m_self_index).arg(server->m_display_name);
 		server->m_state = ServerUnconnected;
 		emit serverStateChanged(server_index, ServerUnconnected);
 	}
@@ -210,6 +212,7 @@ void MattermostQt::set_server_enabled(int server_index, const bool enabled)
 //		get_login(server);
 		slot_recconect_servers();
 		m_reconnect_server.start();
+		qDebug() << QLatin1String("Recconect timer started.");
 	}
 }
 
@@ -309,6 +312,7 @@ void MattermostQt::post_login_by_token(QString url, QString token, int api, QStr
 	server->m_cert_path = cert_path;
 //	server->m_user_id = user_id;
 	server->m_ping_timer.setInterval( m_ping_server_timeout );
+	qDebug() << QStringLiteral("Server[%0] (%1) set ping timer interval to %2.").arg(server->m_self_index).arg(server->m_display_name).arg(m_ping_server_timeout);
 	m_server.append(server);
 	get_login(server);
 	emit serverAdded(server);
@@ -1655,6 +1659,7 @@ bool MattermostQt::load_settings()
 		server->m_cert_path = server->m_data_path + QDir::separator() + cert_path;
 		server->m_user_id = user_id;
 		server->m_ping_timer.setInterval( m_ping_server_timeout );
+		qDebug() << QStringLiteral("Server[%0] (%1) set ping timer interval to %2.").arg(server->m_self_index).arg(server->m_display_name).arg(m_ping_server_timeout);
 		server->m_enabled =is_server_enabled;
 		m_server.append(server);
 		get_login(server);
@@ -1976,6 +1981,7 @@ bool MattermostQt::reply_login(QNetworkReply *reply)
 			server->m_cookie= reply->header(QNetworkRequest::CookieHeader).toString();
 			server->m_self_index =  m_server.size();
 			server->m_ping_timer.setInterval( m_ping_server_timeout );
+			qDebug() << QStringLiteral("Server[%0] (%1) set ping timer interval to %2.").arg(server->m_self_index).arg(server->m_display_name).arg(m_ping_server_timeout);
 
 			QJsonDocument json = QJsonDocument::fromJson( reply->readAll() );
 			if( json.isObject() )
@@ -3904,8 +3910,10 @@ void MattermostQt::replyFinished(QNetworkReply *reply)
 						server->m_socket->close(QWebSocketProtocol::CloseCodeAbnormalDisconnection, QString("Client closing") );
 					emit serverStateChanged(i, server->m_state);
 					server->m_ping_timer.stop();
+					qDebug() << QStringLiteral("Server[%0] (%1)  stop ping timer.").arg(server->m_self_index).arg(server->m_display_name);
 					m_user_status_timer.stop();
 					m_reconnect_server.start();
+					qDebug() << QStringLiteral("Recconect timer started.");
 				}
 				break;
 			}
@@ -3957,6 +3965,7 @@ void MattermostQt::slotNetworkAccessibleChanged(QNetworkAccessManager::NetworkAc
 			if( server->m_state != ServerConnected ) {
 				slot_recconect_servers();
 				m_reconnect_server.start();
+				qDebug() << QLatin1String("Recconect timer started.");
 				m_user_status_timer.start();
 			}
 		}
@@ -3972,8 +3981,10 @@ void MattermostQt::slotNetworkAccessibleChanged(QNetworkAccessManager::NetworkAc
 			server->m_socket->close(QWebSocketProtocol::CloseCodeAbnormalDisconnection, QString("Client closing") );
 			emit serverStateChanged(i, server->m_state);
 			server->m_ping_timer.stop();
+			qDebug() << QStringLiteral("Server[%0] (%1)  stop ping timer.").arg(server->m_self_index).arg(server->m_display_name);
 			m_user_status_timer.stop();
 			m_reconnect_server.stop();
+			qDebug() << QStringLiteral("Recconect timer stoped.");
 		}
 		break;
 	}
@@ -4141,8 +4152,10 @@ void MattermostQt::onWebSocketError(QAbstractSocket::SocketError error)
 			server->m_socket->close(QWebSocketProtocol::CloseCodeAbnormalDisconnection, QString("Client closing") );
 			emit serverStateChanged(server_index, server->m_state);
 			server->m_ping_timer.stop();
+			qDebug() << QStringLiteral("Server[%0] (%1)  stop ping timer.").arg(server->m_self_index).arg(server->m_display_name);
 			m_user_status_timer.stop();
 			m_reconnect_server.stop();
+			qDebug() << QStringLiteral("Recconect timer stoped.");
 		}
 		break;
 	}
@@ -4174,6 +4187,7 @@ void MattermostQt::onWebSocketStateChanged(QAbstractSocket::SocketState state)
 	case QAbstractSocket::UnconnectedState:
 //		s_state = QStringLiteral("UnconnectedState");
 		m_reconnect_server.start();
+		qDebug() << QLatin1String("Recconect timer started.");
 		sc->m_state = (int)state;
 		emit serverStateChanged(server_index, (int)sc->m_state);
 		break;
@@ -4193,8 +4207,10 @@ void MattermostQt::onWebSocketStateChanged(QAbstractSocket::SocketState state)
 					need_reconnect = true;
 				emit serverStateChanged(i, (int)sc->m_state);
 			}
-			if(!need_reconnect)
+			if(!need_reconnect) {
 				m_reconnect_server.stop();
+				qDebug() << QLatin1String("Recconect timer stoped.");
+			}
 		}
 		break;
 	case QAbstractSocket::HostLookupState:
@@ -4387,7 +4403,7 @@ void MattermostQt::slot_ping_timeout()
 
 		if( server.isNull() )
 		{
-			qCritical() << "Cant find server pointer;";
+			qCritical() << "Cant find server pointer for ping;";
 			return;
 		}
 	}
@@ -4395,6 +4411,7 @@ void MattermostQt::slot_ping_timeout()
 	if( server->m_socket.isNull() )
 	{
 		qWarning() << "No exists web socket!";
+		// TODO maby need create it and connect?
 		return;
 	}
 	if(m_settings && m_settings->debug())

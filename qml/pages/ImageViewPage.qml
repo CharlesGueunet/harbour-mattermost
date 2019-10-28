@@ -6,18 +6,6 @@ import QtQuick 2.6
 import Sailfish.Silica 1.0
 import ru.sashikknox 1.0
 
-//allowedOrientations: Orientation.All
-
-//property alias imagePath: imageview.imagePath
-//property alias previewPath: imageview.previewPath
-//property alias animatedImage: imageview.animatedImage
-//property alias imageSize: imageview.imageSize
-
-//ImageViewer {
-//    id: imageview
-//    anchors.fill: parent
-//}
-
 Page {
     id:imageview
     property string imagePath
@@ -30,11 +18,6 @@ Page {
 
     onSelfScIndexChanged: {
         isInGallery = context.mattermost.isImageFileInGallery(server_index, selfScIndex)
-
-//        context.mattermost.onImageFileSavedToGallery.connect( function foo(si, fsi) {
-//            console.debug("Image saved to Pictures folder")
-//            isInGallery = true;
-//        })
     }
 
     allowedOrientations: Orientation.All
