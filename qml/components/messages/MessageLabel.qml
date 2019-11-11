@@ -43,8 +43,8 @@ ListItem {
     property color linkColor: Theme.primaryColor
     property color blobColor:  Theme.rgba(Theme.darkPrimaryColor,Theme.highlightBackgroundOpacity * blobsOpacity)
 
-    property bool  isMessageEditable   : messageOwner === MattermostQt.MessageMine
-    property bool  isMessageDeletable  : messageOwner === MattermostQt.MessageMine
+    property bool  isMessageEditable   : messageOwner === MattermostQt.MessageMine || context.mattermost.user_role(server_index,-2,MattermostQt.SystemAdmin)
+    property bool  isMessageDeletable  : messageOwner === MattermostQt.MessageMine || context.mattermost.user_role(server_index,-2,MattermostQt.SystemAdmin)
     property bool  isMessageMineOrOther: false
 
     onMessageOwnerChanged: {

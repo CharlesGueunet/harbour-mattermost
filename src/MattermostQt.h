@@ -118,6 +118,17 @@ public:
 	Q_ENUMS(UserDataRole)
 
 	/**
+	 * @brief The UserSystemRole enum
+	 * user mattermost roles
+	 */
+	enum UserSystemRole {
+		SystemUser  = 0,
+		SystemAdmin,
+		UserSystemRolesCount
+	};
+	Q_ENUMS(UserSystemRole)
+
+	/**
 	 * @brief The FileContainer struct
 	 * all files list stored in serverptr
 	 */
@@ -233,6 +244,7 @@ public:
 		UserContainer() noexcept {
 			m_update_at = 0;
 			m_last_activity_at = 0;
+			memset(m_roles, false, UserSystemRolesCount * sizeof(bool) );
 		}
 
 		UserContainer(QJsonObject object);
@@ -264,7 +276,9 @@ public:
 		//"email": "string",
 		//"email_verified": true,
 		//"auth_service": "string",
-		//"roles": "string", // TODO system_admin need catch
+		//"roles": "string",
+		bool m_roles[UserSystemRolesCount]; //
+
 		QString m_locale;
 		//"notify_props": {
 		//	"email": "string",
@@ -404,6 +418,7 @@ public:
 		QSslConfiguration           m_cert;  /**< server certificate */
 		QSharedPointer<QWebSocket>  m_socket;/**< websocket connection */
 		QString                     m_user_id;/**< user id */
+		UserPtr                     m_current_user;/**< current user */
 		int                         m_self_index; /**< server index in QVector */
 		QVector<TeamPtr>            m_teams; /**< allowed teams */
 		int                         m_state; /**< server state (from WebSocket) */
@@ -491,6 +506,15 @@ public:
 	Q_INVOKABLE void post_users_status(int server_index);
 	/** get current user id */
 	Q_INVOKABLE QString user_id(int server_index) const;
+
+	/**
+	 * @brief user_role  return true if role for user is enabled
+	 * @param server_index
+	 * @param user_index    user index, or -2 for current user
+	 * @param role          UserSystemRole
+	 * @return  true, if role is enabled for user
+	 */
+	Q_INVOKABLE bool    user_role(int server_index, int user_index, int role) const; /**< get role for user*/
 	Q_INVOKABLE QString getUserName(int server_index, int user_index);
 	/** get channel name */
 	Q_INVOKABLE QString getChannelName(int server_index, int team_index, int channel_type, int channel_index);

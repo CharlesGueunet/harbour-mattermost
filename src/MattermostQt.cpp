@@ -55,18 +55,21 @@
 // config file name
 #define F_CONFIG_FILE       "config.json"
 #define F_SETTINGS_FILE       "settings.json"
-// some
+// some helpers defines
 #define cmp(s,t) s.compare(#t) == 0
 #define scmp(s1,s2) s1.compare(s2) == 0
 #define _compare(string) if( cmp(event,string) )
+// additioanl get_user_info flags
+#define GET_USER_INFO_direct_channel -1 // reques user info for direct channel
+#define GET_USER_INFO_current_user   -2 // request user info for current loggined user
 
 //#ifdef _RELEASE
 #define request_set_headers(requset, server) \
 	/*request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");*/ \
-	request.setHeader(QNetworkRequest::UserAgentHeader, QString("Sailfish Mattermost v%0").arg(MATTERMOSTQT_VERSION) ); \
+	request.setHeader(QNetworkRequest::UserAgentHeader, QStringLiteral("Sailfish Mattermost v%0").arg(MATTERMOSTQT_VERSION) ); \
 	if( !server->m_cookie.isEmpty() ) \
 	    request.setHeader(QNetworkRequest::CookieHeader, server->m_cookie); \
-	request.setRawHeader("Authorization", QString("Bearer %0").arg(server->m_token).toUtf8())
+	request.setRawHeader("Authorization", QStringLiteral("Bearer %0").arg(server->m_token).toUtf8())
 
 #define request_json(requset) \
 	request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json")
@@ -1063,7 +1066,7 @@ void MattermostQt::get_user_image(int server_index, int user_index)
 
 void MattermostQt::get_user_info(int server_index, QString userId, int team_index)
 {
-	bool direct_channel = (bool)(team_index == -1);
+	bool direct_channel = (bool)(team_index == GET_USER_INFO_direct_channel);
 	if( server_index < 0 || server_index >= m_server.size() )
 		return;
 	ServerPtr sc = m_server[server_index];
@@ -1334,6 +1337,23 @@ void MattermostQt::post_users_status(int server_index)
 QString MattermostQt::user_id(int server_index) const
 {
 	return m_server[server_index]->m_user_id;
+}
+
+bool MattermostQt::user_role(int server_index, int user_index, int role) const
+{
+	if( server_index < 0 || server_index >= m_server.size() ||
+	        role < 0 || role >= UserSystemRolesCount )
+		return false;
+	ServerPtr server = m_server[server_index];
+	if( user_index == GET_USER_INFO_current_user ) {
+		if(!server->m_current_user) {
+			return false;
+		}
+		return server->m_current_user->m_roles[role];
+	}
+	else if( user_index < 0 || user_index >= server->m_user.size() )
+		return false;
+	return server->m_user[user_index]->m_roles[role];
 }
 
 QString MattermostQt::getChannelName(int server_index, int team_index, int channel_type, int channel_index)
@@ -1722,7 +1742,7 @@ void MattermostQt::prepare_direct_channel(int server_index, int channel_index)
 		}
 	}
 	// send request for user credentials first
-	get_user_info(sc->m_self_index, user_id);
+	get_user_info(sc->m_self_index, user_id, GET_USER_INFO_direct_channel);
 }
 
 void MattermostQt::prepare_user_index(int server_index, MattermostQt::MessagePtr message, int tean_index)
@@ -1948,6 +1968,7 @@ bool MattermostQt::reply_login(QNetworkReply *reply)
 			QJsonObject object = json.object();
 			//qDebug() << object;
 			server->m_user_id = object["id"].toString();
+			get_user_info(server_id, server->m_user_id, GET_USER_INFO_current_user);
 		}
 		QString server_dir = QString("%0_%1").arg(server->m_self_index).arg(server->m_user_id);
 		if( server->m_data_path.isEmpty() )
@@ -2641,10 +2662,13 @@ void MattermostQt::reply_get_user_info(QNetworkReply *reply)
 	}
 
 	UserPtr user( new UserContainer(json.object()) );
-
+	// first check if user is current account
+	if( sc->m_user_id == user->m_id && team_index == GET_USER_INFO_current_user ) {
+		sc->m_current_user = user;
+	}
 //	for(int)
-	// maby need check if user laready exists in list
 	bool user_exists = false;
+	// maby need check if user laready exists in list
 	for(int i = 0; i < sc->m_user.size(); i ++ )
 	{
 		if( user->m_id.compare(sc->m_user[i]->m_id) == 0 )
@@ -2679,8 +2703,6 @@ void MattermostQt::reply_get_user_info(QNetworkReply *reply)
 					m->m_user_index = user->m_self_index;
 					emit updateMessage(m,MessagesModel::SenderUserName);
 				}
-
-
 				// check if user has image
 				if( user_image_exists ) {
 					emit updateMessage(m,MessagesModel::SenderImagePath);
@@ -4602,6 +4624,23 @@ MattermostQt::UserContainer::UserContainer(QJsonObject object)
 	//"email_verified": true,
 	//"auth_service": "string",
 	//"roles": "string",
+	memset(m_roles, false, UserSystemRolesCount * sizeof(bool) );
+	// grab roles for user
+	QJsonValue roles_obj = object["roles"];
+	if( roles_obj.isString() )
+	{
+		QStringList roles = roles_obj.toString().split(' ');
+		for(QStringList::iterator i = roles.begin(); i != roles.end(); i++)
+		{
+			QString role = *i;
+			if( role == "system_user") {
+				m_roles[SystemUser] = true;
+			}
+			else if (role == "system_admin") {
+				m_roles[SystemAdmin] = true;
+			}
+		}
+	}
 	//"locale": "string",
 	m_locale = object["locale"].toString();
 	//"notify_props": {
@@ -4626,6 +4665,7 @@ MattermostQt::ServerContainer::~ServerContainer()
 	if( m_socket ){
 		m_socket->blockSignals(true);
 		m_socket->close(QWebSocketProtocol::CloseCodeGoingAway, QString("Client closing") );
+		m_socket->blockSignals(false);
 	}
 }
 
