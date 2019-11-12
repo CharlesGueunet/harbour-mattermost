@@ -69,7 +69,7 @@ protected:
 	QSizeF computeItemSize(MattermostQt::FilePtr file) const;
 
 protected Q_SLOTS:
-	void slot_attachedFilesChanged(MattermostQt::MessagePtr m, QVector<QString> file_ids, QVector<int> roles);
+	void slot_attachedFilesChanged(MattermostQt::MessagePtr m, QVector<QString> file_ids,  QVectorInt roles);
 //	void slot_attachedFileStatusChanged(QString id, MattermostQt::FileStatus status);
 	void slot_onIndexChanged();
 protected:

@@ -213,7 +213,7 @@ bool MessagesModel::setData(const QModelIndex &index, const QVariant &value, int
 		if(m_mattermost->settings()->debug())
 			qDebug() << "Item size changed " << value.toDouble();
 		message->m_item_height = value.toDouble();
-		dataChanged(index,index, QVector<int>() << role);
+		dataChanged(index,index,  QVectorInt() << role);
 		break;
 	default:
 		return false;
@@ -498,7 +498,7 @@ void MessagesModel::slot_messageUpdated(QList<MattermostQt::MessagePtr> messages
 //	beginResetModel();
 //	endResetModel();
 
-	QVector<int> roles;
+	 QVectorInt roles;
 	roles << CreateAt << Text << ValidPaths << FilesCount << FormatedText << RootId << RootMessage << RootMessageUserName;
 	int br = 0,lt = m_messages.size() - 1;
 
@@ -555,7 +555,7 @@ void MessagesModel::slot_updateMessage(MattermostQt::MessagePtr message, int rol
 		return;
 	int row = m_messages.size() - 1 - message->m_self_index;
 
-	QVector<int> roles;
+	 QVectorInt roles;
 	roles << role;
 	if(m_mattermost->settings()->debug())
 	{
@@ -600,21 +600,21 @@ void MessagesModel::slot_messageAddedBefore(MattermostQt::ChannelPtr channel, in
 		emit messagesEnded();
 }
 
-void MessagesModel::slot_usersUpdated(QVector<MattermostQt::UserPtr> users, QVector<int> roles)
+void MessagesModel::slot_usersUpdated(QVector<MattermostQt::UserPtr> users,  QVectorInt roles)
 {
 	QModelIndex end = index(m_messages.size() - 1);
 	QModelIndex begin = index(0);
 	dataChanged(begin,end, roles);
 }
 
-void MessagesModel::slot_userUpdated(MattermostQt::UserPtr user, QVector<int> roles)
+void MessagesModel::slot_userUpdated(MattermostQt::UserPtr user,  QVectorInt roles)
 {
 	QModelIndex end = index(m_messages.size() - 1);
 	QModelIndex begin = index(0);
 	dataChanged(begin,end, roles);
 }
 
-void MessagesModel::slot_attachedFilesChanged(MattermostQt::MessagePtr message, QVector<QString> file_ids, QVector<int> roles)
+void MessagesModel::slot_attachedFilesChanged(MattermostQt::MessagePtr message, QVector<QString> file_ids,  QVectorInt roles)
 {
 	if(!message || m_messages.empty() )
 		return;

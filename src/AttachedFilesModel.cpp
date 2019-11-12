@@ -162,7 +162,7 @@ void AttachedFilesModel::setMaxWidth(qreal value)
 	m_maxWidth = value;
 	if(m_message.isNull())
 		return;
-	QVector<int> roles;
+	 QVectorInt roles;
 	roles << FileItemSize;
 
 	QModelIndex topLeft = index(0);
@@ -182,8 +182,8 @@ void AttachedFilesModel::init(int server_index, int team_index, int channel_type
 		return;
 	}
 
-	connect( m_mattermost.data(), SIGNAL(attachedFilesChanged(MattermostQt::MessagePtr,QVector<QString>, QVector<int>)),
-	         SLOT(slot_attachedFilesChanged(MattermostQt::MessagePtr,QVector<QString>,QVector<int>)) );
+	connect( m_mattermost.data(), SIGNAL(attachedFilesChanged(MattermostQt::MessagePtr,QVector<QString>,  QVectorInt)),
+	         SLOT(slot_attachedFilesChanged(MattermostQt::MessagePtr,QVector<QString>, QVectorInt)) );
 
 	m_channel = m_mattermost->channelAt(server_index,team_index,channel_type,channel_index);
 	if(!m_channel) {
@@ -249,7 +249,7 @@ QSizeF AttachedFilesModel::computeItemSize(MattermostQt::FilePtr file) const
 	return file->m_item_size;
 }
 
-void AttachedFilesModel::slot_attachedFilesChanged(MattermostQt::MessagePtr m, QVector<QString> file_ids, QVector<int> roles)
+void AttachedFilesModel::slot_attachedFilesChanged(MattermostQt::MessagePtr m, QVector<QString> file_ids,  QVectorInt roles)
 {
 	if( !m_message ) {
 		qCritical() << "MessagePtr is empty in AttachedFilesModel";
@@ -298,7 +298,7 @@ void AttachedFilesModel::slot_onIndexChanged()
 //	}
 //	if( m != m_message )
 //		return;
-//	QVector<int> roles;
+//	 QVectorInt roles;
 //	roles << DataRoles::FileStatus;
 
 //	QModelIndex topLeft = index(0);

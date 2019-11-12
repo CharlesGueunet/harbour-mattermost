@@ -10,6 +10,7 @@
 #include <QNetworkAccessManager>
 #include <QtWebSockets/qwebsocket.h>
 #include "MarkdownParser.h"
+#include <MattermostQt_gobal.h>
 //#include <QtWebSockets/QWebSocket>
 //#include <QWebSocket>
 
@@ -577,11 +578,11 @@ Q_SIGNALS:
 	void serverAdded(ServerPtr server);
 	void serverConnected(int server_index);
 	void serverStateChanged(int server_index, int state);
-	void serverChanged(ServerPtr server, QVector<int> roles);
+	void serverChanged(ServerPtr server,  QVectorInt roles);
 	void onConnectionError(int code, QString message, int server_index);
 	void channelsList(QList<ChannelPtr> list);
 	void channelAdded(ChannelPtr channel);
-	void updateChannel(ChannelPtr channel, QVector<int> roles);
+	void updateChannel(ChannelPtr channel,  QVectorInt roles);
 	void updateChannelInfo(QString channel_id, int team_index, int self_index );
 //	void updateChannel()
 	void messagesAdded(ChannelPtr channel);
@@ -592,15 +593,15 @@ Q_SIGNALS:
 	void messageUpdated(QList<MessagePtr> messages);
 	void updateMessage(MessagePtr m,int role);
 	void messageDeleted(QList<MessagePtr> messages);
-	void userUpdated(UserPtr user, QVector<int> roles);
-	void usersUpdated(QVector<UserPtr> users, QVector<int> roles);
+	void userUpdated(UserPtr user,  QVectorInt roles);
+	void usersUpdated(QVector<UserPtr> users,  QVectorInt roles);
 	void fileStatusChanged(QString file_id, int status);
 	void fileUploaded(int server_index, int file_sc_index);
 	// teams changing signals
 	void teamAdded(TeamPtr team);
 	void teamsExists(const QVector<MattermostQt::TeamPtr> &teams);
 	void teamUnread(QString team_id, int msg, int mention);
-	void teamChanged(TeamPtr team, QVector<int> roles);
+	void teamChanged(TeamPtr team,  QVectorInt roles);
 
 	/**
 	 * @brief onImageFileSavedToGallery
@@ -611,7 +612,7 @@ Q_SIGNALS:
 	void onImageFileSavedToGallery(int server_index, int file_sc_index);
 
 	/// renew signals
-	void attachedFilesChanged(MattermostQt::MessagePtr message, QVector<QString> file_ids, QVector<int> roles);
+	void attachedFilesChanged(MattermostQt::MessagePtr message, QVector<QString> file_ids,  QVectorInt roles);
 //	void fileUploaded(FilePtr file);
 
 	/**

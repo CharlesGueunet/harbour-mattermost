@@ -126,7 +126,7 @@ QVariant ChannelsModel::data(const QModelIndex &index, int role) const
 //{
 //	if (data(index, role) != value) {
 //		// FIXME: Implement me!
-//		emit dataChanged(index, index, QVector<int>() << role);
+//		emit dataChanged(index, index,  QVectorInt() << role);
 //		return true;
 //	}
 //	return false;
@@ -269,7 +269,7 @@ void ChannelsModel::slot_channelsList(QList<MattermostQt::ChannelPtr> list)
 	}
 }
 
-void ChannelsModel::slot_updateChannel(MattermostQt::ChannelPtr channel, QVector<int> roles)
+void ChannelsModel::slot_updateChannel(MattermostQt::ChannelPtr channel,  QVectorInt roles)
 {
 	int headerIndex, endIndex;
 
@@ -305,7 +305,7 @@ void ChannelsModel::slot_updateChannel(MattermostQt::ChannelPtr channel, QVector
 	dataChanged(ci,ci,roles);
 }
 
-void ChannelsModel::slot_usersUpdated(QVector<MattermostQt::UserPtr> users, QVector<int> roles)
+void ChannelsModel::slot_usersUpdated(QVector<MattermostQt::UserPtr> users,  QVectorInt roles)
 {
 	int headerIndex = m_header_index[ItemType::HeaderDirect] + 1;
 	int endIndex = m_header.size() - 1;
@@ -315,7 +315,7 @@ void ChannelsModel::slot_usersUpdated(QVector<MattermostQt::UserPtr> users, QVec
 	dataChanged(ibegin,iend,roles);
 }
 
-void ChannelsModel::slot_userUpdated(MattermostQt::UserPtr user, QVector<int> roles)
+void ChannelsModel::slot_userUpdated(MattermostQt::UserPtr user,  QVectorInt roles)
 {
 	int headerIndex = m_header_index[ItemType::HeaderDirect] + 1;
 	int endIndex = m_header.size();

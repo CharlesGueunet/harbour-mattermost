@@ -73,15 +73,15 @@ protected:
 protected Q_SLOTS:
 	void slot_channelAdded(MattermostQt::ChannelPtr channel);
 	void slot_channelsList(QList<MattermostQt::ChannelPtr> list);
-	void slot_updateChannel(MattermostQt::ChannelPtr channel, QVector<int> roles);
-	void slot_usersUpdated(QVector<MattermostQt::UserPtr> users, QVector<int> roles);
-	void slot_userUpdated(MattermostQt::UserPtr user, QVector<int> roles);
+	void slot_updateChannel(MattermostQt::ChannelPtr channel,  QVectorInt roles);
+	void slot_usersUpdated(QVector<MattermostQt::UserPtr> users,  QVectorInt roles);
+	void slot_userUpdated(MattermostQt::UserPtr user,  QVectorInt roles);
 private:
 //	QVector<QString> m_display_name;
 	QVector<QString> m_header;
 	QVector<QString> m_puprose;
 	QVector<MattermostQt::ChannelPtr> m_channel;
-	QVector<int>     m_type;
+	 QVectorInt     m_type;
 //	QVector<QString> m
 	// indexes of headers
 	int m_header_index[HeadersCount];

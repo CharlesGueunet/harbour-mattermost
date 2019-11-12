@@ -91,12 +91,12 @@ void AccountsModel::slotServerAdded(MattermostQt::ServerPtr server)
 
 void AccountsModel::slotServerStateChanged(int server_index, int state)
 {
-	QVector<int> roles;
+	 QVectorInt roles;
 	roles << RoleStatus;
 	dataChanged( index(server_index), index(server_index), roles );
 }
 
-void AccountsModel::slotServerChanged(MattermostQt::ServerPtr server, QVector<int> roles)
+void AccountsModel::slotServerChanged(MattermostQt::ServerPtr server,  QVectorInt roles)
 {
 	dataChanged( index(server->m_self_index), index(server->m_self_index), roles );
 }

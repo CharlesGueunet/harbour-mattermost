@@ -21,6 +21,7 @@
 
 #include "MessagesModel.h"
 #include "ChannelsModel.h"
+#include "TeamsModel.h"
 #include "SettingsContainer.h"
 #include "AttachedFilesModel.h"
 #include "DiscountMDParser.h"
@@ -203,7 +204,7 @@ void MattermostQt::set_server_enabled(int server_index, const bool enabled)
 		return;
 	server->m_enabled = enabled;
 
-	emit serverChanged(server, QVector<int>() << AccountsModel::RoleIsEnabled );
+	emit serverChanged(server,  QVectorInt() << AccountsModel::RoleIsEnabled );
 	if(server->m_enabled )
 	{
 		server->m_ping_timer.stop();
@@ -671,7 +672,7 @@ void MattermostQt::get_file_info(int server_index, int team_index, int channel_t
 				qInfo() << "File info.json - exists! Try search file data in local storage.";
 			if( f->m_file_status == FileStatus::FileDownloaded )
 			{
-				emit attachedFilesChanged(m, QVector<QString>(), QVector<int>());
+				emit attachedFilesChanged(m, QVector<QString>(),  QVectorInt());
 				return;
 			}
 		}
@@ -741,7 +742,7 @@ void MattermostQt::get_file(int server_index, int team_index,
 	file->m_file_status = FileStatus::FileDownloading;
 	emit fileStatusChanged(file->m_id, file->m_file_status);
 	QVector<QString> file_ids;
-	QVector<int> roles;
+	 QVectorInt roles;
 	file_ids << file->m_id;
 	roles << AttachedFilesModel::FileStatus;
 	attachedFilesChanged(message, file_ids, roles);
@@ -1449,7 +1450,7 @@ void MattermostQt::clearCache()
 			if(!m)
 				continue;
 //			QVector<QString>() << file->m_id;
-			QVector<int> roles;
+			 QVectorInt roles;
 			roles << AttachedFilesModel::FileThumbnailPath
 			      << AttachedFilesModel::FilePreviewPath;
 			emit attachedFilesChanged(m, QVector<QString>() << file->m_id, roles);
@@ -1498,7 +1499,7 @@ bool MattermostQt::saveImageFileToGallery(int server_index, int file_sc_index)
 		                         file->m_message_index );
 		if(m) {
 			emit attachedFilesChanged(m, QVector<QString>() << file->m_id,
-			                     QVector<int>() << AttachedFilesModel::FilePath );
+			                      QVectorInt() << AttachedFilesModel::FilePath );
 		}
 	}
 	else
@@ -1735,7 +1736,7 @@ void MattermostQt::prepare_direct_channel(int server_index, int channel_index)
 			else
 				sc->m_direct_channels[channel_index]->m_display_name = sc->m_user[i]->m_username;
 			sc->m_direct_channels[channel_index]->m_dc_user_index = sc->m_user[i]->m_self_index;
-			QVector<int> roles;
+			 QVectorInt roles;
 			roles << ChannelsModel::DisplayName << ChannelsModel::AvatarPath;
 			emit updateChannel(ct, roles);
 			return;
@@ -2072,6 +2073,7 @@ void MattermostQt::reply_get_teams(QNetworkReply *reply)
 			else
 				qDebug() << "array[" << i << "]: " << array.at(i);
 		}
+		get_teams_unread(m_server[server_index]);
 	}
 	else {
 		qWarning() << "Cant parse json: " << json;
@@ -2131,7 +2133,7 @@ void MattermostQt::reply_get_teams_unread(QNetworkReply *reply)
 		if(object.isEmpty())
 			continue;
 		QString team_id = object["team_id"].toString();
-		qlonglong msg_count = (qlonglong)object["mgg_count"].toDouble();
+		qlonglong msg_count = (qlonglong)object["msg_count"].toDouble();
 		qlonglong mention_count = (qlonglong)object["mention_count"].toDouble();
 		int team_index = server->get_team_index(team_id);
 		if( team_index == -1)
@@ -2141,7 +2143,10 @@ void MattermostQt::reply_get_teams_unread(QNetworkReply *reply)
 		team->m_unread_mentions = (int)mention_count;
 		// TODO finish teams unread mechanism
 		// change signal to TeamPtr instead team_id string
-		emit teamUnread(team_id, (int)msg_count, (int)mention_count);
+//		emit teamUnread(team_id, (int)msg_count, (int)mention_count);
+		emit teamChanged(team, QVectorInt()
+		                 << TeamsModel::RoleUnreadMentionCount
+		                 << TeamsModel::RoleUnreadMessageCount);
 	}
 }
 
@@ -2677,7 +2682,6 @@ void MattermostQt::reply_get_user_info(QNetworkReply *reply)
 	// first check if user is current account
 	if( sc->m_user_id == user->m_id && team_index == GET_USER_INFO_current_user ) {
 		sc->m_current_user = user;
-		get_teams_unread(sc);
 	}
 //	for(int)
 	bool user_exists = false;
@@ -2747,7 +2751,7 @@ void MattermostQt::reply_get_user_info(QNetworkReply *reply)
 				        + QLatin1String(" ") // for right translation, if someone forgot about space before '(you)'
 				        + QObject::trUtf8("(you)");
 				channel->m_dc_user_index = user->m_self_index;
-				QVector<int> roles;
+				 QVectorInt roles;
 				roles << ChannelsModel::DisplayName << ChannelsModel::AvatarPath;
 				emit updateChannel(channel, roles);
 				qDebug() << QString("direct_channel \"%0\" id: '%1'").arg(channel->m_display_name).arg(channel->m_id) ;
@@ -2757,7 +2761,7 @@ void MattermostQt::reply_get_user_info(QNetworkReply *reply)
 			{
 				channel->m_display_name = user->m_username;
 				channel->m_dc_user_index = user->m_self_index;
-				QVector<int> roles;
+				 QVectorInt roles;
 				roles << ChannelsModel::DisplayName << ChannelsModel::AvatarPath;
 				emit updateChannel(channel, roles);
 				qDebug() << QString("direct_channel \"%0\" id: '%1'").arg(channel->m_display_name).arg(channel->m_id) ;
@@ -2835,7 +2839,7 @@ void MattermostQt::reply_post_users_status(QNetworkReply *reply)
 		qWarning() << replyData.data();
 	if(users.empty()) return;
 	// then send signal with updated users
-	QVector<int> roles;
+	 QVectorInt roles;
 	roles << UserLastActivityRole << UserStatusRole;
 	emit usersUpdated(users,roles);
 }
@@ -2931,7 +2935,7 @@ void MattermostQt::reply_get_file_thumbnail(QNetworkReply *reply)
 //		QList<MessagePtr> messages;
 //		messages << mc;
 //		emit messageUpdated(messages);
-		QVector<int> file_update_roles;
+		 QVectorInt file_update_roles;
 		file_update_roles << AttachedFilesModel::FileThumbnailPath;
 		emit attachedFilesChanged(mc, QVector<QString>(),file_update_roles);
 	}
@@ -2986,7 +2990,7 @@ void MattermostQt::reply_get_file_preview(QNetworkReply *reply)
 //		QList<MessagePtr> messages;
 //		messages << mc;
 //		emit messageUpdated(messages);
-		QVector<int> file_update_roles;
+		 QVectorInt file_update_roles;
 		file_update_roles << AttachedFilesModel::FilePreviewPath;
 		emit attachedFilesChanged(mc, QVector<QString>(), file_update_roles);
 	}
@@ -3040,7 +3044,7 @@ void MattermostQt::reply_get_file_info(QNetworkReply *reply)
 //	mc->m_file.push_back(file);
 
 	//QList<MessagePtr> messages;
-	QVector<int> file_update_roles;
+	 QVectorInt file_update_roles;
 
 	file_update_roles << AttachedFilesModel::FileType;
 	file_update_roles << AttachedFilesModel::FileName;
@@ -3142,7 +3146,7 @@ void MattermostQt::failed_get_file_info(QNetworkReply *reply)
 
 	file->m_file_status = FileStatus::FileUninitialized;
 
-	QVector<int> file_update_roles;
+	 QVectorInt file_update_roles;
 	file_update_roles << AttachedFilesModel::FileStatus;
 	emit attachedFilesChanged(mc, QVector<QString>(), file_update_roles);
 }
@@ -3205,7 +3209,7 @@ void MattermostQt::reply_get_file(QNetworkReply *reply)
 //			QList<MessagePtr> msgs;
 //			msgs << message;
 //			emit messageUpdated( msgs );
-			QVector<int> roles;
+			 QVectorInt roles;
 			roles << AttachedFilesModel::FileStatus << AttachedFilesModel::FilePath;
 			emit attachedFilesChanged(message, QVector<QString>(),roles);
 		}
@@ -3310,13 +3314,13 @@ void MattermostQt::reply_get_user_image(QNetworkReply *reply)
 			ChannelPtr c = sc->m_direct_channels[i];
 			if( c->m_dc_user_index == user->m_self_index )
 			{
-				QVector<int> roles;
+				 QVectorInt roles;
 				roles << ChannelsModel::AvatarPath;
 				emit updateChannel(c, roles);
 				break;
 			}
 		}
-		QVector<int> roles;
+		 QVectorInt roles;
 		roles << UserImageRole;
 		emit userUpdated(user,roles);
 	}
@@ -3622,7 +3626,7 @@ void MattermostQt::event_status_change(MattermostQt::ServerPtr sc, QJsonObject d
 		return; // FIXME
 	}
 	current->m_status = status;
-	QVector<int> roles;
+	 QVectorInt roles;
 	roles << UserStatusRole;
 	emit userUpdated(current, roles);
 }
@@ -3639,7 +3643,7 @@ void MattermostQt::event_typing(MattermostQt::ServerPtr sc, QJsonObject data)
 	    return; // FIXME
 	//}
 	//current->m_status = status;
-	//QVector<int> roles;
+	// QVectorInt roles;
 	//roles << UserStatusRole;
 	//emit userUpdated(current, roles);
 }

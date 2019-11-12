@@ -40,7 +40,7 @@ public:
 protected Q_SLOTS:
 	void slotServerAdded(MattermostQt::ServerPtr server);
 	void slotServerStateChanged(int server_index, int state);
-	void slotServerChanged(MattermostQt::ServerPtr server, QVector<int> roles);
+	void slotServerChanged(MattermostQt::ServerPtr server,  QVectorInt roles);
 private:
 	QPointer<MattermostQt> m_mattermost;
 };

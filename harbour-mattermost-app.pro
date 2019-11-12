@@ -13,23 +13,17 @@
 TARGET = harbour-mattermost
 
 # get version from yaml file
-#VER_VERSION=$$find($$cat($$PWD/rpm/harbour-mattermost.yaml, lines), "Version:*")
-#VER_RELEASE=$$find($$cat($$PWD/rpm/harbour-mattermost.yaml, lines), "Release:*")
-
 VER_VERSION=0.1.4
 VER_RELEASE=1
 
-#message( $$cat($$PWD/rpm/harbour-mattermost.yaml, lines) )
 LINES_ALL = $$cat($$PWD/rpm/harbour-mattermost.yaml, lines)
 for( l, LINES_ALL ): {
     contains( l, Version.* ): {
         _TMP=$$split(l," ")
         VER_VERSION=$$member(_TMP,1)
-#        message("Version is "$$VER_VERSION )
     } else : contains( l, Release:.* ) {
         _TMP=$$split(l," ")
         VER_RELEASE=$$member(_TMP,1)
-#        message("Release is "$$VER_RELEASE)
     }
 }
 

@@ -93,35 +93,12 @@ Page {
 
             model: teamsmodel
 
-            delegate: ListItem {
-                id: bgitem
+            delegate: TeamLabel {
                 anchors {
                     left:parent.left;
                     right:parent.right;
-                    leftMargin: Theme.paddingMedium
-                    rightMargin: Theme.paddingMedium
-                }
-                contentHeight: Theme.itemSizeMedium
-
-                Label {
-                    id: teamname
-                    anchors.verticalCenter: parent.verticalCenter
-                    anchors.left: parent.left
-                    anchors.leftMargin: Theme.paddingMedium
-                    font.pixelSize: Theme.fontSizeLarge
-                    text: display_name
-                }
-
-                onClicked: {
-                    pageStack.pushAttached( Qt.resolvedUrl("ChannelsPage.qml"),
-                                   {
-                                       teamid: teamsmodel.getTeamId(index),
-                                       server_index: teamsPage.server_index,
-                                       team_index: teamsmodel.getTeamIndex(index),
-                                       team_label: teamname.text,
-                                       context: teamsPage.context
-                                   } )
-                    pageStack.navigateForward(PageStackAction.Animated);
+                    leftMargin: Settings.pageMargin
+                    rightMargin: Settings.pageMargin
                 }
             }
         }

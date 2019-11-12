@@ -95,9 +95,9 @@ protected slots:
 	void slot_messageDeleted(QList<MattermostQt::MessagePtr> messages);
 	void slot_updateMessage(MattermostQt::MessagePtr message, int role);
 	void slot_messageAddedBefore(MattermostQt::ChannelPtr channel, int count);
-	void slot_usersUpdated(QVector<MattermostQt::UserPtr> users, QVector<int> roles);
-	void slot_userUpdated(MattermostQt::UserPtr user, QVector<int> roles);
-	void slot_attachedFilesChanged(MattermostQt::MessagePtr message, QVector<QString> file_ids, QVector<int> roles);
+	void slot_usersUpdated(QVector<MattermostQt::UserPtr> users,  QVectorInt roles);
+	void slot_userUpdated(MattermostQt::UserPtr user,  QVectorInt roles);
+	void slot_attachedFilesChanged(MattermostQt::MessagePtr message, QVector<QString> file_ids,  QVectorInt roles);
 private:
 	QString                            m_channel_id;
 	MattermostQt::ChannelPtr           m_channel;

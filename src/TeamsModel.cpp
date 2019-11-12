@@ -23,37 +23,39 @@ QVariant TeamsModel::data(const QModelIndex &index, int role) const
 	if(index.row() < 0 || index.row() >= m_team.size()) {
 		return QVariant();
 	}
+	MattermostQt::TeamPtr team = m_team[index.row()];
+
 	if(role == DataRoles::DisplayName) {
-		return QVariant(m_team[index.row()]->m_display_name);
+		return QVariant(team->m_display_name);
 	}
 	else if(role == DataRoles::Description) {
-		return QVariant(m_team[index.row()]->m_description);
+		return QVariant(team->m_description);
 	}
 	else if(role == DataRoles::Email) {
-		return QVariant(m_team[index.row()]->m_email);
+		return QVariant(team->m_email);
 	}
 	else if(role == DataRoles::TeamId) {
-		return QVariant(m_team[index.row()]->m_id);
+		return QVariant(team->m_id);
 	}
-	else if(role == DataRoles::MsgCount) {
-		return QVariant(m_msg_count[index.row()]);
+	else if(role == DataRoles::RoleUnreadMessageCount) {
+		return QVariant(team->m_unread_messages);
 	}
-	else if(role == DataRoles::MentionCount) {
-		return QVariant(m_mention_count[index.row()]);
+	else if(role == DataRoles::RoleUnreadMentionCount) {
+		return QVariant(team->m_unread_mentions);
 	}
 	else if(role == DataRoles::ActiveUsers) {
-//		return QVariant(m_team[index.row()]);
+//		return QVariant(team);
 		return QVariant(0);
 	}
 	else if(role == DataRoles::UserCount) {
-//		return QVariant(m_team[index.row()]);
+//		return QVariant(team);
 		return QVariant(0);
 	}
 	else if(role == DataRoles::Index) {
-		return QVariant(m_team[index.row()]->m_self_index);
+		return QVariant(team->m_self_index);
 	}
 	else if(role == DataRoles::ServerIndex) {
-		return QVariant(m_team[index.row()]->m_server_index);
+		return QVariant(team->m_server_index);
 	}
 	else if(role == DataRoles::ServerCustomName) {
 		return QVariant( m_mattermost->get_server_name(m_server_index) );
@@ -65,17 +67,17 @@ QHash<int, QByteArray> TeamsModel::roleNames() const
 {
 	// thx to @Kaffeine for that optimization (static const)
 	static const QHash<int, QByteArray> names = {
-	{ DataRoles::DisplayName,       "display_name" },
-	{ DataRoles::Description,       "description" },
-	{ DataRoles::Email,             "email" },
-	{ DataRoles::TeamId,            "teamid" },
-	{ DataRoles::MsgCount,          "msg_count" },
-	{ DataRoles::MentionCount,      "mention_count" },
-	{ DataRoles::ActiveUsers,       "active_users" },
-	{ DataRoles::UserCount,         "user_count" },
-	{ DataRoles::Index,             "self_index" },
-	{ DataRoles::ServerIndex,       "server_index" },
-	{ DataRoles::ServerCustomName,  "role_server_display_name" } };
+	{ DataRoles::DisplayName,             "role_display_name" },
+	{ DataRoles::Description,             "role_description" },
+	{ DataRoles::Email,                   "email" },
+	{ DataRoles::TeamId,                  "role_team_id" },
+	{ DataRoles::RoleUnreadMessageCount,  "role_unread_message" },
+	{ DataRoles::RoleUnreadMentionCount,  "role_unread_mention" },
+	{ DataRoles::ActiveUsers,             "active_users" },
+	{ DataRoles::UserCount,               "user_count" },
+	{ DataRoles::Index,                   "role_team_index" },
+	{ DataRoles::ServerIndex,             "role_server_index" },
+	{ DataRoles::ServerCustomName,        "role_server_display_name" } };
 	return names;
 }
 
@@ -137,6 +139,8 @@ void TeamsModel::setMattermostQt(MattermostQt* mattermost)
 	        , this, &TeamsModel::slot_teamUnread );
 	connect(m_mattermost.data(), &MattermostQt::teamsExists
 	        , this, &TeamsModel::slot_teamsExists );
+	connect(m_mattermost.data(), &MattermostQt::teamChanged
+	        , this, &TeamsModel::slot_teamChanged );
 	//	m_mattermost->post_login(QString(SERVER_URL),QString("testuser"),QString("testuser"), true);
 }
 
@@ -164,8 +168,8 @@ int TeamsModel::getTeamIndex(int index) const
 void TeamsModel::slot_teamAdded(MattermostQt::TeamPtr team)
 {
 	beginInsertRows(QModelIndex(), m_team.size(), m_team.size());
-	m_msg_count.append(0);
-	m_mention_count.append(0);
+//	m_msg_count.append(0);
+//	m_mention_count.append(0);
 	m_team.append(team);
 	endInsertRows();
 }
@@ -174,8 +178,8 @@ void TeamsModel::slot_teamsExists(const QVector<MattermostQt::TeamPtr> &teams)
 {
 	beginResetModel();
 	m_team = teams;
-	m_msg_count.fill(0,teams.size());
-	m_mention_count.fill(0,teams.size());
+//	m_msg_count.fill(0,teams.size());
+//	m_mention_count.fill(0,teams.size());
 	endResetModel();
 }
 
@@ -185,14 +189,22 @@ void TeamsModel::slot_teamUnread(QString team_id, int msg, int mention)
 	{
 		if( m_team[i]->m_id.compare(team_id) == 0 )
 		{
-			bool update = false;
-			update = m_msg_count[i] != msg || m_mention_count[i] != mention;
-			if(update) {
-				beginResetModel();
-				m_msg_count[i] = msg;
-				m_mention_count[i] = mention;
-				endResetModel();
-			}
+			QModelIndex tl = index(i);
+			dataChanged(tl,tl,QVectorInt() << RoleUnreadMentionCount << RoleUnreadMessageCount);
+			break;
+		}
+	}
+}
+
+void TeamsModel::slot_teamChanged(MattermostQt::TeamPtr team, QVectorInt roles)
+{
+	for(int i = 0; i < m_team.size(); i++)
+	{
+		if( m_team[i] == team )
+		{
+			QModelIndex tl = index(i);
+			dataChanged(tl,tl,roles);
+			break;
 		}
 	}
 }

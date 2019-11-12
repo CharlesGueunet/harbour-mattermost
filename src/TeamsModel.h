@@ -30,8 +30,8 @@ public:
 		Description,
 		Email,
 		TeamId,
-		MsgCount,
-		MentionCount,
+		RoleUnreadMessageCount,
+		RoleUnreadMentionCount,
 		ActiveUsers,
 		UserCount,
 		Index,
@@ -70,17 +70,19 @@ protected Q_SLOTS:
 	void slot_teamAdded(MattermostQt::TeamPtr team);
 	void slot_teamsExists(const QVector<MattermostQt::TeamPtr> &teams);
 	void slot_teamUnread(QString team_id, int msg, int mention);
+	void slot_teamChanged(MattermostQt::TeamPtr team, QVectorInt roles);
 private:
 //	QVector<QString> m_displayName;
 //	QVector<QString> m_description;
 //	QVector<QString> m_email;
-	QVector<int>     m_msg_count;
-	QVector<int>     m_mention_count;
-//	QVector<int>     m_active_users;
-//	QVector<int>     m_user_count;
+//	 QVectorInt     m_msg_count;
+//	 QVectorInt     m_mention_count;
+//	 QVectorInt     m_active_users;
+//	 QVectorInt     m_user_count;
 	QVector<MattermostQt::TeamPtr> m_team;
 //	QVector<QString> m_id;
-	QPointer<MattermostQt> m_mattermost;
+	MattermostQt::ServerPtr m_server;
+	QPointer<MattermostQt>  m_mattermost;
 
 	int m_server_index;
 
