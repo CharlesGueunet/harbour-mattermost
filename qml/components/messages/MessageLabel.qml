@@ -132,8 +132,9 @@ ListItem {
         height: Math.max(messageContent.height,userAvatar.height)
 
         onHeightChanged: {
-            if( role_item_height < height)
-                role_item_height =height
+            // TODO fix computing height of messages without text, but with files
+            //if( role_item_height < height)
+                role_item_height = height
         }
 
         // TODO make change direction possible

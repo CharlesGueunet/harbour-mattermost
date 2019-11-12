@@ -353,6 +353,8 @@ public:
 			m_create_at = 0;
 			m_update_at = 0;
 			m_delete_at = 0;
+			m_unread_messages = 0;
+			m_unread_mentions = 0;
 		}
 
 		TeamContainer(QJsonObject &object) noexcept ;
@@ -374,11 +376,15 @@ public:
 		QString    m_invite_id;
 		QString    m_allowed_domains;
 		bool       m_allowed_open_invite;
-		qlonglong  m_create_at;
-		qlonglong  m_update_at;
-		qlonglong  m_delete_at;
+		qlonglong  m_create_at = 0;
+		qlonglong  m_update_at = 0;
+		qlonglong  m_delete_at = 0;
 		int        m_server_index; /**< server index in QVector */
 		int        m_self_index;   /**< self index in vector */
+
+		// unread data
+		int  m_unread_messages = 0;
+		int  m_unread_mentions = 0;
 
 		QVector<ChannelPtr> m_public_channels;
 		QVector<ChannelPtr> m_private_channels;
@@ -573,14 +579,11 @@ Q_SIGNALS:
 	void serverStateChanged(int server_index, int state);
 	void serverChanged(ServerPtr server, QVector<int> roles);
 	void onConnectionError(int code, QString message, int server_index);
-	void teamAdded(TeamPtr team);
-	void teamsExists(const QVector<MattermostQt::TeamPtr> &teams);
 	void channelsList(QList<ChannelPtr> list);
 	void channelAdded(ChannelPtr channel);
 	void updateChannel(ChannelPtr channel, QVector<int> roles);
 	void updateChannelInfo(QString channel_id, int team_index, int self_index );
 //	void updateChannel()
-	void teamUnread(QString team_id, int msg, int mention);
 	void messagesAdded(ChannelPtr channel);
 	void messagesIsEnd(ChannelPtr channel); // its mean no more messages in channel
 	void messagesAddedBefore(ChannelPtr channel, int count);
@@ -593,6 +596,11 @@ Q_SIGNALS:
 	void usersUpdated(QVector<UserPtr> users, QVector<int> roles);
 	void fileStatusChanged(QString file_id, int status);
 	void fileUploaded(int server_index, int file_sc_index);
+	// teams changing signals
+	void teamAdded(TeamPtr team);
+	void teamsExists(const QVector<MattermostQt::TeamPtr> &teams);
+	void teamUnread(QString team_id, int msg, int mention);
+	void teamChanged(TeamPtr team, QVector<int> roles);
 
 	/**
 	 * @brief onImageFileSavedToGallery

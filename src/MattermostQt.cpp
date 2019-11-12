@@ -2033,6 +2033,7 @@ bool MattermostQt::reply_login(QNetworkReply *reply)
 
 			if(is_new_account)
 				m_server.append( server );
+			get_user_info(server->m_self_index,server->m_user_id, GET_USER_INFO_current_user);
 			//get_login(server);
 			websocket_connect(server);
 
@@ -2107,8 +2108,10 @@ void MattermostQt::reply_get_teams_unread(QNetworkReply *reply)
 {
 	bool is_ok;
 	int server_index = reply->property(P_SERVER_INDEX).toInt(&is_ok);
-	Q_UNUSED(server_index)
+//	Q_UNUSED(server_index)
 	if(!is_ok)
+		return;
+	if(server_index < 0 || server_index >= m_server.size())
 		return;
 	QJsonDocument json = QJsonDocument::fromJson(reply->readAll());
 	QJsonArray array = json.array();
@@ -2118,6 +2121,7 @@ void MattermostQt::reply_get_teams_unread(QNetworkReply *reply)
 		qWarning() << "Wrong Json" << json;
 		return;
 	}
+	ServerPtr server = m_server[server_index];
 
 //	qDebug() << reply->header(QNetworkRequest::LastModifiedHeader);
 
@@ -2129,6 +2133,14 @@ void MattermostQt::reply_get_teams_unread(QNetworkReply *reply)
 		QString team_id = object["team_id"].toString();
 		qlonglong msg_count = (qlonglong)object["mgg_count"].toDouble();
 		qlonglong mention_count = (qlonglong)object["mention_count"].toDouble();
+		int team_index = server->get_team_index(team_id);
+		if( team_index == -1)
+			continue;
+		TeamPtr team = server->m_teams[team_index];
+		team->m_unread_messages = (int)msg_count;
+		team->m_unread_mentions = (int)mention_count;
+		// TODO finish teams unread mechanism
+		// change signal to TeamPtr instead team_id string
 		emit teamUnread(team_id, (int)msg_count, (int)mention_count);
 	}
 }
@@ -2665,6 +2677,7 @@ void MattermostQt::reply_get_user_info(QNetworkReply *reply)
 	// first check if user is current account
 	if( sc->m_user_id == user->m_id && team_index == GET_USER_INFO_current_user ) {
 		sc->m_current_user = user;
+		get_teams_unread(sc);
 	}
 //	for(int)
 	bool user_exists = false;
