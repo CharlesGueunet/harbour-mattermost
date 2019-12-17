@@ -36,6 +36,7 @@ import "../model"
 
 Page {
     id: teamsPage
+    objectName: "TeamsPage"
     layer.enabled: true
     property Context context
     property int server_index

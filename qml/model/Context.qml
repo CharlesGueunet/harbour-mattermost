@@ -80,29 +80,117 @@ Item {
              '    <property name="type" type="i" access="read" />\n' +
              '    <property name="channel" type="i" access="read" />\n' +
              '    <property name="channel_id" type="s" access="read" />\n' +
+//             '    <property name="team_id" type="s" access="read" />\n' +
              '  </interface>\n'
 
         function newMessage(server,team,type,channel,channel_id) {
 //            console.log("Server: " + server + " Team " + team + " " + type + " " + channel )
+            var team_name = context.mattermost.getTeamName(server,team)
+            var team_id = context.mattermost.getTeamId(server,team)
             mattermost.notificationActivated( server, team, type, channel )
             __silica_applicationwindow_instance.activate();
             if( pageStack !== null && pageStack.currentPage !== null ) {
                 var name = pageStack.currentPage.objectName
                 var messages = null
+                var channels = null
                 if( name === "MessagesPage" ) {
-                    messages = pageStack.replace(
-                                Qt.resolvedUrl("../pages/MessagesPage.qml"),
-                                {
-                                    server_index: server,
-                                    team_index: team,
-                                    channel_type: type,
-                                    channel_index: channel,
-                                    channel_id: channel_id,
-                                    display_name: mattermost.getChannelName(server,team,type,channel),
-                                    context: context_item
-                                } );
+                    // TODO here need check team_id !
+                    if( pageStack.currentPage.team_index !== team ) {
+
+                        channels = pageStack.replace(pageStack.previousPage(pageStack.currentPage),
+                                    Qt.resolvedUrl("../pages/ChannelsPage.qml"),
+                                    {
+                                      teamid:       team_id,
+                                      server_index: server,
+                                      team_index:   team,
+                                      team_label:   team_name,
+                                      context:      context_item
+                                    }  );
+                    }
+                    if(pageStack.currentPage.channel_id !== channel_id) {
+                        console.debug("Go to channel(" + String(pageStack.currentPage.channel_id) + ") page.");
+                        messages = pageStack.replace(pageStack.currentPage,
+                                    Qt.resolvedUrl("../pages/MessagesPage.qml"),
+                                    {
+                                        server_index: server,
+                                        team_index: team,
+                                        channel_type: type,
+                                        channel_index: channel,
+                                        channel_id: channel_id,
+                                        channel_name: mattermost.getChannelName(server,team,type,channel),
+                                        context: context_item
+                                    } );
+                    }
                 }
-                else
+                else if( name === "ChannelsPage" ) {
+                    // this for multiserver version only, not in 0.1.4
+                    if( server !== pageStack.currentPage.server_index ) {
+                        // current channels page from another server, go back to servers page
+                        // TODO !
+                    }
+                    else  {
+//                        if( team !== pageStack.currentPage.team_index )
+//                            pageStack.navigateBack(PageStackAction.Animated) // go to teams page
+                        //pageStack.
+                        if( pageStack.currentPage.team_index !== team ) {
+
+                            channels = pageStack.replace(pageStack.previousPage(pageStack.currentPage),
+                                        Qt.resolvedUrl("../pages/ChannelsPage.qml"),
+                                        {
+                                          teamid:       team_id,
+                                          server_index: server,
+                                          team_index:   team,
+                                          team_label:   team_name,
+                                          context:      context_item
+                                        }  );
+                        }
+                        messages = pageStack.pushAttached(
+                                    Qt.resolvedUrl("../pages/MessagesPage.qml"),
+                                    {
+                                        server_index: server,
+                                        team_index: team,
+                                        channel_type: type,
+                                        channel_index: channel,
+                                        channel_id: channel_id,
+                                        channel_name: mattermost.getChannelName(server,team,type,channel),
+                                        context: context_item
+                                    }  );
+                        pageStack.navigateForward(PageStackAction.Animated)
+                    }
+                }
+                else if( name === "TeamsPage" ) {
+                    if( server !== pageStack.currentPage.server_index ) {
+                        // current channels page from another server, go back to servers page
+                        // TODO !
+                    }
+                    else {
+
+                        //pageStack.navigateForward(PageStackAction.Animated)
+//                        pageStack.
+                        messages = pageStack.pushAttached(
+                                    Qt.resolvedUrl("../pages/MessagesPage.qml"),
+                                    {
+                                        server_index: server,
+                                        team_index: team,
+                                        channel_type: type,
+                                        channel_index: channel,
+                                        channel_id: channel_id,
+                                        channel_name: mattermost.getChannelName(server,team,type,channel),
+                                        context: context_item
+                                    } );
+                        pageStack.navigateForward(PageStackAction.Animated)
+//                        pageStack.navigateForward(PageStackAction.Animated)
+//                        channels = pageStack.pushAttached(
+//                                    Qt.resolvedUrl("../pages/ChannelsPage.qml"),
+//                                    {
+//                                        teamid:       team_id,
+//                                        server_index: server,
+//                                        team_index:   team,
+//                                        team_label:   team_name,
+//                                        context:      context_item
+//                                    } );
+                    }
+                } else
                 {
                     messages = pageStack.pushAttached(
                                 Qt.resolvedUrl("../pages/MessagesPage.qml"),
@@ -112,7 +200,7 @@ Item {
                                     channel_type: type,
                                     channel_index: channel,
                                     channel_id: channel_id,
-                                    display_name: mattermost.getChannelName(server,team,type,channel),
+                                    channel_name: mattermost.getChannelName(server,team,type,channel),
                                     context: context_item
                                 } );
                     pageStack.navigateForward(PageStackAction.Animated)

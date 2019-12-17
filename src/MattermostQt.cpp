@@ -82,6 +82,32 @@ Q_DECLARE_METATYPE(MattermostQt::FilePtr)
 Q_DECLARE_METATYPE(MattermostQt::ChannelPtr)
 Q_DECLARE_METATYPE(MattermostQt::MessagePtr)
 
+void MattermostQt::init_reply_functions()
+{
+	memset(m_reply_func, NULL, sizeof(void*)*ReplyTypeCount );
+	m_reply_func[ReplyType::rt_login                ] = &MattermostQt::reply_login;
+	m_reply_func[ReplyType::rt_get_teams:           ] = &MattermostQt::reply_get_teams;
+	m_reply_func[ReplyType::rt_get_public_channels: ] = &MattermostQt::reply_get_public_channels;
+	m_reply_func[ReplyType::rt_get_channel          ] = &MattermostQt::reply_get_channel;
+	m_reply_func[ReplyType::rt_post_channel_view    ] = &MattermostQt::reply_post_channel_view;
+	m_reply_func[ReplyType::rt_get_user_info        ] = &MattermostQt::reply_get_user_info;
+	m_reply_func[ReplyType::rt_post_users_status    ] = &MattermostQt::reply_post_users_status;
+	m_reply_func[ReplyType::rt_get_user_image       ] = &MattermostQt::reply_get_user_image;
+	m_reply_func[ReplyType::rt_get_team             ] = &MattermostQt::reply_get_team;
+	m_reply_func[ReplyType::rt_get_teams_unread     ] = &MattermostQt::reply_get_teams_unread;
+	m_reply_func[ReplyType::rt_get_post             ] = &MattermostQt::reply_get_post;
+	m_reply_func[ReplyType::rt_get_posts            ] = &MattermostQt::reply_get_posts;
+	m_reply_func[ReplyType::rt_get_posts_before     ] = &MattermostQt::reply_get_posts_before;
+	m_reply_func[ReplyType::rt_get_file_thumbnail   ] = &MattermostQt::reply_get_file_thumbnail;
+	m_reply_func[ReplyType::rt_get_file_preview     ] = &MattermostQt::reply_get_file_preview;
+	m_reply_func[ReplyType::rt_get_file_info        ] = &MattermostQt::reply_get_file_info;
+	m_reply_func[ReplyType::rt_get_file             ] = &MattermostQt::reply_get_file;
+	m_reply_func[ReplyType::rt_post_file_upload     ] = &MattermostQt::reply_post_file_upload;
+	m_reply_func[ReplyType::rt_post_send_message    ] = &MattermostQt::reply_post_send_message;
+	m_reply_func[ReplyType::rt_delete_message       ] = &MattermostQt::reply_delete_message;
+	m_reply_func[ReplyType::rt_post_message_edit    ] = &MattermostQt::reply_post_message_edit;
+}
+
 MattermostQt::MattermostQt(QObject *parent )
     : QObject(parent)
     , m_mdParser(nullptr)
@@ -151,6 +177,11 @@ int MattermostQt::get_server_state(int server_index)
 	return m_server[server_index]->m_state;
 }
 
+void MattermostQt::force_server_recconect()
+{
+	slot_recconect_servers();
+}
+
 int MattermostQt::get_server_count() const
 {
 	return m_server.size();
@@ -216,7 +247,7 @@ void MattermostQt::set_server_enabled(int server_index, const bool enabled)
 //		get_login(server);
 		slot_recconect_servers();
 		m_reconnect_server.start();
-		qDebug() << QLatin1String("Recconect timer started.");
+		qDebug() << QStringLiteral("Server[%0] (%1) recconect timer started.").arg(server->m_self_index).arg(server->m_display_name);
 	}
 }
 
@@ -1373,6 +1404,22 @@ QString MattermostQt::getChannelId(int server_index, int team_index, int channel
 	return QString();
 }
 
+QString MattermostQt::getTeamId(int server_index, int team_index)
+{
+	TeamPtr team = teamAt(server_index, team_index);
+	if(!team)
+		return QString::Null();
+	return team->m_id;
+}
+
+QString MattermostQt::getTeamName(int server_index, int team_index)
+{
+	TeamPtr team = teamAt(server_index, team_index);
+	if(!team)
+		return QString::Null();
+	return team->m_display_name;
+}
+
 void MattermostQt::notificationActivated(int server_index, int team_index, int channel_type, int channel_index)
 {
 	//
@@ -1796,6 +1843,22 @@ MattermostQt::ServerPtr MattermostQt::get_server(int server_index) const
 	return m_server[server_index];
 }
 
+MattermostQt::TeamPtr MattermostQt::teamAt(int server_index, int team_index)
+{
+	if(  server_index < 0 || server_index >= m_server.size() )
+	{
+		qCritical() << "Wrong server index " << server_index << " servers count " << m_server.size();
+		return TeamPtr();
+	}
+	ServerPtr server = m_server[server_index];
+	if( team_index < 0 || team_index >= server->m_teams.size() )
+	{
+		qCritical() << QStringLiteral("Wrong team index (%0) in server (%1) with %2 teams").arg(team_index).arg(server_index).arg(server->m_teams.size());
+		return TeamPtr();
+	}
+	return server->m_teams[team_index];
+}
+
 MattermostQt::ChannelPtr MattermostQt::channelAt(int server_index, int team_index, int channel_type, int channel_index)
 {
 	ChannelPtr channel;
@@ -1950,7 +2013,7 @@ void MattermostQt::websocket_connect(ServerPtr server)
 	socket->open(url);
 }
 
-bool MattermostQt::reply_login(QNetworkReply *reply)
+void MattermostQt::reply_login(QNetworkReply *reply)
 {
 //	 TODO here we need check if server already exists, just need update auth data
 	if( reply->property(P_SERVER_INDEX).isValid() )
@@ -1979,7 +2042,7 @@ bool MattermostQt::reply_login(QNetworkReply *reply)
 		websocket_connect(server);
 		// TODO add singnal server Added
 //		emit serverConnected(server->m_self_index);
-		return true;
+		return;
 	}
 	// first login, or update token
 	QList<QByteArray> headerList = reply->rawHeaderList();
@@ -2041,10 +2104,10 @@ bool MattermostQt::reply_login(QNetworkReply *reply)
 			if(is_new_account)
 				emit serverAdded(server);
 
-			return true;
+			return;
 		}
 	}
-	return false;
+	return;
 }
 
 void MattermostQt::reply_get_teams(QNetworkReply *reply)
@@ -3351,7 +3414,7 @@ void MattermostQt::event_posted(ServerPtr sc, QJsonObject data)
 	qDebug() << data;
 	ChannelType type = ChannelType::ChannelTypeCount;
 	QString ch_type = data["channel_type"].toString();
-
+	QJsonValue mentionsv = data["mentions"];
 	QJsonObject post = data["post"].toObject();
 	if( post.isEmpty() )
 	{
@@ -3433,18 +3496,21 @@ void MattermostQt::event_posted(ServerPtr sc, QJsonObject data)
 		QString team_id = data["team_id"].toString();
 		QString channel_id = message->m_channel_id;
 		ChannelPtr channel;
+		TeamPtr team;
 		int channel_index = -1;
 
 		for(int i = 0; i < sc->m_teams.size(); i++ )
 		{
 			if( scmp(sc->m_teams[i]->m_id,team_id) )
 			{
-				TeamPtr tc = sc->m_teams[i];
+				team = sc->m_teams[i];
+				team_index = i;
+
 				QVector<ChannelPtr> *channels;
 				if( type == ChannelType::ChannelPublic )
-					channels = &tc->m_public_channels;
+					channels = &team->m_public_channels;
 				else if( type == ChannelType::ChannelPrivate )
-					channels = &tc->m_private_channels;
+					channels = &team->m_private_channels;
 				if(!channels)
 				{
 					qWarning() << "Wrong channel type" << type;
@@ -3456,18 +3522,33 @@ void MattermostQt::event_posted(ServerPtr sc, QJsonObject data)
 					{
 						channel = channels->at(j);
 						channel_index = j;
-						team_index = i;
 						break;
 					}
 				}
 				break;
 			}
 		}
+		if(team) {
+			team->m_unread_messages++;
+			if( !mentionsv.isUndefined() ) {
+				QJsonDocument d = QJsonDocument::fromJson(mentionsv.toString().toUtf8());
+				QJsonArray mentions = d.array();
+				for(int m = 0; m < mentions.size(); m++ ) {
+					if( !mentions[m].isString() )
+						continue;
+					if( mentions[m].toString() == m_server[team->m_server_index]->m_user_id ) {
+						team->m_unread_mentions++;
+						break;
+					}
+				}
+			}
+			message->m_team_index = team_index;
+			teamChanged(team, QVectorInt() << TeamsModel::RoleUnreadMessageCount << TeamsModel::RoleUnreadMentionCount );
+		}
 		if( channel && channel_index >= 0)
 		{
 			// TODO refactoring, move all creation parameters to constructor
 			message->m_channel_type  = channel->m_type;
-			message->m_team_index    = team_index;
 			message->m_channel_index = channel_index;
 			message->m_self_index    = channel->m_message.size();
 			channel->m_message.append(message);
@@ -3505,10 +3586,15 @@ void MattermostQt::event_posted(ServerPtr sc, QJsonObject data)
 			emit messageAdded(new_messages);// add messages to model
 			// chek if messed sended from another user, then
 			if( message->m_type != MessageMine )
+			{
+				// notificaton
 				emit newMessage(message);
+				// add unread msg count to team
+//				 = m_server[channel->m_server_index]->m_teams[team_index];
+			}
 		}
 	}
-	if(message->m_channel_index == -1 && message->m_team_index == -1)
+	if(message->m_channel_index == -1 )
 	{// Need some structure for unnatached messages (when it need)
 	//maybe need use only channels list in ServerPtr,
 	//and download TeamPtr and teamslist after it needed by user
@@ -3517,6 +3603,7 @@ void MattermostQt::event_posted(ServerPtr sc, QJsonObject data)
 //		umessage->m_message = message;
 //		sc->m_untacched_messages.append(umessage);
 		if( message->m_type != MessageMine )
+			// notification
 			emit newMessage(message);
 	}
 
@@ -3838,13 +3925,7 @@ void MattermostQt::replyFinished(QNetworkReply *reply)
 		{
 			switch (replyType.toInt()) {
 			case ReplyType::rt_login:
-				if( reply_login(reply) )
-				{//connect timers
-//					connect( &m_update_server, SIGNAL(timeout()), SLOT(slot_get_teams_unread()) );
-//					m_update_server.setTimerType(Qt::/*TimerType*/);
-//					m_update_server.start();
-//					slot_get_teams_unread();
-				}
+				reply_login(reply);
 				break;
 			case ReplyType::rt_get_teams:
 				reply_get_teams(reply);
@@ -3952,7 +4033,7 @@ void MattermostQt::replyFinished(QNetworkReply *reply)
 					qDebug() << QStringLiteral("Server[%0] (%1)  stop ping timer.").arg(server->m_self_index).arg(server->m_display_name);
 					m_user_status_timer.stop();
 					m_reconnect_server.start();
-					qDebug() << QStringLiteral("Recconect timer started.");
+					qDebug() << QStringLiteral("Server[%0] (%1)  start reconnect timer.").arg(server->m_self_index).arg(server->m_display_name);
 				}
 				break;
 			}
@@ -3966,6 +4047,8 @@ void MattermostQt::replyFinished(QNetworkReply *reply)
 					else {
 						server().at(i)->m_state = ServerState::ServerUnconnected;
 						emit serverStateChanged(i, server().at(i)->m_state);
+						m_reconnect_server.start();
+						qWarning() << QStringLiteral("Unknown network error. Start reconnect timer;");
 					}
 				}
 				break;
@@ -4177,7 +4260,7 @@ void MattermostQt::onWebSocketError(QAbstractSocket::SocketError error)
 	{
 	case QAbstractSocket::NetworkError:
 	case QAbstractSocket::SocketTimeoutError :
-		// sgoud i reconnect by my self, or its automatically ?
+		// should i reconnect by my self, or its automatically ?
 		{
 			QVariant sId = socket->property(P_SERVER_INDEX);
 			if(!sId.isValid()) // that too strange!!! that cant be!
@@ -4188,13 +4271,13 @@ void MattermostQt::onWebSocketError(QAbstractSocket::SocketError error)
 			ServerPtr server = m_server[server_index];
 
 			//server->m_state = ServerState::ServerUnconnected;
-			server->m_socket->close(QWebSocketProtocol::CloseCodeAbnormalDisconnection, QString("Client closing") );
 			emit serverStateChanged(server_index, server->m_state);
 			server->m_ping_timer.stop();
 			qDebug() << QStringLiteral("Server[%0] (%1)  stop ping timer.").arg(server->m_self_index).arg(server->m_display_name);
 			m_user_status_timer.stop();
 			m_reconnect_server.stop();
-			qDebug() << QStringLiteral("Recconect timer stoped.");
+			qDebug() << QStringLiteral("Recconect timer started.");
+			server->m_socket->close(QWebSocketProtocol::CloseCodeAbnormalDisconnection, QString("Client closing") );
 		}
 		break;
 	}
@@ -4383,7 +4466,8 @@ void MattermostQt::slot_recconect_servers()
 		if( !m_server[i]->m_socket ) {
 			get_login(m_server[i]);
 		}
-		else if( m_server[i]->m_state == ServerUnconnected)
+		else if( m_server[i]->m_state != ServerConnected
+		         && m_server[i]->m_state != ServerConnecting )
 		{
 			QString urlString = QLatin1String("/api/v")
 			        + QString::number(m_server[i]->m_api)

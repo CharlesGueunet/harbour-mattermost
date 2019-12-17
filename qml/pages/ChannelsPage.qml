@@ -5,7 +5,8 @@ import "../components"
 import ru.sashikknox 1.0
 
 Page {
-    id: channelspage
+    id: channelsPage
+    objectName: "ChannelsPage"
     layer.enabled: true
     property Context context
     property bool isuptodate: false
@@ -40,11 +41,11 @@ Page {
         PullDownMenu {
             MenuItem {
                 text: qsTr("About")
-                onClicked: pageStack.push(Qt.resolvedUrl("AboutPage.qml"),{context: channelspage.context})
+                onClicked: pageStack.push(Qt.resolvedUrl("AboutPage.qml"),{context: channelsPage.context})
             }
             MenuItem {
                 text: qsTr("Options")
-                onClicked: pageStack.push(Qt.resolvedUrl("OptionsPage.qml"),{context: channelspage.context})
+                onClicked: pageStack.push(Qt.resolvedUrl("OptionsPage.qml"),{context: channelsPage.context})
             }
         }
 
@@ -104,7 +105,7 @@ Page {
                     channelType: channel_type
                     directChannelImage: avatar_path
                     directChannelUserStatus: user_status
-                    context: channelspage.context
+                    context: channelsPage.context
 
                     x: Theme.horizontalPageMargin
                     anchors {
@@ -122,18 +123,18 @@ Page {
                     var messages = pageStack.pushAttached(
                                 Qt.resolvedUrl("MessagesPage.qml"),
                                 {
-                                    team_index: channelspage.team_index,
-                                    server_index: channelspage.server_index,
+                                    team_index: channelsPage.team_index,
+                                    server_index: channelsPage.server_index,
                                     channel_index: channellabel._index,
                                     channel_type: channellabel.channelType,
                                     channel_id: context.mattermost.getChannelId(
-                                                    channelspage.server_index,
-                                                    channelspage.team_index,
+                                                    channelsPage.server_index,
+                                                    channelsPage.team_index,
                                                     channellabel.channelType,
                                                     channellabel._index
                                                     ),
                                     channel_name: channellabel._display_name,
-                                    context: channelspage.context
+                                    context: channelsPage.context
                                 } );
                     pageStack.navigateForward(PageStackAction.Animated);
                 }

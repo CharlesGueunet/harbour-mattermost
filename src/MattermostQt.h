@@ -26,7 +26,7 @@ class MattermostQt : public QObject
 	friend class ChannelsModel;
 public:
 	enum ReplyType : int {
-		rt_login,
+		rt_login = 0,
 		rt_get_teams,
 		rt_get_public_channels,
 		rt_get_channel,
@@ -48,7 +48,9 @@ public:
 		rt_get_file_info,
 		rt_post_send_message,
 		rt_delete_message,
-		rt_post_message_edit
+		rt_post_message_edit,
+		//======================
+		ReplyTypeCount
 	};
 
 	enum ConnectionError {
@@ -448,6 +450,9 @@ public:
 	};
 	typedef QSharedPointer<ServerContainer> ServerPtr;
 
+	typedef void (*reply_func)(QNetworkReply*);
+	reply_func m_reply_func[ReplyTypeCount];
+	void init_reply_functions();
 public:
 	MattermostQt(QObject *parent = nullptr);
 
@@ -527,7 +532,9 @@ public:
 	/** get channel name */
 	Q_INVOKABLE QString getChannelName(int server_index, int team_index, int channel_type, int channel_index);
 	Q_INVOKABLE QString getChannelId(int server_index, int team_index, int channel_type, int channel_index);
-
+	/** get team data */
+	Q_INVOKABLE QString getTeamId(int server_index, int team_index);
+	Q_INVOKABLE QString getTeamName(int server_index, int team_index);
 	/** functions, called from DBusAdaptor */
 	Q_INVOKABLE void notificationActivated(int server_index, int team_index, int channel_type, int channel_index);
 
@@ -560,6 +567,8 @@ public:
 	bool load_settings();
 
 	/** */
+	TeamPtr teamAt(int server_index, int team_index);
+
 	ChannelPtr channelAt(int server_index, int team_index,
 	                     int channel_type, int channel_index);
 
@@ -666,7 +675,7 @@ protected:
 
 	void websocket_connect(ServerPtr server);
 	// repliest
-	bool reply_login(QNetworkReply *reply);
+	void reply_login(QNetworkReply *reply);
 	void reply_get_teams(QNetworkReply *reply);
 	void reply_get_team(QNetworkReply *reply);
 	void reply_get_teams_unread(QNetworkReply *reply);

@@ -43,7 +43,7 @@ ApplicationWindow
     property Context context: Context {}
     property string previewString: ""
 
-    Notification{
+    Notification {
         id:notification
         appName: "Mattermost"
         previewBody: previewString

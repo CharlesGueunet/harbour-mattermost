@@ -105,16 +105,20 @@ void SailNotify::slotNewMessage(MattermostQt::MessagePtr message)
 	notify->setRemoteDBusCallInterface("sashikknox.mattermost.service");
 	notify->setRemoteDBusCallMethodName("newMessage");
 	QVariantList args;
-	QVariant a;
+	QString team_id;
 	args << QVariant(message->m_server_index);
 	args << QVariant(message->m_team_index);
 	args << QVariant(message->m_channel_type);
 	args << QVariant(message->m_channel_index);
 	args << QVariant(message->m_channel_id);
+//	team_id = m->getTeamId(message->m_server_index,message->m_team_index);
+//	args << QVariant(team_id);
+
+	qWarning() << QStringLiteral("Channel index %0").arg(message->m_channel_index);
 
 	notify->setRemoteDBusCallArguments( args );
-
 	notify->publish();
+
 	NotifyPtr notifyPtr( new NotificationContainer() );
 	notifyPtr->notification = notify;
 	notifyPtr->server = message->m_server_index;
