@@ -91,11 +91,16 @@ CoverBackground {
         switch(server_state){
         case status_server_connected:
             status_text = qsTr("Online")
+            coverAction.enabled = false
+            error = ""
             break;
         case status_server_connecting:
             status_text = qsTr("Connecting")
+            coverAction.enabled = false
+            error = ""
             break;
         case status_server_unconnected:
+            coverAction.enabled = true
             status_text = qsTr("Offline")
             break;
         }
@@ -144,14 +149,19 @@ CoverBackground {
         verticalAlignment: Text.AlignVCenter
     }
 
-//    CoverActionList {
-//        id: coverAction
-//        CoverAction {
-//            iconSource: "image://theme/icon-cover-next"
-//        }
+    CoverActionList {
+        id: coverAction
+        enabled: true
+        CoverAction {
+            id: forceReconnect
+            iconSource: "image://theme/icon-cover-refresh"
+            onTriggered: {
+                context.mattermost.force_server_recconect()
+            }
+        }
 //        CoverAction {
 //            iconSource: "image://theme/icon-cover-pause"
 //        }
-//    }
+    }
 }
 

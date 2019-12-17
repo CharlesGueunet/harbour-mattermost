@@ -456,6 +456,7 @@ public:
 	Q_INVOKABLE QString getVersion() const;
 	// Server helper functions
 	Q_INVOKABLE int     get_server_state(int server_index);
+	Q_INVOKABLE void    force_server_recconect();
 	Q_INVOKABLE int     get_server_count() const;
 	Q_INVOKABLE QString get_server_name(int server_index) const;
 	Q_INVOKABLE QString get_server_url(int server_index) const;
