@@ -450,8 +450,8 @@ public:
 	};
 	typedef QSharedPointer<ServerContainer> ServerPtr;
 
-	typedef void (*reply_func)(QNetworkReply*);
-	reply_func m_reply_func[ReplyTypeCount];
+	typedef void (MattermostQt::*reply_func)(QNetworkReply* reply);
+	void (MattermostQt::*m_reply_func[ReplyTypeCount])(QNetworkReply* reply);
 	void init_reply_functions();
 public:
 	MattermostQt(QObject *parent = nullptr);

@@ -82,30 +82,39 @@ Q_DECLARE_METATYPE(MattermostQt::FilePtr)
 Q_DECLARE_METATYPE(MattermostQt::ChannelPtr)
 Q_DECLARE_METATYPE(MattermostQt::MessagePtr)
 
+#define ASSERT_REPLY(function_name) \
+	if(!reply) { \
+	    qCritical() << QStringLiteral("Function %0 call with NULL QNetworkReply pointer.").arg( #function_name ); \
+	        return; \
+	}
+
+#define BIND_REPLY_FUNCTION(name) m_reply_func[ReplyType:: CONCAT2(rt_,name) ] = &MattermostQt:: CONCAT2(reply_, name)
+
 void MattermostQt::init_reply_functions()
 {
 	memset(m_reply_func, NULL, sizeof(void*)*ReplyTypeCount );
-	m_reply_func[ReplyType::rt_login                ] = &MattermostQt::reply_login;
-	m_reply_func[ReplyType::rt_get_teams:           ] = &MattermostQt::reply_get_teams;
-	m_reply_func[ReplyType::rt_get_public_channels: ] = &MattermostQt::reply_get_public_channels;
-	m_reply_func[ReplyType::rt_get_channel          ] = &MattermostQt::reply_get_channel;
-	m_reply_func[ReplyType::rt_post_channel_view    ] = &MattermostQt::reply_post_channel_view;
-	m_reply_func[ReplyType::rt_get_user_info        ] = &MattermostQt::reply_get_user_info;
-	m_reply_func[ReplyType::rt_post_users_status    ] = &MattermostQt::reply_post_users_status;
-	m_reply_func[ReplyType::rt_get_user_image       ] = &MattermostQt::reply_get_user_image;
-	m_reply_func[ReplyType::rt_get_team             ] = &MattermostQt::reply_get_team;
-	m_reply_func[ReplyType::rt_get_teams_unread     ] = &MattermostQt::reply_get_teams_unread;
-	m_reply_func[ReplyType::rt_get_post             ] = &MattermostQt::reply_get_post;
-	m_reply_func[ReplyType::rt_get_posts            ] = &MattermostQt::reply_get_posts;
-	m_reply_func[ReplyType::rt_get_posts_before     ] = &MattermostQt::reply_get_posts_before;
-	m_reply_func[ReplyType::rt_get_file_thumbnail   ] = &MattermostQt::reply_get_file_thumbnail;
-	m_reply_func[ReplyType::rt_get_file_preview     ] = &MattermostQt::reply_get_file_preview;
-	m_reply_func[ReplyType::rt_get_file_info        ] = &MattermostQt::reply_get_file_info;
-	m_reply_func[ReplyType::rt_get_file             ] = &MattermostQt::reply_get_file;
-	m_reply_func[ReplyType::rt_post_file_upload     ] = &MattermostQt::reply_post_file_upload;
-	m_reply_func[ReplyType::rt_post_send_message    ] = &MattermostQt::reply_post_send_message;
-	m_reply_func[ReplyType::rt_delete_message       ] = &MattermostQt::reply_delete_message;
-	m_reply_func[ReplyType::rt_post_message_edit    ] = &MattermostQt::reply_post_message_edit;
+	//func_pointer = (reply_func)&MattermostQt::reply_login;
+	BIND_REPLY_FUNCTION(login);
+	BIND_REPLY_FUNCTION(get_teams);
+	BIND_REPLY_FUNCTION(get_public_channels);
+	BIND_REPLY_FUNCTION(get_channel);
+	BIND_REPLY_FUNCTION(post_channel_view);
+	BIND_REPLY_FUNCTION(get_user_info); //-
+	BIND_REPLY_FUNCTION(post_users_status);
+	BIND_REPLY_FUNCTION(get_user_image);
+	BIND_REPLY_FUNCTION(get_team);
+	BIND_REPLY_FUNCTION(get_teams_unread);
+	BIND_REPLY_FUNCTION(get_post);
+	BIND_REPLY_FUNCTION(get_posts);
+	BIND_REPLY_FUNCTION(get_posts_before);
+	BIND_REPLY_FUNCTION(get_file_thumbnail);
+	BIND_REPLY_FUNCTION(get_file_preview);
+	BIND_REPLY_FUNCTION(get_file_info);
+	BIND_REPLY_FUNCTION(get_file);
+	BIND_REPLY_FUNCTION(post_file_upload);
+	BIND_REPLY_FUNCTION(post_send_message);
+	BIND_REPLY_FUNCTION(delete_message);
+	BIND_REPLY_FUNCTION(post_message_edit);
 }
 
 MattermostQt::MattermostQt(QObject *parent )
@@ -113,6 +122,7 @@ MattermostQt::MattermostQt(QObject *parent )
     , m_mdParser(nullptr)
     , m_settings(nullptr)
 {
+	init_reply_functions();
 	m_networkManager.reset(new QNetworkAccessManager());
 
 	m_update_server_timeout = 5000; // in millisecs
@@ -2015,6 +2025,7 @@ void MattermostQt::websocket_connect(ServerPtr server)
 
 void MattermostQt::reply_login(QNetworkReply *reply)
 {
+	ASSERT_REPLY(reply_login)
 //	 TODO here we need check if server already exists, just need update auth data
 	if( reply->property(P_SERVER_INDEX).isValid() )
 	{//login by token
@@ -2112,6 +2123,7 @@ void MattermostQt::reply_login(QNetworkReply *reply)
 
 void MattermostQt::reply_get_teams(QNetworkReply *reply)
 {
+	ASSERT_REPLY(reply_get_teams)
 	QJsonDocument json;
 	QByteArray rawData = reply->readAll();
 	int server_index = reply->property(P_SERVER_INDEX).toInt();
@@ -2535,6 +2547,7 @@ void MattermostQt::reply_get_posts_before(QNetworkReply *reply)
 
 void MattermostQt::reply_get_public_channels(QNetworkReply *reply)
 {
+	ASSERT_REPLY(reply_get_public_channels)
 	int server_index = reply->property(P_SERVER_INDEX).toInt();
 	if( server_index < 0 || server_index >= m_server.size() )
 	{
@@ -2630,6 +2643,7 @@ void MattermostQt::reply_get_public_channels(QNetworkReply *reply)
 
 void MattermostQt::reply_get_channel(QNetworkReply *reply)
 {
+	ASSERT_REPLY(reply_get_channel)
 	QJsonDocument json = QJsonDocument::fromJson(reply->readAll());
 	QJsonObject object = json.object();
 	ChannelPtr channel(new ChannelContainer(object));
@@ -2695,6 +2709,7 @@ void MattermostQt::reply_get_channel(QNetworkReply *reply)
 
 void MattermostQt::reply_post_channel_view(QNetworkReply *reply)
 {
+	ASSERT_REPLY(reply_post_channel_view)
 	ChannelPtr channel = reply->property(P_CHANNEL_PTR).value<ChannelPtr>();
 	if(!channel)
 		return;
@@ -2709,6 +2724,7 @@ void MattermostQt::reply_post_channel_view(QNetworkReply *reply)
 
 void MattermostQt::reply_get_user_info(QNetworkReply *reply)
 {
+	ASSERT_REPLY(reply_get_user_info)
 	int server_index = reply->property(P_SERVER_INDEX).toInt();
 	int team_index = reply->property(P_TEAM_INDEX).toInt();
 	bool direct_channel = reply->property(P_DIRECT_CHANNEL).toBool();
@@ -3923,79 +3939,20 @@ void MattermostQt::replyFinished(QNetworkReply *reply)
 
 		if(replyType.isValid())
 		{
-			switch (replyType.toInt()) {
-			case ReplyType::rt_login:
-				reply_login(reply);
-				break;
-			case ReplyType::rt_get_teams:
-				reply_get_teams(reply);
-				break;
-			case ReplyType::rt_get_public_channels:
-				reply_get_public_channels(reply);
-				break;
-			case ReplyType::rt_get_channel:
-				reply_get_channel(reply);
-				break;
-			case ReplyType::rt_post_channel_view:
-				reply_post_channel_view(reply);
-				break;
-			case ReplyType::rt_get_user_info:
-				reply_get_user_info(reply);
-				break;
-			case ReplyType::rt_post_users_status:
-				reply_post_users_status(reply);
-				break;
-			case ReplyType::rt_get_user_image:
-				reply_get_user_image(reply);
-				break;
-			case ReplyType::rt_get_team:
-				reply_get_team(reply);
-				break;
-			case ReplyType::rt_get_teams_unread:
-				reply_get_teams_unread(reply);
-				break;
-			case ReplyType::rt_get_post:
-				reply_get_post(reply);
-			case ReplyType::rt_get_posts:
-				reply_get_posts(reply);
-				break;
-			case ReplyType::rt_get_posts_before:
-				reply_get_posts_before(reply);
-				break;
-			case ReplyType::rt_get_file_thumbnail:
-				reply_get_file_thumbnail(reply);
-				break;
-			case ReplyType::rt_get_file_preview:
-				reply_get_file_preview(reply);
-				break;
-			case ReplyType::rt_get_file_info:
-				reply_get_file_info(reply);
-				break;
-			case ReplyType::rt_get_file:
-				reply_get_file(reply);
-				break;
-			case ReplyType::rt_post_file_upload:
-				reply_post_file_upload(reply);
-				break;
-			case ReplyType::rt_post_send_message:
-				reply_post_send_message(reply);
-				break;
-			case ReplyType::rt_delete_message:
-				reply_delete_message(reply);
-				break;
-			case ReplyType::rt_post_message_edit:
-				reply_post_message_edit(reply);
-				break;
-			default:
-				qWarning() << "That can't be!";
+			int  reply_type = replyType.toInt();
+			if( reply_type >= 0 && reply_type < ReplyTypeCount && m_reply_func[reply_type] != nullptr )
+			{
+				(this->*m_reply_func[reply_type])(reply);
+			}
+			else
+			{
+				qWarning() << "Unknown reoply type: " << reply_type;
 				qDebug() << "Reply:" << QString::fromUtf8( reply->readAll() );
-
 				QList<QByteArray> headers = reply->rawHeaderList();
 				foreach(QByteArray header, headers)
 				{
 					qDebug() << header;
 				}
-				break;
 			}
 		}
 		else
@@ -4008,7 +3965,6 @@ void MattermostQt::replyFinished(QNetworkReply *reply)
 		//failure
 		qWarning() << "Failure: " << reply->error() << reply->errorString();
 		qDebug() << reply;
-//		qDebug() << "Reply: " << reply->readAll();
 		reply_error(reply);
 		switch(reply->error() )
 		{
