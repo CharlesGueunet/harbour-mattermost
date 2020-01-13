@@ -46,7 +46,8 @@ Page {
                   + qsTr("Russian SailfishOS Community channel")
                   + "</a> " + qsTr("in Telegram for their help.") + "<br>"
                   + qsTr("And to users:")
-                  + "<br>< a href=\"https://gitlab.com/alexus230\">Alexey Kovalev</a>"
+                  + "<br>< a href=\"https://gitlab.com/alexus230\">Alexey Kovalev</a> "
+                  + "<br>< a href=\"https://gitlab.com/dashinfantry\">dashinfantry</a>"
             width: parent.width
             wrapMode: Text.Wrap
             horizontalAlignment: Text.AlignLeft

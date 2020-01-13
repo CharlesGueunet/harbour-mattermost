@@ -12,7 +12,7 @@
 # The name of your application
 TARGET = harbour-mattermost
 
-VERSION = 0.1.3
+VERSION = 0.1.3-16
 
 DEFINES += MATTERMOSTQT_VERSION=\\\"$${VERSION}\\\"
 DEFINES += EMOJI_PATH=\\\"/usr/share/$$TARGET/emoji\\\"
@@ -32,9 +32,6 @@ LIBS += -Llibs -lqt5websockets
 INCLUDEPATH += src/
 INCLUDEPATH += libs/qtwebsockets/include
 INCLUDEPATH += libs/qtwebsockets/src/websockets
-
-#INCLUDEPATH += $$PWD/../../SailfishOS/mersdk/targets/SailfishOS-3.1.0.11-i486/usr/include/nemonotifications-qt5
-#INCLUDEPATH += $$PWD/../../SailfishOS/mersdk/targets/SailfishOS-3.1.0.12-i486/usr/include
 
 include(libs/discount.pri);
 
