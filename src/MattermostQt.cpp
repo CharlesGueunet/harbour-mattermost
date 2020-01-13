@@ -3427,7 +3427,8 @@ void MattermostQt::reply_post_message_edit(QNetworkReply *reply)
 
 void MattermostQt::event_posted(ServerPtr sc, QJsonObject data)
 {
-	qDebug() << data;
+	// confedencial data
+	//qDebug() << data;
 	ChannelType type = ChannelType::ChannelTypeCount;
 	QString ch_type = data["channel_type"].toString();
 	QJsonValue mentionsv = data["mentions"];
@@ -4056,7 +4057,8 @@ void MattermostQt::slotNetworkAccessibleChanged(QNetworkAccessManager::NetworkAc
 			ServerPtr server = m_server[i];
 //			server->m_socket->st
 			server->m_state = ServerState::ServerUnconnected;
-			server->m_socket->close(QWebSocketProtocol::CloseCodeAbnormalDisconnection, QString("Client closing") );
+			if(server->m_socket)
+				server->m_socket->close(QWebSocketProtocol::CloseCodeAbnormalDisconnection, QString("Client closing") );
 			emit serverStateChanged(i, server->m_state);
 			server->m_ping_timer.stop();
 			qDebug() << QStringLiteral("Server[%0] (%1)  stop ping timer.").arg(server->m_self_index).arg(server->m_display_name);

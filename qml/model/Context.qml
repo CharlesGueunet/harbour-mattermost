@@ -109,6 +109,12 @@ Item {
                     }
                     if(pageStack.currentPage.channel_id !== channel_id) {
                         console.debug("Go to channel(" + String(pageStack.currentPage.channel_id) + ") page.");
+                        console.debug("data ( server:" + String(server) + ", "
+                                      + "team:" + String(team) + ", "
+                                      + "channel_type:" + String(type) + ", "
+                                      + "channel:" + String(channel) + ", "
+                                      + "channel_id:" + String(channel_id) + ", "
+                                      + "channel_name:" + String(mattermost.getChannelName(server,team,type,channel)) + ")")
                         messages = pageStack.replace(pageStack.currentPage,
                                     Qt.resolvedUrl("../pages/MessagesPage.qml"),
                                     {
