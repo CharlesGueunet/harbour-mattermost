@@ -27,6 +27,8 @@ BuildRequires:  pkgconfig(sailfishsilica)
 BuildRequires:  pkgconfig(Qt5Core)
 BuildRequires:  pkgconfig(Qt5Qml)
 BuildRequires:  pkgconfig(Qt5Quick)
+BuildRequires:  pkgconfig(Qt5DBus)
+BuildRequires:  pkgconfig(Qt5Svg)
 BuildRequires:  pkgconfig(nemonotifications-qt5)
 BuildRequires:  desktop-file-utils
 
@@ -44,7 +46,7 @@ Mattermost native client for SailfishOS
 # >> build pre
 # << build pre
 
-%qtc_qmake5 
+%qtc_qmake5 %{name}.pro
 
 %qtc_make %{?_smp_mflags}
 
