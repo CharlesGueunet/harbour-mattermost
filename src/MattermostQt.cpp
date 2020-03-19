@@ -78,8 +78,9 @@ Q_DECLARE_METATYPE(MattermostQt::FilePtr)
 Q_DECLARE_METATYPE(MattermostQt::ChannelPtr)
 Q_DECLARE_METATYPE(MattermostQt::MessagePtr)
 
-MattermostQt::MattermostQt()
-    : m_mdParser(nullptr)
+MattermostQt::MattermostQt(QObject *parent )
+    : QObject(parent)
+    , m_mdParser(nullptr)
     , m_settings(nullptr)
 {
 	m_networkManager.reset(new QNetworkAccessManager());
@@ -3785,8 +3786,8 @@ void MattermostQt::replyFinished(QNetworkReply *reply)
 #endif
 	if (reply->error() == QNetworkReply::NoError) {
 		//success
-		if(reply->header(QNetworkRequest::LastModifiedHeader).isValid())
-			qDebug() << "LastModified" << reply->header(QNetworkRequest::LastModifiedHeader);
+//		if(reply->header(QNetworkRequest::LastModifiedHeader).isValid())
+//			qDebug() << "LastModified" << reply->header(QNetworkRequest::LastModifiedHeader);
 
 		if(replyType.isValid())
 		{
@@ -3914,7 +3915,7 @@ void MattermostQt::replyFinished(QNetworkReply *reply)
 				for(int i = 0; i < server().size(); i ++ )
 				{
 					if(server().at(i)->m_socket)
-						server().at(i)->m_socket->ping(QString("ping").toUtf8());
+						server().at(i)->m_socket->ping(QStringLiteral("ping").toUtf8());
 					else {
 						server().at(i)->m_state = ServerState::ServerUnconnected;
 						emit serverStateChanged(i, server().at(i)->m_state);
@@ -4136,7 +4137,7 @@ void MattermostQt::onWebSocketError(QAbstractSocket::SocketError error)
 				break;
 			ServerPtr server = m_server[server_index];
 
-			server->m_state = ServerState::ServerUnconnected;
+			//server->m_state = ServerState::ServerUnconnected;
 			server->m_socket->close(QWebSocketProtocol::CloseCodeAbnormalDisconnection, QString("Client closing") );
 			emit serverStateChanged(server_index, server->m_state);
 			server->m_ping_timer.stop();
@@ -4149,51 +4150,69 @@ void MattermostQt::onWebSocketError(QAbstractSocket::SocketError error)
 
 void MattermostQt::onWebSocketStateChanged(QAbstractSocket::SocketState state)
 {
-	qDebug() << "WebSocket state changed: "<< state;
 	QWebSocket * socket = qobject_cast<QWebSocket*>(sender());
 	if(!socket) // strange situation, if it happens
+	{
+		qCritical() << "Sender is not WebSocket! but WebSocket state changed: "<< state;
 		return;
+	}
 	QVariant sId = socket->property(P_SERVER_INDEX);
-	if(!sId.isValid()) // that too strange!!! that cant be!
-		return;
+	if(!sId.isValid()) {
+		qCritical() << "Cant get server's Id! WebSocket state changed: "<< state;
+		return;// that too strange!!! that cant be!
+	}
 	int server_index = sId.toInt();
+//	QStringLiteral s_state;
 
-	if( server_index < 0 || server_index >= m_server.size() )
+	if( server_index < 0 || server_index >= m_server.size() ) {
+		qCritical() << QStringLiteral("Cant get server from index %0").arg(server_index);
+		qDebug() << QStringLiteral("WebSocket [%0] state changed: ").arg(server_index) << state;
 		return;
+	}
 	ServerPtr sc = m_server[server_index];
 	switch(state) {
 	case QAbstractSocket::UnconnectedState:
+//		s_state = QStringLiteral("UnconnectedState");
 		m_reconnect_server.start();
 		sc->m_state = (int)state;
-		emit serverStateChanged(server_index, (int)state);
+		emit serverStateChanged(server_index, (int)sc->m_state);
 		break;
 	case QAbstractSocket::ConnectingState:
+//		s_state = QStringLiteral("ConnectingState");
 		sc->m_state = (int)state;
-		emit serverStateChanged(server_index, (int)state);
+		emit serverStateChanged(server_index, (int)sc->m_state);
 		break;
 	case QAbstractSocket::ConnectedState:
 		{
+//			s_state = QStringLiteral("ConnectedState");
 			sc->m_state = (int)state;
 			bool need_reconnect = false;
 			for(int i = 0; i < m_server.size(); i++ )
 			{
 				if( m_server[i]->m_state == ServerUnconnected )
 					need_reconnect = true;
+				emit serverStateChanged(i, (int)sc->m_state);
 			}
 			if(!need_reconnect)
 				m_reconnect_server.stop();
-			emit serverStateChanged(server_index, (int)state);
 		}
 		break;
 	case QAbstractSocket::HostLookupState:
+//		s_state = QStringLiteral("HostLookupState");
 		break;
 	case QAbstractSocket::BoundState:
+//		s_state = QStringLiteral("BoundState");
 		break;
 	case QAbstractSocket::ListeningState:
+//		s_state = QStringLiteral("ListeningState");
 		break;
 	case QAbstractSocket::ClosingState:
+//		s_state = QStringLiteral("ClosingState");
+		sc->m_state = (int)ServerUnconnected;
+		emit serverStateChanged(server_index, (int)sc->m_state);
 		break;
 	}
+	qDebug() << QStringLiteral("WebSocket [%0] state changed: ").arg(server_index) << state;
 }
 
 void MattermostQt::onWebSocketTextMessageReceived(const QString &message)
@@ -4654,8 +4673,11 @@ MattermostQt::MessageContainer::MessageContainer(QJsonObject object)
 		if(v.isObject())
 		{
 			QJsonObject metadata =v.toObject();
-			qDebug() << "Message" << m_id << "has metadta:";
-			qDebug() << metadata.keys();
+			if( !metadata.keys().isEmpty() )
+			{
+				qDebug() << "Message" << m_id << "has metadfta:";
+				qDebug() << metadata.keys();
+			}
 		}
 		else {
 			qDebug() << v;

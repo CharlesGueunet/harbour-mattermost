@@ -12,7 +12,7 @@
 # The name of your application
 TARGET = harbour-mattermost
 
-VERSION = 0.1.3-16
+VERSION = 0.1.3-17
 
 DEFINES += MATTERMOSTQT_VERSION=\\\"$${VERSION}\\\"
 DEFINES += EMOJI_PATH=\\\"/usr/share/$$TARGET/emoji\\\"

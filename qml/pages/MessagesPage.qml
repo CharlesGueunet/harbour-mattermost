@@ -90,6 +90,7 @@ Page {
 //            visible: true
 
             MenuItem{
+                id: actGetOlder
                 text:qsTr("get older")
                 onClicked:
                 {

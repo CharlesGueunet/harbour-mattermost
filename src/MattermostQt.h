@@ -427,7 +427,7 @@ public:
 	typedef QSharedPointer<ServerContainer> ServerPtr;
 
 public:
-	MattermostQt();
+	MattermostQt(QObject *parent = nullptr);
 
 	~MattermostQt();
 

@@ -20,7 +20,7 @@ Page {
     property int status_server_connecting: MattermostQt.ServerConnecting
     property int status_server_unconnected: MattermostQt.ServerUnconnected
 
-    property int connectionStatus: 0
+    property int connectionStatus: status_server_unconnected
 
 
     property bool canAccept : server_name.isComplete &
@@ -57,6 +57,7 @@ Page {
                     trust_certificate_switcher.checked = context.mattermost.get_server_trust_certificate(server_index);
                     ca_cert_text_field.text = context.mattermost.get_server_cert_path(server_index);
                     cert_text_field.text = context.mattermost.get_server_ca_cert_path(server_index);
+                    connectionStatus = status_server_unconnected
                 }
             }
         );
@@ -76,7 +77,11 @@ Page {
     }
 
     onContextChanged:{
+        // TODO when multi user ablity is enbled? need rewrite this part
+        connectionStatus = context.mattermost.get_server_state(0)
         context.mattermost.serverStateChanged.connect( function onServerConnected(server_index,state){
+            if( server_index != 0 )
+                console.debug("Server index is " + server_index )
             connectionStatus = state;
             if(state === status_server_connected) {
                 var teamspage = pageStack.replace(Qt.resolvedUrl("TeamsPage.qml"),
@@ -91,9 +96,8 @@ Page {
         context.mattermost.onConnectionError.connect( function onConnectionError(id,message,server_index){
             specialmessage.text = message;
             specialmessage.visible = true;
+//            connectionStatus = status_server_unconnected
         })
-
-        loading.running = true;
     }
 
     SilicaFlickable {
@@ -135,7 +139,7 @@ Page {
                 id: server
                 property bool isComplete: false
                 label: qsTr("server address");
-                placeholderText: label
+                placeholderText: label + ": https://example.com"
                 anchors { left: parent.left; right: parent.right }
                 EnterKey.enabled: text || inputMethodComposing
                 EnterKey.iconSource: "image://theme/icon-m-enter-next"
@@ -297,6 +301,7 @@ Page {
                 text: qsTr("Login")
                 anchors.horizontalCenter: parent.horizontalCenter
                 onClicked: {
+                    specialmessage.visible = false;
                     accepted();
                 }
             }
@@ -307,7 +312,7 @@ Page {
         id: loading
         size: BusyIndicatorSize.Large
         anchors.centerIn: parent
-        running: connectionStatus == MattermostQt.ServerConnecting
+        running: connectionStatus == status_server_connecting
         visible: running
     }
 }

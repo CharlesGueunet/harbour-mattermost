@@ -37,23 +37,6 @@ Page {
         }
 
         LinkedLabel {
-            id: aboutlabel
-            text: qsTr("This is unofficial client for")
-                  + " <a href=\"https://www.mattermost.org/licensing/\">Mattermost</a> "
-                  + qsTr("server.") + " "
-                  + qsTr("Thanks to")
-                  + " <a href=\"https://t.me/sailfishos/\">"
-                  + qsTr("Russian SailfishOS Community channel")
-                  + "</a> " + qsTr("in Telegram for their help.") + "<br>"
-                  + qsTr("And to users:")
-                  + "<br>< a href=\"https://gitlab.com/alexus230\">Alexey Kovalev</a> "
-                  + "<br>< a href=\"https://gitlab.com/dashinfantry\">dashinfantry</a>"
-            width: parent.width
-            wrapMode: Text.Wrap
-            horizontalAlignment: Text.AlignLeft
-        }
-
-        LinkedLabel {
             id: sourceslink
             text: qsTr("Sources: ") + "<a href=\"https://gitlab.com/sashikknox/harbour-mattermost\">GitLab</a><br>"
                 + qsTr("Using Emoji from") + " <a href=\"https://twemoji.twitter.com/\">Twemoji</a>"
@@ -67,6 +50,24 @@ Page {
             text: qsTr("If you want to donate, you can do that by:")
                   + " <br> <a href=\"http://yasobe.ru/na/sashikknox\">"
                   + qsTr("Yandex Money") + "</a>"
+            width: parent.width
+            wrapMode: Text.Wrap
+            horizontalAlignment: Text.AlignLeft
+        }
+
+        LinkedLabel {
+            id: aboutlabel
+            text: qsTr("This is unofficial client for")
+                  + " <a href=\"https://www.mattermost.org/licensing/\">Mattermost</a> "
+                  + qsTr("server.") + " "
+                  + qsTr("Thanks to")
+                  + " <a href=\"https://t.me/sailfishos/\">"
+                  + qsTr("Russian SailfishOS Community channel")
+                  + "</a> " + qsTr("in Telegram for their help.") + "<br>"
+                  + qsTr("And to users:")
+                  + "<br>< a href=\"https://gitlab.com/alexus230\">Alexey Kovalev</a> "
+                  + "<br>< a href=\"https://gitlab.com/dashinfantry\">dashinfantry</a>"
+                  + "<br>< a href=\"https://gitlab.com/SlavaMonich\">Slava Monich</a>"
             width: parent.width
             wrapMode: Text.Wrap
             horizontalAlignment: Text.AlignLeft
