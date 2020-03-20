@@ -101,7 +101,7 @@ protected slots:
 private:
 	QString                            m_channel_id;
 	MattermostQt::ChannelPtr           m_channel;
-	QVector<MattermostQt::MessagePtr>  m_messages;
+//	QVector<MattermostQt::MessagePtr>  m_messages;
 //	xxQVector<MattermostQt::UserPtr>     m_users;
 	QPointer<MattermostQt>             m_mattermost;
 };

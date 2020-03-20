@@ -11,20 +11,25 @@ MessagesModel::MessagesModel(QObject *parent)
 int MessagesModel::rowCount(const QModelIndex &parent) const
 {
 	Q_UNUSED(parent)
-	return m_messages.size();
+	if(m_channel)
+		return m_channel->m_message.size();
+	return 0;
 }
 
 QVariant MessagesModel::data(const QModelIndex &index, int role) const
 {
-	if ( index.row() < 0 || index.row() >= m_messages.size() )
+	if (!m_channel)
 		return QVariant();
 
-	int row = m_messages.size() - 1 - index.row();
-
-	if ( row < 0 || row >= m_messages.size() )
+	if ( index.row() < 0 || index.row() >= m_channel->m_message.size() )
 		return QVariant();
 
-	MattermostQt::MessagePtr message = m_messages[row];
+	int row = m_channel->m_message.size() - 1 - index.row();
+
+	if ( row < 0 || row >= m_channel->m_message.size() )
+		return QVariant();
+
+	MattermostQt::MessagePtr message = m_channel->m_message[row];
 
 	switch (role) {
 	case MessagesModel::PostId:
@@ -196,15 +201,15 @@ QVariant MessagesModel::data(const QModelIndex &index, int role) const
 
 bool MessagesModel::setData(const QModelIndex &index, const QVariant &value, int role)
 {
-	if ( index.row() < 0 || index.row() >= m_messages.size() )
+	if ( !m_channel || index.row() < 0 || index.row() >= m_channel->m_message.size() )
 		return false;
 
-	int row = m_messages.size() - 1 - index.row();
+	int row = m_channel->m_message.size() - 1 - index.row();
 
-	if ( row < 0 || row >= m_messages.size() )
+	if ( row < 0 || row >= m_channel->m_message.size() )
 		return false;
 
-	MattermostQt::MessagePtr message = m_messages[row];
+	MattermostQt::MessagePtr message = m_channel->m_message[row];
 	switch(role)
 	{
 	case MessagesModel::PageOrientation:
@@ -305,38 +310,38 @@ QString MessagesModel::getChannelId() const
 
 int MessagesModel::getFileType(int row,int i) const
 {
-	if(row < 0 || i < 0 || row >= m_messages.size() || i >= m_messages[row]->m_file.size() )
+	if(!m_channel || row < 0 || i < 0 || row >= m_channel->m_message.size() || i >= m_channel->m_message[row]->m_file.size() )
 		return (int)MattermostQt::FileUnknown;
-	return (int)m_messages[row]->m_file[i]->m_file_type;
+	return (int)m_channel->m_message[row]->m_file[i]->m_file_type;
 }
 
 int MessagesModel::getFileStatus(int row, int i) const
 {
-	if(row < 0 || i < 0 || row >= m_messages.size() || i >= m_messages[row]->m_file.size() )
+	if(!m_channel || row < 0 || i < 0 || row >= m_channel->m_message.size() || i >= m_channel->m_message[row]->m_file.size() )
 		return (int)MattermostQt::FileStatus::FileRemote;
-	return (int)m_messages[row]->m_file[i]->m_file_status;
+	return (int)m_channel->m_message[row]->m_file[i]->m_file_status;
 }
 
 QString MessagesModel::getFileMimeType(int row, int i) const
 {
-	if(row < 0 || i < 0 || row >= m_messages.size() || i >= m_messages[row]->m_file.size() )
+	if(!m_channel || row < 0 || i < 0 || row >= m_channel->m_message.size() || i >= m_channel->m_message[row]->m_file.size() )
 		return "";
-	return m_messages[row]->m_file[i]->m_mime_type;
+	return m_channel->m_message[row]->m_file[i]->m_mime_type;
 }
 
 QString MessagesModel::getThumbPath(int row,int i) const
 {
-	if(row < 0 || i < 0 || row >= m_messages.size() || i >= m_messages[row]->m_file.size() )
+	if(!m_channel || row < 0 || i < 0 || row >= m_channel->m_message.size() || i >= m_channel->m_message[row]->m_file.size() )
 		return "";//TODO add path for bad thumb (default error image)
-	return m_messages[row]->m_file[i]->m_thumb_path;
+	return m_channel->m_message[row]->m_file[i]->m_thumb_path;
 }
 
 QString MessagesModel::getValidPath(int row, int i) const
 {
-	if(row < 0 || i < 0 || row >= m_messages.size() || i >= m_messages[row]->m_file.size() )
+	if(!m_channel || row < 0 || i < 0 || row >= m_channel->m_message.size() || i >= m_channel->m_message[row]->m_file.size() )
 		return "";//TODO add path for bad thumb (default error image)
-	MattermostQt::ServerPtr sc = m_mattermost->m_server[m_messages[row]->m_server_index];
-	MattermostQt::FilePtr file = m_messages[row]->m_file[i];
+	MattermostQt::ServerPtr sc = m_mattermost->m_server[m_channel->m_message[row]->m_server_index];
+	MattermostQt::FilePtr file = m_channel->m_message[row]->m_file[i];
 
 	if( file->m_file_type == MattermostQt::FileAnimatedImage )
 	{
@@ -357,30 +362,30 @@ QString MessagesModel::getValidPath(int row, int i) const
 
 QString MessagesModel::getFilePath(int row, int i) const
 {
-	if(row < 0 || i < 0 || row >= m_messages.size() || i >= m_messages[row]->m_file.size() )
+	if(!m_channel || row < 0 || i < 0 || row >= m_channel->m_message.size() || i >= m_channel->m_message[row]->m_file.size() )
 		return "";//TODO add path for bad thumb (default error image)
-	return m_messages[row]->m_file[i]->m_file_path;
+	return m_channel->m_message[row]->m_file[i]->m_file_path;
 }
 
 QString MessagesModel::getFileId(int row, int i) const
 {
-	if(row < 0 || i < 0 || row >= m_messages.size() || i >= m_messages[row]->m_file.size() )
+	if(!m_channel || row < 0 || i < 0 || row >= m_channel->m_message.size() || i >= m_channel->m_message[row]->m_file.size() )
 		return "";//TODO add path for bad thumb (default error image)
-	return m_messages[row]->m_file[i]->m_id;
+	return m_channel->m_message[row]->m_file[i]->m_id;
 }
 
 QSize MessagesModel::getImageSize(int row, int i) const
 {
-	if(row < 0 || i < 0 || row >= m_messages.size() || i >= m_messages[row]->m_file.size() )
+	if(!m_channel || row < 0 || i < 0 || row >= m_channel->m_message.size() || i >= m_channel->m_message[row]->m_file.size() )
 		return QSize();
-	return m_messages[row]->m_file[i]->m_image_size;
+	return m_channel->m_message[row]->m_file[i]->m_image_size;
 }
 
 QSizeF MessagesModel::getItemSize(int row, int i, qreal contentWidth) const
 {
-	if(row < 0 || i < 0 || row >= m_messages.size() || i >= m_messages[row]->m_file.size() )
+	if(!m_channel || row < 0 || i < 0 || row >= m_channel->m_message.size() || i >= m_channel->m_message[row]->m_file.size() )
 		return QSizeF(32,32);
-	MattermostQt::FilePtr file = m_messages[row]->m_file[i];
+	MattermostQt::FilePtr file = m_channel->m_message[row]->m_file[i];
 	QSize sourceSize = file->m_image_size;
 	if( !file->m_item_size.isEmpty() && file->m_contentwidth == (int)contentWidth )
 		return file->m_item_size;
@@ -418,23 +423,23 @@ QSizeF MessagesModel::getItemSize(int row, int i, qreal contentWidth) const
 
 QString MessagesModel::getFileName(int row, int i) const
 {
-	if(row < 0 || i < 0 || row >= m_messages.size() || i >= m_messages[row]->m_file.size() )
+	if(!m_channel || row < 0 || i < 0 || row >= m_channel->m_message.size() || i >= m_channel->m_message[row]->m_file.size() )
 		return "";
-	return m_messages[row]->m_file[i]->m_name;
+	return m_channel->m_message[row]->m_file[i]->m_name;
 }
 
 QString MessagesModel::getSenderName(int row) const
 {
-	if(row < 0 || row >= m_messages.size())
+	if(!m_channel || row < 0 || row >= m_channel->m_message.size())
 		return "";
-	return m_messages[row]->m_user_id;
+	return m_channel->m_message[row]->m_user_id;
 }
 
 QString MessagesModel::getFileSize(int row, int i) const
 {
-	if(row < 0 || i < 0 || row >= m_messages.size() || i >= m_messages[row]->m_file.size() )
+	if(!m_channel || row < 0 || i < 0 || row >= m_channel->m_message.size() || i >= m_channel->m_message[row]->m_file.size() )
 		return "";
-	MattermostQt::FilePtr file = m_messages[row]->m_file[i];
+	MattermostQt::FilePtr file = m_channel->m_message[row]->m_file[i];
 	if( file->m_file_size < 1000 )
 		return QObject::tr("%0 bytes").arg(file->m_file_size);
 	qreal size = (qreal)file->m_file_size/1024;
@@ -453,13 +458,23 @@ bool MessagesModel::atEnd() const
 
 void MessagesModel::slot_messagesAdded(MattermostQt::ChannelPtr channel)
 {
-	if(channel->m_message.size() != m_messages.size() )
-	{
-		beginResetModel();
-		m_messages = channel->m_message;
-		endResetModel();
+//	if(channel->m_message.size() != m_channel->m_message.size() )
+//	{
+//		beginResetModel();
+//		m_channel->m_message = channel->m_message;
+//		endResetModel();
+//	}
+
+	if( m_channel )
+		m_channel = channel;
+	else if ( m_channel != channel) {
+		return;
 	}
-	m_channel = channel;
+
+//	beginInsertRows(QModelIndex(),0,0);
+//	endInsertRows();
+	beginResetModel();
+	endResetModel();
 
 	emit messagesInitialized();
 	emit atEndChanged();
@@ -483,12 +498,12 @@ void MessagesModel::slot_messageAdded(QList<MattermostQt::MessagePtr> messages)
 	// we add messages in end of array? but in bigen of model (!)
 	// need refator it!
 	beginInsertRows(QModelIndex(),0,messages.size() - 1);
-//	m_messages.reserve();
-	foreach( MattermostQt::MessagePtr message, messages)
-	{
-		m_messages.append(message);
-	}
-//	m_messages.swap(m_channel->m_message);
+//	m_channel->m_message.reserve();
+//	foreach( MattermostQt::MessagePtr message, messages)
+//	{
+//		m_channel->m_message.append(message);
+//	}
+//	m_channel->m_message.swap(m_channel->m_message);
 	endInsertRows();
 	emit newMessage();
 }
@@ -497,16 +512,18 @@ void MessagesModel::slot_messageUpdated(QList<MattermostQt::MessagePtr> messages
 {
 //	beginResetModel();
 //	endResetModel();
+	if( !m_channel )
+		return;
 
 	 QVectorInt roles;
 	roles << CreateAt << Text << ValidPaths << FilesCount << FormatedText << RootId << RootMessage << RootMessageUserName;
-	int br = 0,lt = m_messages.size() - 1;
+	int br = 0,lt = m_channel->m_message.size() - 1;
 
 	QList<MattermostQt::MessagePtr> answers;
 	for(QList<MattermostQt::MessagePtr>::iterator it = messages.begin(), end = messages.end(); it != end; it++ )
 	{
 		MattermostQt::MessagePtr m = *it;
-		int row = m_messages.size() - 1 - m->m_self_index;
+		int row = m_channel->m_message.size() - 1 - m->m_self_index;
 		QModelIndex i = index(row);
 		dataChanged(i, i, roles);
 
@@ -515,17 +532,17 @@ void MessagesModel::slot_messageUpdated(QList<MattermostQt::MessagePtr> messages
 		    it_a != end_a; it_a++ )
 		{
 			MattermostQt::MessagePtr ans = *it_a;
-			int ans_row = m_messages.size() - 1 - ans->m_self_index;
+			int ans_row = m_channel->m_message.size() - 1 - ans->m_self_index;
 			ans->updateRootMessage(m_mattermost.data());
-			QModelIndex i = index(ans_row);
-			dataChanged(i, i, roles);
+			QModelIndex j = index(ans_row);
+			dataChanged(j, j, roles);
 		}
 	}
 }
 
 void MessagesModel::slot_messageDeleted(QList<MattermostQt::MessagePtr> messages)
 {
-	if(messages.isEmpty())
+	if(messages.isEmpty() || !m_channel )
 		return;
 
 	MattermostQt::MessagePtr message = messages.first();
@@ -539,10 +556,10 @@ void MessagesModel::slot_messageDeleted(QList<MattermostQt::MessagePtr> messages
 	    it != end; it++, count++ )
 	{
 		MattermostQt::MessagePtr current = *it;
-		int row = m_messages.size() - 1 - current->m_self_index + count;
+		int row = m_channel->m_message.size() - 1 - current->m_self_index + count;
 		QModelIndex i = index(row);
 		beginRemoveRows(QModelIndex(), row, row);
-		m_messages.remove(message->m_self_index - count);
+//		m_channel->m_message.remove(message->m_self_index - count);
 		endRemoveRows();
 	}
 }
@@ -553,7 +570,7 @@ void MessagesModel::slot_updateMessage(MattermostQt::MessagePtr message, int rol
 		return;
 	if(message->m_channel_id.compare(m_channel->m_id) != 0)
 		return;
-	int row = m_messages.size() - 1 - message->m_self_index;
+	int row = m_channel->m_message.size() - 1 - message->m_self_index;
 
 	 QVectorInt roles;
 	roles << role;
@@ -575,7 +592,7 @@ void MessagesModel::slot_updateMessage(MattermostQt::MessagePtr message, int rol
 	    it != end; it++ )
 	{
 		MattermostQt::MessagePtr ans = *it;
-		int ans_row = m_messages.size() - 1 - ans->m_self_index;
+		int ans_row = m_channel->m_message.size() - 1 - ans->m_self_index;
 		ans->updateRootMessage(m_mattermost.data());
 		QModelIndex i = index(ans_row);
 		dataChanged(i, i, roles);
@@ -584,14 +601,16 @@ void MessagesModel::slot_updateMessage(MattermostQt::MessagePtr message, int rol
 
 void MessagesModel::slot_messageAddedBefore(MattermostQt::ChannelPtr channel, int count)
 {
-	if( channel != m_channel )
+	if( channel.isNull() )
+		channel = m_channel;
+	else if( channel != m_channel )
 		return;
 //	QVector messages;
 //	messages.reserve(channel->m_me
 //	if(channel->m_message.size() > 0)
 	{
-		beginInsertRows(QModelIndex(),m_messages.size(),m_messages.size() + count-1);
-		m_messages = channel->m_message;
+		beginInsertRows(QModelIndex(),m_channel->m_message.size() - count - 1, m_channel->m_message.size() - 1);
+//		m_channel->m_message = channel->m_message;
 		endInsertRows();
 	}
 //	if(atEnd())
@@ -602,23 +621,23 @@ void MessagesModel::slot_messageAddedBefore(MattermostQt::ChannelPtr channel, in
 
 void MessagesModel::slot_usersUpdated(QVector<MattermostQt::UserPtr> users,  QVectorInt roles)
 {
-	QModelIndex end = index(m_messages.size() - 1);
+	QModelIndex end = index(m_channel->m_message.size() - 1);
 	QModelIndex begin = index(0);
 	dataChanged(begin,end, roles);
 }
 
 void MessagesModel::slot_userUpdated(MattermostQt::UserPtr user,  QVectorInt roles)
 {
-	QModelIndex end = index(m_messages.size() - 1);
+	QModelIndex end = index(m_channel->m_message.size() - 1);
 	QModelIndex begin = index(0);
 	dataChanged(begin,end, roles);
 }
 
 void MessagesModel::slot_attachedFilesChanged(MattermostQt::MessagePtr message, QVector<QString> file_ids,  QVectorInt roles)
 {
-	if(!message || m_messages.empty() )
+	if(!message || m_channel->m_message.empty() )
 		return;
-	if( message->m_channel_id != m_messages.front()->m_channel_id )
+	if( message->m_channel_id != m_channel->m_message.front()->m_channel_id )
 		return;
 
 	roles.clear();
@@ -629,7 +648,7 @@ void MessagesModel::slot_attachedFilesChanged(MattermostQt::MessagePtr message, 
 	    it != end; it++ )
 	{
 		MattermostQt::MessagePtr ans = *it;
-		int ans_row = m_messages.size() - 1 - ans->m_self_index;
+		int ans_row = m_channel->m_message.size() - 1 - ans->m_self_index;
 		ans->updateRootMessage(m_mattermost.data());
 		QModelIndex i = index(ans_row);
 		dataChanged(i, i, roles);
