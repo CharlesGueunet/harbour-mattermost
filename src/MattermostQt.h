@@ -49,6 +49,7 @@ public:
 		rt_post_send_message,
 		rt_delete_message,
 		rt_post_message_edit,
+		rt_get_channel_unread,
 		//======================
 		ReplyTypeCount
 	};
@@ -338,6 +339,8 @@ public:
 		int     m_team_index;   /**< team index in QVector */
 		int     m_server_index; /**< server index in QVector */
 		int     m_self_index;   /**< self index in vector */
+		int     m_msg_unread;   /**< count of unread messages **/
+		int     m_mention_count;/**< count of mention in channel **/
 
 		// direct channel data
 		int m_dc_user_index; /**< if it direct channel, is index*/
@@ -504,6 +507,8 @@ public:
 
 	Q_INVOKABLE void post_channel_view(int server_index, int team_index,
 	                                     int channel_type, int channel_index);
+	Q_INVOKABLE void get_channel_unread(int server_index, int team_index,
+	                                    int channel_type, int channel_index);
 	Q_INVOKABLE void get_user_image(int server_index, int user_index);
 	Q_INVOKABLE void get_user_info(int server_index, QString userId,  int team_index = -1);
 	Q_INVOKABLE void get_teams_unread(int server_index);
@@ -685,6 +690,7 @@ protected:
 	void reply_get_public_channels(QNetworkReply *reply);
 	void reply_get_channel(QNetworkReply *reply);
 	void reply_post_channel_view(QNetworkReply *reply);
+	void reply_get_channel_unread(QNetworkReply *reply);
 	void reply_get_user_info(QNetworkReply *reply);
 	void error_get_user_info(QNetworkReply *reply);
 	void reply_post_users_status(QNetworkReply *reply);

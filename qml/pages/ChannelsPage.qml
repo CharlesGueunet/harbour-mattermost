@@ -13,6 +13,7 @@ Page {
 
     property int server_index
     property int team_index
+    property int unread_messages : 0
     property string teamid
     property string team_label
 

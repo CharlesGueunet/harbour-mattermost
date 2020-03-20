@@ -115,6 +115,7 @@ void MattermostQt::init_reply_functions()
 	BIND_REPLY_FUNCTION(post_send_message);
 	BIND_REPLY_FUNCTION(delete_message);
 	BIND_REPLY_FUNCTION(post_message_edit);
+	BIND_REPLY_FUNCTION(get_channel_unread);
 }
 
 MattermostQt::MattermostQt(QObject *parent )
@@ -1060,6 +1061,59 @@ void MattermostQt::post_channel_view(int server_index, int team_index, int chann
 	reply->setProperty(P_TRUST_CERTIFICATE, QVariant(sc->m_trust_cert) );
 	reply->setProperty(P_REPLY_TYPE, QVariant(ReplyType::rt_post_channel_view) );
 	reply->setProperty(P_CHANNEL_PTR, QVariant::fromValue<ChannelPtr>(channel) );
+}
+
+void MattermostQt::get_channel_unread(int server_index, int team_index, int channel_type, int channel_index)
+{
+	ServerPtr sc = m_server[server_index];
+	ChannelPtr channel = channelAt(server_index,team_index,channel_type,channel_index);
+
+//	if(channel_type == ChannelType::ChannelDirect)
+//	{
+//		channel = sc->m_direct_channels[channel_index];
+//	}
+//	else {
+//		TeamPtr tc = sc->m_teams[team_index];
+//		QVector<ChannelPtr> *channels = nullptr;
+//		if(channel_type == ChannelType::ChannelPublic)
+//			channels = &tc->m_public_channels;
+//		else if(channel_type == ChannelType::ChannelPrivate)
+//			channels = &tc->m_private_channels;
+//		if(!channels)
+//			return;
+//		channel = channels->at(channel_index);
+//	}
+
+	if( !channel ) {
+		qCritical() << QStringLiteral("Wrong channels unread requset data") ;
+	}
+
+	QString urlString = QLatin1String("/api/v")
+	        + QString::number(sc->m_api)
+	        + QLatin1String("/users/")
+	        + sc->m_user_id
+	        + QLatin1String("/channels/")
+	        + channel->m_id
+	        + QLatin1String("/unread");
+
+	QUrl url(sc->m_url);
+	url.setPath(urlString);
+	QNetworkRequest request;
+
+	request.setUrl(url);
+	request_set_headers(request,sc);
+	request_urlencoded(request);
+
+	if(sc->m_trust_cert && !sc->m_cert.isNull() )
+		request.setSslConfiguration(sc->m_cert);
+
+	QNetworkReply *reply = m_networkManager->get(request);
+	reply->setProperty(P_REPLY_TYPE, QVariant(ReplyType::rt_get_channel_unread) );
+	reply->setProperty(P_SERVER_INDEX, QVariant(server_index) );
+	reply->setProperty(P_TEAM_INDEX, QVariant(team_index) );
+	reply->setProperty(P_CHANNEL_TYPE, QVariant(channel_type) );
+	reply->setProperty(P_CHANNEL_INDEX, QVariant(channel_index) );
+	reply->setProperty(P_CHANNEL_PTR, QVariant(channel) );
 }
 
 void MattermostQt::get_user_image(int server_index, int user_index)
@@ -2720,6 +2774,24 @@ void MattermostQt::reply_post_channel_view(QNetworkReply *reply)
 	{
 		qWarning() << json;
 	}
+}
+
+void MattermostQt::reply_get_channel_unread(QNetworkReply *reply)
+{
+	ASSERT_REPLY(reply_get_channel_unread)
+	ChannelPtr channel = reply->property(P_CHANNEL_PTR).value<ChannelPtr>();
+	if(!channel)
+		return;
+	ServerPtr pc = m_server[channel->m_server_index];
+	QJsonDocument json = QJsonDocument::fromJson(reply->readAll());
+	QJsonObject object = json.object();
+	if( object["channel_id"].toString() != channel->m_id )
+	{
+		qCritical() << json;
+	}
+	channel->m_msg_unread    = object["msg_count"].toInt();
+	channel->m_mention_count = object["mention_count"].toInt();
+	emit updateChannel( channel, QVectorInt() << ChannelsModel::MessageUnread << ChannelsModel::MentionCount );
 }
 
 void MattermostQt::reply_get_user_info(QNetworkReply *reply)

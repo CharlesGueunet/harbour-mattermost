@@ -26,6 +26,8 @@ public:
 		UserStatus = MattermostQt::UserStatusRole,
 		UserActivity = MattermostQt::UserLastActivityRole,
 		UserName = MattermostQt::UserNameRole,
+		MessageUnread, // count of unreaded messages
+		MentionCount   // count of mention
 	};
 
 	enum ItemType {

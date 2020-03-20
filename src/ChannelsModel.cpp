@@ -59,13 +59,19 @@ QVariant ChannelsModel::data(const QModelIndex &index, int role) const
 			return QVariant(channel->m_display_name);
 		break;
 	case Purpose:
-		return m_puprose[index.row()];
+//		return m_puprose[index.row()];
+		if( channel.isNull() )
+			return QVariant("");
+		return channel->m_purpose;
 		break;
 	case Email:
 		return QVariant();
 		break;
 	case Header:
-		return m_header[index.row()];
+//		return m_header[index.row()];
+		if( channel.isNull() )
+			return QVariant("");
+		return channel->m_header;
 		break;
 	case Type:
 		return m_type[index.row()];
@@ -118,6 +124,20 @@ QVariant ChannelsModel::data(const QModelIndex &index, int role) const
 			return QVariant((int)user->m_status);
 		}
 		break;
+	case MessageUnread :
+	    {
+		    if(channel.isNull())
+				return QVariant(0);
+			return channel->m_msg_unread;
+	    }
+		break;
+	case MessageUnread :
+	    {
+		    if(channel.isNull())
+				return QVariant(0);
+			return channel->m_mention_count;
+	    }
+		break;
 	}
 	return QVariant();
 }
@@ -161,17 +181,19 @@ QHash<int, QByteArray> ChannelsModel::roleNames() const
 {
 	// thx to @Kaffeine for that optimization (static const)
 	static const QHash<int, QByteArray> names = {
-	{ DataRoles::DisplayName,  "m_display_name" },
-	{ DataRoles::Purpose,      "m_purpose" },
-	{ DataRoles::Header,       "m_header" },
-	{ DataRoles::Email,        "m_email" },
-	{ DataRoles::Index,        "m_index" },
-	{ DataRoles::Type,         "m_type" },
-	{ DataRoles::ServerIndex,  "server_index" },
-	{ DataRoles::TeamIndex,    "team_index" },
-	{ DataRoles::ChannelType,  "channel_type" },
-	{ DataRoles::AvatarPath,   "avatar_path" },
-	{ DataRoles::UserStatus,   "user_status" } };
+	{ DataRoles::DisplayName,   "m_display_name" },
+	{ DataRoles::Purpose,       "m_purpose" },
+	{ DataRoles::Header,        "m_header" },
+	{ DataRoles::Email,         "m_email" },
+	{ DataRoles::Index,         "m_index" },
+	{ DataRoles::Type,          "m_type" },
+	{ DataRoles::ServerIndex,   "server_index" },
+	{ DataRoles::TeamIndex,     "team_index" },
+	{ DataRoles::ChannelType,   "channel_type" },
+	{ DataRoles::AvatarPath,    "avatar_path" },
+	{ DataRoles::UserStatus,    "user_status" },
+	{ DataRoles::MessageUnread, "role_msg_unread" },
+	{ DataRoles::MentionCount,  "role_mention_count" }};
 	return names;
 }
 

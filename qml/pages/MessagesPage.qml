@@ -140,6 +140,17 @@ Page {
             width: messagesListView.width
             showMenuOnPressAndHold: isMessageMineOrOther
 
+            Component.onCompleted: {
+                if( role_row_index == 0 ) {
+                    context.mattermost.post_channel_view(
+                            server_index,
+                            team_index,
+                            channel_type,
+                            channel_index
+                        )
+                }
+            }
+
             menu: ContextMenu {
                 id: contextmenu
 
