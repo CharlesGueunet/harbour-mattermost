@@ -16,7 +16,7 @@ TARGET = harbour-mattermost
 VER_VERSION=0.1.4
 VER_RELEASE=1
 
-LINES_ALL = $$cat($$PWD/rpm/harbour-mattermost.yaml, lines)
+LINES_ALL = $$cat($$PWD/rpm/harbour-mattermost.spec, lines)
 for( l, LINES_ALL ): {
     contains( l, Version.* ): {
         _TMP=$$split(l," ")
