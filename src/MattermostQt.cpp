@@ -4202,7 +4202,25 @@ void MattermostQt::onWebSocketSslError(QList<QSslError> errors)
 	}
 	QWebSocket *socket = qobject_cast<QWebSocket*>(sender());
 	if(socket)
+	{
 		socket->ignoreSslErrors(ignoreErrors);
+		if(!ignoreErrors.empty()) {
+			// try set status to Connectiong, for beauty loading process in UI
+			QVariant sId = socket->property(P_SERVER_INDEX);
+			if(!sId.isValid()) {
+				qCritical() << "Cant get server's Id (index) from QWebSocket pointer";
+				return;
+			}
+			int server_index = sId.toInt();
+			if( server_index < 0 || server_index >= m_server.size() ) {
+				qCritical() << QStringLiteral("Cant get server from index %0").arg(server_index);
+				return;
+			}
+			ServerPtr sc = m_server[server_index];
+			sc->m_state = (int)QAbstractSocket::ConnectingState;
+			emit serverStateChanged(server_index, (int)sc->m_state);
+		}
+	}
 //	qDebug() << err;
 }
 

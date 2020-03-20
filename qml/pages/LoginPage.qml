@@ -35,6 +35,7 @@ Page {
     property string caCertPath
     property string certPath
     property string lastFolder
+    property int    server_id: 0
 
     onCaCertPathChanged: {
         ca_cert_text_field.text = caCertPath;
@@ -61,6 +62,12 @@ Page {
                 }
             }
         );
+        if ( context.mattermost.get_server_count() === 1 ) {
+            server_id = 0;
+            server_name.text = context.mattermost.get_server_name(0);
+            server.text = context.mattermost.get_server_url(0);
+            trust_certificate_switcher.checked = context.mattermost.get_server_trust_certificate(0);
+        }
     }
 
     onAccepted: {
@@ -80,7 +87,7 @@ Page {
         // TODO when multi user ablity is enbled? need rewrite this part
         connectionStatus = context.mattermost.get_server_state(0)
         context.mattermost.serverStateChanged.connect( function onServerConnected(server_index,state){
-            if( server_index != 0 )
+            if( server_index !== 0 )
                 console.debug("Server index is " + server_index )
             connectionStatus = state;
             if(state === status_server_connected) {
