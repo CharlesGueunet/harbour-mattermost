@@ -131,7 +131,7 @@ QVariant ChannelsModel::data(const QModelIndex &index, int role) const
 			return channel->m_msg_unread;
 	    }
 		break;
-	case MessageUnread :
+	case MentionCount :
 	    {
 		    if(channel.isNull())
 				return QVariant(0);

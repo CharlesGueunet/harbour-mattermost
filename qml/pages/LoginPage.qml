@@ -51,15 +51,16 @@ Page {
         context.mattermost.onConnectionError.connect(
             function connectionError(code, message, server_index) {
                 // its mean your token is outdated
-                if( code === MattermostQt.SessionExpired ) {
+                if( code === MattermostQt.SessionExpired )
+                {
                     // then just paste server information to editor lines and ask password
                     server_name.text = context.mattermost.get_server_name(server_index);
                     server.text = context.mattermost.get_server_url(server_index);
                     trust_certificate_switcher.checked = context.mattermost.get_server_trust_certificate(server_index);
                     ca_cert_text_field.text = context.mattermost.get_server_cert_path(server_index);
                     cert_text_field.text = context.mattermost.get_server_ca_cert_path(server_index);
-                    connectionStatus = status_server_unconnected
                 }
+                connectionStatus = status_server_unconnected
             }
         );
         if ( context.mattermost.get_server_count() === 1 ) {
@@ -102,7 +103,7 @@ Page {
 
         context.mattermost.onConnectionError.connect( function onConnectionError(id,message,server_index){
             specialmessage.text = message;
-            specialmessage.visible = true;
+            specialmessage.opacity = 1.0;
 //            connectionStatus = status_server_unconnected
         })
     }
@@ -290,7 +291,8 @@ Page {
 
             Label {
                 id: specialmessage
-                visible: false
+                visible: opacity > 0 && height > 0.1
+                opacity: 0
                 anchors {
                     left:parent.left;
                     right:parent.right;
@@ -300,6 +302,19 @@ Page {
                 }
                 truncationMode: TruncationMode.Elide
                 wrapMode: Text.Wrap
+                Behavior on opacity {
+                    NumberAnimation { duration: 200 }
+                }
+                Behavior on height {
+                    NumberAnimation { duration: 200 }
+                }
+
+                onOpacityChanged: {
+                    if( opacity == 0.1 ) {
+                        text = ""
+                    }
+                }
+
 //                horizontalAlignment: parent.horizontalCenter
             }
 
@@ -308,7 +323,7 @@ Page {
                 text: qsTr("Login")
                 anchors.horizontalCenter: parent.horizontalCenter
                 onClicked: {
-                    specialmessage.visible = false;
+                    specialmessage.opacity = 0;
                     accepted();
                 }
             }

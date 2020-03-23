@@ -141,7 +141,7 @@ Page {
             showMenuOnPressAndHold: isMessageMineOrOther
 
             Component.onCompleted: {
-                if( role_row_index == 0 ) {
+                if( role_row_index >= model.count - 1 ) {
                     context.mattermost.post_channel_view(
                             server_index,
                             team_index,

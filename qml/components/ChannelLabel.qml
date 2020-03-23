@@ -15,6 +15,7 @@ Item {
     property int channelType
     property string directChannelImage
     property int directChannelUserStatus: MattermostQt.UserNoStatus
+    property int _channel_unread: 0 // summary count of unread messages and mention
     property Context context
 
     height: loader.itemHeight
@@ -207,5 +208,24 @@ Item {
                     public_channel
                 }
             }
+    }
+
+    Rectangle {
+        id: unreadLabelRect
+        visible: _channel_unread > 0
+        color: Theme.highlightBackgroundColor
+        width: context.avatarSize * 0.5
+        radius: width * 0.5
+
+        anchors.right: parent.right
+        anchors.verticalCenter: parent.verticalCenter
+        anchors.rightMargin: Settings.pageMargin
+
+        Label {
+            anchors.centerIn: parent
+            color: Theme.highlightColor
+            text: _channel_unread
+            font.pixelSize: Theme.fontSizeSmall
+        }
     }
 }

@@ -163,6 +163,7 @@ MattermostQt::MattermostQt(QObject *parent )
 	m_settings = SettingsContainer::getInstance();
 //	m_settings.reset(new SettingsContainer(this));
 	connect(m_settings, &SettingsContainer::settingsChanged, this, &MattermostQt::slot_settingsChanged);
+	connect(this, &MattermostQt::channelAdded, this, &MattermostQt::slot_channelAdded);
 
 	m_mdParser = new DiscountMDParser();
 
@@ -1065,28 +1066,23 @@ void MattermostQt::post_channel_view(int server_index, int team_index, int chann
 
 void MattermostQt::get_channel_unread(int server_index, int team_index, int channel_type, int channel_index)
 {
-	ServerPtr sc = m_server[server_index];
 	ChannelPtr channel = channelAt(server_index,team_index,channel_type,channel_index);
+	get_channel_unread(channel);
+}
 
-//	if(channel_type == ChannelType::ChannelDirect)
-//	{
-//		channel = sc->m_direct_channels[channel_index];
-//	}
-//	else {
-//		TeamPtr tc = sc->m_teams[team_index];
-//		QVector<ChannelPtr> *channels = nullptr;
-//		if(channel_type == ChannelType::ChannelPublic)
-//			channels = &tc->m_public_channels;
-//		else if(channel_type == ChannelType::ChannelPrivate)
-//			channels = &tc->m_private_channels;
-//		if(!channels)
-//			return;
-//		channel = channels->at(channel_index);
-//	}
-
+void MattermostQt::get_channel_unread(MattermostQt::ChannelPtr channel)
+{
 	if( !channel ) {
 		qCritical() << QStringLiteral("Wrong channels unread requset data") ;
 	}
+
+	ServerPtr sc = m_server[channel->m_server_index];
+
+	if( !sc) {
+		qCritical() << QStringLiteral("Wrong server index in get channels unread request. Bad channel PTR") ;
+	}
+
+	qDebug() << QStringLiteral("Request: Get channel unread for %1 (%2)").arg(channel->m_display_name).arg(channel->m_id);
 
 	QString urlString = QLatin1String("/api/v")
 	        + QString::number(sc->m_api)
@@ -1109,11 +1105,11 @@ void MattermostQt::get_channel_unread(int server_index, int team_index, int chan
 
 	QNetworkReply *reply = m_networkManager->get(request);
 	reply->setProperty(P_REPLY_TYPE, QVariant(ReplyType::rt_get_channel_unread) );
-	reply->setProperty(P_SERVER_INDEX, QVariant(server_index) );
-	reply->setProperty(P_TEAM_INDEX, QVariant(team_index) );
-	reply->setProperty(P_CHANNEL_TYPE, QVariant(channel_type) );
-	reply->setProperty(P_CHANNEL_INDEX, QVariant(channel_index) );
-	reply->setProperty(P_CHANNEL_PTR, QVariant(channel) );
+	reply->setProperty(P_SERVER_INDEX, QVariant(channel->m_server_index) );
+	reply->setProperty(P_TEAM_INDEX, QVariant(channel->m_team_index) );
+	reply->setProperty(P_CHANNEL_TYPE, QVariant(channel->m_type) );
+	reply->setProperty(P_CHANNEL_INDEX, QVariant(channel->m_self_index) );
+	reply->setProperty(P_CHANNEL_PTR, QVariant::fromValue<ChannelPtr>(channel) );
 }
 
 void MattermostQt::get_user_image(int server_index, int user_index)
@@ -2610,19 +2606,9 @@ void MattermostQt::reply_get_public_channels(QNetworkReply *reply)
 	}
 	ServerPtr sc = m_server[server_index];
 	TeamPtr tc;
-//"id": "string",
-//"create_at": 0,
-//"update_at": 0,
-//"delete_at": 0,
-//"display_name": "string",
-//"name": "string",
-//"description": "string",
-//"email": "string",
-//"type": "string",
-//"allowed_domains": "string",
-//"invite_id": "string",
-//"allow_open_invite": true
+
 	QJsonDocument json = QJsonDocument::fromJson(reply->readAll());
+	//qDebug() << json;
 	if(json.isArray())
 	{
 		QJsonArray array = json.array();
@@ -2633,9 +2619,9 @@ void MattermostQt::reply_get_public_channels(QNetworkReply *reply)
 				QJsonObject object = array.at(i).toObject();
 				ChannelPtr ct( new ChannelContainer(object) );
 
-				// TODO not much secure, need test all parameters
+				// TODO not much safe, need test all parameters
 				ct->m_server_index = server_index;
-				qDebug() << QString("channel \"%0\" : %1").arg(ct->m_display_name).arg(ct->m_id);
+				QString channel_type;
 
 				switch( ct->m_type )
 				{
@@ -2646,6 +2632,7 @@ void MattermostQt::reply_get_public_channels(QNetworkReply *reply)
 					tc = sc->m_teams[ct->m_team_index];
 					ct->m_self_index = tc->m_public_channels.size();
 					tc->m_public_channels.append(ct);
+					channel_type = QStringLiteral("public");
 					emit channelAdded(ct);
 					break;
 				// private channels
@@ -2655,6 +2642,7 @@ void MattermostQt::reply_get_public_channels(QNetworkReply *reply)
 					tc = sc->m_teams[ct->m_team_index];
 					ct->m_self_index = tc->m_private_channels.size();
 					tc->m_private_channels.append(ct);
+					channel_type = QStringLiteral("private");
 					emit channelAdded(ct);
 					break;
 				// direct channel
@@ -2682,6 +2670,7 @@ void MattermostQt::reply_get_public_channels(QNetworkReply *reply)
 						ct->m_team_index = -1;
 						ct->m_self_index = m_server[ct->m_server_index]->m_direct_channels.size();
 						m_server[ct->m_server_index]->m_direct_channels.append(ct);
+						channel_type = QStringLiteral("dircet");
 						emit channelAdded(ct);
 						prepare_direct_channel(ct->m_server_index, ct->m_self_index);
 					}
@@ -2689,6 +2678,8 @@ void MattermostQt::reply_get_public_channels(QNetworkReply *reply)
 				default:
 					break;
 				}
+				if(!channel_type.isEmpty())
+					qDebug() << QStringLiteral("Add %0 channel with \"%1\" : %2").arg(channel_type).arg(ct->m_display_name).arg(ct->m_id);
 			}
 		}
 	}
@@ -2774,6 +2765,17 @@ void MattermostQt::reply_post_channel_view(QNetworkReply *reply)
 	{
 		qWarning() << json;
 	}
+	if( channel->m_type != ChannelDirect )
+	{
+		TeamPtr team = teamAt(channel->m_server_index, channel->m_team_index);
+		get_teams_unread(pc);
+//		team->m_unread_messages -= channel->m_msg_unread;
+//		team->m_unread_mentions -= channel->m_mention_count;
+//		emit teamChanged(team, QVectorInt() << TeamsModel::RoleUnreadMentionCount << TeamsModel::RoleUnreadMessageCount );
+	}
+	channel->m_mention_count = 0;
+	channel->m_msg_unread = 0;
+	emit updateChannel(channel, QVectorInt() << ChannelsModel::MentionCount << ChannelsModel::MessageUnread );
 }
 
 void MattermostQt::reply_get_channel_unread(QNetworkReply *reply)
@@ -3015,6 +3017,11 @@ void MattermostQt::reply_error(QNetworkReply *reply)
 			{
 				int server_index  = reply->property(P_SERVER_INDEX).toInt();
 				emit onConnectionError(ConnectionError::SessionExpired, message, server_index);
+			}
+			else if( error_id.compare("api.user.login.invalid_credentials_email_username") == 0 )
+			{
+				int server_index  = reply->property(P_SERVER_INDEX).toInt();
+				emit onConnectionError(ConnectionError::WrongPasswordOrEmail, message, server_index);
 			}
 			else
 				qWarning() << json;
@@ -3500,7 +3507,7 @@ void MattermostQt::reply_post_message_edit(QNetworkReply *reply)
 void MattermostQt::event_posted(ServerPtr sc, QJsonObject data)
 {
 	// confedencial data
-	//qDebug() << data;
+//	qDebug() << data;
 	ChannelType type = ChannelType::ChannelTypeCount;
 	QString ch_type = data["channel_type"].toString();
 	QJsonValue mentionsv = data["mentions"];
@@ -3575,9 +3582,14 @@ void MattermostQt::event_posted(ServerPtr sc, QJsonObject data)
 			new_messages << message;
 			emit messageAdded(new_messages); // add messages to model
 			// chek if messed sended from another user, then
-			if( message->m_type != MessageMine )
+			if( message->m_type != MessageMine ) {
 			// that for notifications
 				emit newMessage(message);
+				channel->m_msg_unread++;
+//				if( mentionsv.isArray() )
+//					qDebug() << mentionsv;
+				emit updateChannel(channel, QVector<int>()<< ChannelsModel::MessageUnread  );
+			}
 		}
 	}
 	else
@@ -3680,11 +3692,27 @@ void MattermostQt::event_posted(ServerPtr sc, QJsonObject data)
 				emit newMessage(message);
 				// add unread msg count to team
 //				 = m_server[channel->m_server_index]->m_teams[team_index];
+				if( mentionsv.isArray() )
+				{
+					QJsonDocument d = QJsonDocument::fromJson(mentionsv.toString().toUtf8());
+					QJsonArray mentions = d.array();
+					for(int m = 0; m < mentions.size(); m++ ) {
+						if( !mentions[m].isString() )
+							continue;
+						if( mentions[m].toString() == m_server[team->m_server_index]->m_user_id ) {
+							channel->m_mention_count++;
+							break;
+						}
+					}
+				}
+				channel->m_msg_unread++;
+				emit updateChannel(channel, QVector<int>() << ChannelsModel::MessageUnread << ChannelsModel::MentionCount );
 			}
 		}
 	}
 	if(message->m_channel_index == -1 )
-	{// Need some structure for unnatached messages (when it need)
+	{//TODO Channel not found, need load channel info from server
+	// Need some structure for unnatached messages (when it need)
 	//maybe need use only channels list in ServerPtr,
 	//and download TeamPtr and teamslist after it needed by user
 //		UMessagePtr umessage(new UnattachedMessageContainer);
@@ -3821,7 +3849,67 @@ void MattermostQt::event_typing(MattermostQt::ServerPtr sc, QJsonObject data)
 	//current->m_status = status;
 	// QVectorInt roles;
 	//roles << UserStatusRole;
-	//emit userUpdated(current, roles);
+		//emit userUpdated(current, roles);
+}
+
+void MattermostQt::event_channel_viewed(MattermostQt::ServerPtr sc, QJsonObject data)
+{
+	/*\"data\": {
+	 * \"channel_id\":\"dmtkwe7atfbytq3pwm3uikgwmw\"
+	 * },
+	 * \"broadcast\": {
+	 *   \"omit_users\":null,
+	 *   \"user_id\":\"gqr15ebytjg7znhh4boz74foxy\",
+	 *   \"channel_id\":\"\",
+	 *   \"team_id\":\"\"
+	 * }
+	*/
+	QString channel_id = data["channel_id"].toString();
+	ChannelPtr channel;
+	// TODO add qHash for all channels in session/server
+
+	for( int i = 0 ; i < sc->m_direct_channels.size(); i++ )
+		if( sc->m_direct_channels[i]->m_id == channel_id )
+		{
+			channel = sc->m_direct_channels[i];
+			break;
+		}
+
+	if( channel.isNull() )
+	for( int t = 0; t < sc->m_teams.size(); t++ )
+	{
+		TeamPtr team = sc->m_teams[t];
+		// Public channels
+		for( int i = 0 ; i < team->m_public_channels.size(); i++ )
+			if( team->m_public_channels[i]->m_id == channel_id )
+			{
+				channel = team->m_public_channels[i];
+				break;
+			}
+
+		if(!channel.isNull())
+			break;
+		// Private channels
+		for( int i = 0 ; i < team->m_private_channels.size(); i++ )
+			if( team->m_public_channels[i]->m_id == channel_id )
+			{
+				channel = team->m_public_channels[i];
+				break;
+			}
+
+		if(!channel.isNull())
+			break;
+	}
+
+	if(channel.isNull())
+	{
+		qCritical() << QStringLiteral("Channel not loaded to app, need request data from server.");
+	}
+
+	channel->m_mention_count = 0;
+	channel->m_msg_unread = 0;
+	get_teams_unread(sc);// TODO should be more effective way
+	emit updateChannel(channel, QVectorInt() << ChannelsModel::MessageUnread << ChannelsModel::MentionCount );
 }
 
 MattermostQt::UserStatus MattermostQt::str2status(const QString &s) const
@@ -4016,6 +4104,7 @@ void MattermostQt::replyFinished(QNetworkReply *reply)
 			if( reply_type >= 0 && reply_type < ReplyTypeCount && m_reply_func[reply_type] != nullptr )
 			{
 				(this->*m_reply_func[reply_type])(reply);
+				emit requestFinished((ReplyType)reply_type);
 			}
 			else
 			{
@@ -4441,7 +4530,7 @@ void MattermostQt::onWebSocketTextMessageReceived(const QString &message)
 	else _compare(typing)
 	    event_typing(sc,object);
 	else
-	    qWarning() << message;
+	    qWarning() << QStringLiteral("Unhandled event(%0) : %1").arg(event).arg(message);
 /** that need release first */
 //response
 //channel_created
@@ -4596,6 +4685,11 @@ void MattermostQt::slot_settingsChanged()
 	save_settings();
 }
 
+void MattermostQt::slot_channelAdded(ChannelPtr channel)
+{
+	get_channel_unread(channel);
+}
+
 MattermostQt::TeamContainer::TeamContainer(QJsonObject &object) noexcept
 {
 	m_id = object["id"].toString();
@@ -4708,6 +4802,20 @@ bool MattermostQt::TeamContainer::load_json(QString server_dir_path)
 
 MattermostQt::ChannelContainer::ChannelContainer(QJsonObject &object) noexcept
 {
+//"id": "string",
+//"create_at": 0,
+//"update_at": 0,
+//"delete_at": 0,
+//"team_id": "string",
+//"type": "string",
+//"display_name": "string",
+//"name": "string",
+//"header": "string",
+//"purpose": "string",
+//"last_post_at": 0,
+//"total_msg_count": 0,
+//"extra_update_at": 0,
+//"creator_id": "string"
 	m_id = object["id"].toString();
 //"create_at": 0,
 	m_update_at = (qlonglong)object["update_at"].toDouble();
@@ -4729,6 +4837,8 @@ MattermostQt::ChannelContainer::ChannelContainer(QJsonObject &object) noexcept
 	m_extra_update_at = (qlonglong)object["extra_update_at"].toDouble();
 	m_creator_id = object["creator_id"].toString();
 	m_dc_user_index = -1;
+	m_msg_unread = 0;
+	m_mention_count = 0;
 }
 
 bool MattermostQt::ChannelContainer::save_json(QString server_dir_path) const
@@ -4881,8 +4991,7 @@ MattermostQt::MessageContainer::MessageContainer(QJsonObject object)
 			QJsonObject metadata =v.toObject();
 			if( !metadata.keys().isEmpty() )
 			{
-				qDebug() << "Message" << m_id << "has metadfta:";
-				qDebug() << metadata.keys();
+				qDebug() << "Message" << m_id << "has metadata:" << metadata.keys();
 			}
 		}
 		else {

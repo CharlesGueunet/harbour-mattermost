@@ -53,14 +53,16 @@ public:
 		//======================
 		ReplyTypeCount
 	};
+	Q_ENUM(ReplyType)
 
 	enum ConnectionError {
 		WrongPassword,
 		SslError,
 		SessionExpired,
+		WrongPasswordOrEmail,
 		UnknownError
 	};
-	Q_ENUMS(ConnectionError)
+	Q_ENUM(ConnectionError)
 
 	enum FileType {
 		FileUnknown,
@@ -68,7 +70,7 @@ public:
 		FileImage,
 		FileAnimatedImage,
 	};
-	Q_ENUMS(FileType)
+	Q_ENUM(FileType)
 
 	enum FileStatus {
 		FileDownloaded,
@@ -77,7 +79,7 @@ public:
 		FileUninitialized,
 		FileRequested,
 	};
-	Q_ENUMS(FileStatus)
+	Q_ENUM(FileStatus)
 
 	enum ChannelType : int {
 		ChannelPublic,   // "O"
@@ -85,7 +87,7 @@ public:
 		ChannelDirect,  // "D"
 		ChannelTypeCount
 	};
-	Q_ENUMS(ChannelType)
+	Q_ENUM(ChannelType)
 
 	enum MessageOwner {
 		MessageSystem,// system message
@@ -94,7 +96,7 @@ public:
 		MessageDate,  // date of messages group
 		MessageTypeCount
 	};
-	Q_ENUMS(MessageOwner)
+	Q_ENUM(MessageOwner)
 
 	enum ServerState : int {
 		ServerConnected = QAbstractSocket::ConnectedState,
@@ -111,7 +113,7 @@ public:
 		UserOffline,
 		UserDnd
 	};
-	Q_ENUMS(UserStatus)
+	Q_ENUM(UserStatus)
 
 	enum UserDataRole {
 		UserStatusRole = Qt::UserRole + 100,
@@ -119,7 +121,7 @@ public:
 		UserNameRole,
 		UserLastActivityRole
 	};
-	Q_ENUMS(UserDataRole)
+	Q_ENUM(UserDataRole)
 
 	/**
 	 * @brief The UserSystemRole enum
@@ -130,7 +132,7 @@ public:
 		SystemAdmin,
 		UserSystemRolesCount
 	};
-	Q_ENUMS(UserSystemRole)
+	Q_ENUM(UserSystemRole)
 
 	/**
 	 * @brief The FileContainer struct
@@ -315,6 +317,7 @@ public:
 			m_self_index = -1;
 			m_update_at = 0;
 			m_dc_user_index = -1;
+			m_total_msg_count = 0;
 		}
 
 		ChannelContainer(QJsonObject &object) noexcept ;
@@ -507,6 +510,7 @@ public:
 
 	Q_INVOKABLE void post_channel_view(int server_index, int team_index,
 	                                     int channel_type, int channel_index);
+	void get_channel_unread(ChannelPtr channel);
 	Q_INVOKABLE void get_channel_unread(int server_index, int team_index,
 	                                    int channel_type, int channel_index);
 	Q_INVOKABLE void get_user_image(int server_index, int user_index);
@@ -649,6 +653,13 @@ Q_SIGNALS:
 	 * when settings are changed
 	 */
 	void settingsChanged();
+
+	/**
+	 * @brief requestFinished
+	 * shoud call on every reply fucntion
+	 * @param request - type of request
+	 */
+	void requestFinished(ReplyType request);
 protected:
 	/**
 	 * @brief prepare_direct_channel
@@ -712,6 +723,7 @@ protected:
 	void event_post_deleted(ServerPtr sc, QJsonObject data);
 	void event_status_change(ServerPtr sc, QJsonObject data);
 	void event_typing(ServerPtr sc, QJsonObject data);
+	void event_channel_viewed(ServerPtr sc, QJsonObject data);
 
 	// helper functions
 	inline UserStatus str2status(const QString &s) const;
@@ -739,6 +751,7 @@ protected Q_SLOTS:
 	void slot_ping_timeout();
 	/** */
 	void slot_settingsChanged();
+	void slot_channelAdded(ChannelPtr channel);
 protected:
 	QVector<ServerPtr>    m_server;
 	QSharedPointer<QNetworkAccessManager>  m_networkManager;

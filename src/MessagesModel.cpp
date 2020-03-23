@@ -465,7 +465,7 @@ void MessagesModel::slot_messagesAdded(MattermostQt::ChannelPtr channel)
 //		endResetModel();
 //	}
 
-	if( m_channel )
+	if( !m_channel )
 		m_channel = channel;
 	else if ( m_channel != channel) {
 		return;
@@ -490,8 +490,18 @@ void MessagesModel::slot_messagesIsEnd(MattermostQt::ChannelPtr channel)
 
 void MessagesModel::slot_messageAdded(QList<MattermostQt::MessagePtr> messages)
 {
-	if(messages.isEmpty() || m_channel.isNull() )
+	if(messages.isEmpty() )
 		return;
+
+	if(m_channel.isNull())
+	{
+		MattermostQt::MessagePtr m = messages.first();
+		m_channel =
+		        m_mattermost->channelAt(m->m_server_index, m->m_team_index, m->m_channel_type, m->m_channel_index);
+		if( m_channel.isNull() ) {
+			qCritical() << QStringLiteral("Cant find channel ptr");
+		}
+	}
 	if(messages.begin()->data()->m_channel_id.compare(m_channel->m_id) != 0)
 		return;
 	// remeber: we has iverted messages order outside the model ;) that mean?
