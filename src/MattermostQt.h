@@ -55,6 +55,19 @@ public:
 	};
 	Q_ENUM(ReplyType)
 
+	enum EventType : int {
+		et_noevent = 0,
+		et_posted,
+		et_post_edited,
+		et_post_deleted,
+		et_status_change,
+		et_typing,
+		et_channel_viewed,
+		//=======================
+		EventTypeCount
+	};
+	Q_ENUM(EventType)
+
 	enum ConnectionError {
 		WrongPassword,
 		SslError,
@@ -301,6 +314,7 @@ public:
 		qlonglong m_last_activity_at;
 		//"failed_attempts": 0,
 		//"mfa_active": true
+		bool      m_typing = false;
 
 		int m_self_index;
 		UserStatus  m_status;
@@ -344,6 +358,7 @@ public:
 		int     m_self_index;   /**< self index in vector */
 		int     m_msg_unread;   /**< count of unread messages **/
 		int     m_mention_count;/**< count of mention in channel **/
+		QList<UserPtr> m_user_typing;  /**< when we have event user_typing */
 
 		// direct channel data
 		int m_dc_user_index; /**< if it direct channel, is index*/
@@ -450,15 +465,19 @@ public:
 		QList<FilePtr>              m_sended_files; /**<  */
 		QList<MessagePtr>           m_nouser_messages;/**< messages without user */
 		bool                        m_enabled; /**< is server is enabled */
+		QHash<QString,ChannelPtr>   m_channels_hash; /**< yfshed list of channels*/
 
 		QTimer                      m_ping_timer;
 		QVector<QString>            m_requested_users; /** requested users id's */
 	};
 	typedef QSharedPointer<ServerContainer> ServerPtr;
 
+	typedef void (MattermostQt::*event_func)(ServerPtr sc, QJsonObject data);
+	void (MattermostQt::*m_event_func[EventTypeCount])(ServerPtr sc, QJsonObject data);
 	typedef void (MattermostQt::*reply_func)(QNetworkReply* reply);
 	void (MattermostQt::*m_reply_func[ReplyTypeCount])(QNetworkReply* reply);
 	void init_reply_functions();
+	void init_event_functions();
 public:
 	MattermostQt(QObject *parent = nullptr);
 
@@ -718,16 +737,17 @@ protected:
 	// failed replies
 	void failed_get_file_info(QNetworkReply *reply);
 	// events
-	void event_posted(ServerPtr sc, QJsonObject data);
+	void event_posted(ServerPtr sc, QJsonObject object);
 	void event_post_edited(ServerPtr sc, QJsonObject object);
-	void event_post_deleted(ServerPtr sc, QJsonObject data);
-	void event_status_change(ServerPtr sc, QJsonObject data);
-	void event_typing(ServerPtr sc, QJsonObject data);
-	void event_channel_viewed(ServerPtr sc, QJsonObject data);
+	void event_post_deleted(ServerPtr sc, QJsonObject object);
+	void event_status_change(ServerPtr sc, QJsonObject object);
+	void event_typing(ServerPtr sc, QJsonObject object);
+	void event_channel_viewed(ServerPtr sc, QJsonObject object);
 
 	// helper functions
 	inline UserStatus str2status(const QString &s) const;
 	inline UserPtr    id2user(ServerPtr sc, const QString &id) const;
+	inline ChannelPtr id2channel(ServerPtr sc, const QString &id) const;
 //	void  message_format(MessagePtr message);
 protected Q_SLOTS:
 	void replyFinished(QNetworkReply *reply);

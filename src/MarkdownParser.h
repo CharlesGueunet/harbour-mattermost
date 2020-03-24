@@ -2,7 +2,7 @@
 #define MARKDOWNPARSER_H
 
 #include <QString>
-
+// Interface class for Markdown parser implementation
 class MarkdownParser
 {
 public:

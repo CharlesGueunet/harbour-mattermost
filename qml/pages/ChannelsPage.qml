@@ -107,6 +107,7 @@ Page {
                 _index: m_index
                 _type: m_type
                 _channel_unread: role_mention_count + role_msg_unread
+                _users_typing: role_users_typing
                 channelType: channel_type
                 directChannelImage: avatar_path
                 directChannelUserStatus: user_status

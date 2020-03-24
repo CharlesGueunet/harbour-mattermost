@@ -1,4 +1,4 @@
-#include "MattermostQt.h"
+//#include "MattermostQt.h"
 
 #include <QNetworkRequest>
 #include <QNetworkReply>
@@ -89,6 +89,7 @@ Q_DECLARE_METATYPE(MattermostQt::MessagePtr)
 	}
 
 #define BIND_REPLY_FUNCTION(name) m_reply_func[ReplyType:: CONCAT2(rt_,name) ] = &MattermostQt:: CONCAT2(reply_, name)
+#define BIND_EVENT_FUNCTION(name) m_event_func[EventType:: CONCAT2(et_,name) ] = &MattermostQt:: CONCAT2(event_, name)
 
 void MattermostQt::init_reply_functions()
 {
@@ -118,12 +119,42 @@ void MattermostQt::init_reply_functions()
 	BIND_REPLY_FUNCTION(get_channel_unread);
 }
 
+void MattermostQt::init_event_functions()
+{
+//	staticMetaObject.indexOfEnumerator("ReplyType");
+	for(int et = 0; et < EventTypeCount; et++ )
+	{
+//		const QMetaObject *mo = qt_getEnumMetaObject( (EventType)et );
+//		const char *name = qt_getEnumName( (EventType)et );
+//		int enumIdx = mo->indexOfEnumerator(name);
+//		qDebug() << QStringLiteral("ET: %0 with Idx( %1 ) and i( %2 );").arg(name).arg(enumIdx).arg(et);
+		QVariant e = QVariant::fromValue<EventType>((EventType)et);
+		//qDebug() << QStringLiteral("EventType: ") << (EventType)et << qt_getEnumName( (EventType)et );;
+		qDebug() << QStringLiteral("From QVariant: %0").arg(e.toString());
+//		QVariant e2 = QVariant( e.toString() );
+//		qDebug() << QStringLiteral("From string to Variant int: [%0] %1").arg((int)e2.value<EventType>()).arg(e2.toString());
+	}
+//	int enumIdx = mo->indexOfEnumerator(qt_getEnumName(enumValue));
+//	return dbg << mo->enumerator(enumIdx).valueToKey(enumValue);
+
+	memset( m_event_func, NULL, sizeof(void*)*EventTypeCount );
+
+//	BIND_EVENT_FUNCTION(name);
+	BIND_EVENT_FUNCTION(posted);
+	BIND_EVENT_FUNCTION(post_edited);
+	BIND_EVENT_FUNCTION(post_deleted);
+	BIND_EVENT_FUNCTION(status_change);
+	BIND_EVENT_FUNCTION(typing);
+	BIND_EVENT_FUNCTION(channel_viewed);
+}
+
 MattermostQt::MattermostQt(QObject *parent )
     : QObject(parent)
     , m_mdParser(nullptr)
     , m_settings(nullptr)
 {
 	init_reply_functions();
+	init_event_functions();
 	m_networkManager.reset(new QNetworkAccessManager());
 
 	m_update_server_timeout = 5000; // in millisecs
@@ -2474,7 +2505,7 @@ void MattermostQt::reply_get_posts_before(QNetworkReply *reply)
 	ChannelPtr channel = channelAt(server_index,team_index,channel_type,channel_index);
 	if(!channel)
 	{
-		qWarning() << "Chanel not found!";
+		qWarning() << QStringLiteral("Chanel not found!");
 		return;
 	}
 	ServerPtr sc = m_server[server_index];
@@ -3504,10 +3535,11 @@ void MattermostQt::reply_post_message_edit(QNetworkReply *reply)
 	qDebug() << reply->readAll();
 }
 
-void MattermostQt::event_posted(ServerPtr sc, QJsonObject data)
+void MattermostQt::event_posted(ServerPtr sc, QJsonObject object)
 {
 	// confedencial data
 //	qDebug() << data;
+	QJsonObject data  = object["data"].toObject();
 	ChannelType type = ChannelType::ChannelTypeCount;
 	QString ch_type = data["channel_type"].toString();
 	QJsonValue mentionsv = data["mentions"];
@@ -3735,7 +3767,7 @@ void MattermostQt::event_posted(ServerPtr sc, QJsonObject data)
 void MattermostQt::event_post_edited(MattermostQt::ServerPtr sc, QJsonObject object)
 {
 	QJsonObject data = object["data"].toObject();
-	QJsonObject broadcast = object["broadcast"].toObject();
+//	QJsonObject broadcast = object["broadcast"].toObject();
 //	int team_index = -1;
 	ChannelPtr channel;
 
@@ -3818,12 +3850,13 @@ void MattermostQt::event_post_edited(MattermostQt::ServerPtr sc, QJsonObject obj
 	}
 }
 
-void MattermostQt::event_status_change(MattermostQt::ServerPtr sc, QJsonObject data)
+void MattermostQt::event_status_change(MattermostQt::ServerPtr sc, QJsonObject object)
 {
 	//qDebug() << data;
 	//{"status":"online","user_id":"gqr15ebytjg7znhh4boz74foxy"}
+	QJsonObject data  = object["data"].toObject();
 	UserStatus status = str2status(data["status"].toString());
-	UserPtr current = id2user(sc,data["user_id"].toString());
+	UserPtr current   = id2user(sc,data["user_id"].toString());
 	if(!current)
 	{// TODO try to send request for user (if it not found)
 		// and mark this request (that requested from here)
@@ -3835,24 +3868,58 @@ void MattermostQt::event_status_change(MattermostQt::ServerPtr sc, QJsonObject d
 	emit userUpdated(current, roles);
 }
 
-void MattermostQt::event_typing(MattermostQt::ServerPtr sc, QJsonObject data)
+void MattermostQt::event_typing(MattermostQt::ServerPtr sc, QJsonObject object)
 {
-	qDebug() << data;
-	//{"status":"online","user_id":"gqr15ebytjg7znhh4boz74foxy"}
-	//UserStatus status = str2status(data["status"].toString());
-	//UserPtr current = id2user(sc,data["user_id"].toString());
-	//if(!current)
-	//{// TODO try to send request for user (if it not found)
-	    // and mark this request (that requested from here)
-	    return; // FIXME
-	//}
-	//current->m_status = status;
-	// QVectorInt roles;
-	//roles << UserStatusRole;
-		//emit userUpdated(current, roles);
+	/* {
+	 *   "broadcast": {
+	 *      "channel_id":"some_channel_id",
+	 *      "omit_users":{
+	 *        "some user id":true
+	 *      },
+	 *      "team_id":"",
+	 *      "user_id":""
+	 *   },"
+	 *   "data":{
+	 *      "parent_id":"",
+	 *      "user_id":"some user id"
+	 *   },
+	 *   "event":"typing",
+	 *   "seq":2
+	 * }*/
+	QJsonObject data  = object["data"].toObject();
+	QJsonObject broadcast = object["broadcast"].toObject();
+	qDebug() << object;
+	QString channel_id = broadcast["channel_id"].toString();
+	QString usr_id = data["user_id"].toString();
+	ChannelPtr channel = id2channel(sc, channel_id);
+	UserPtr user = id2user(sc, usr_id);
+	if( channel.isNull() )
+	{
+		qWarning() << QStringLiteral("Cant find channel id=\"%0\", need requset it from server.").arg(channel_id);
+		return;
+	}
+
+	if( user.isNull() )
+	{
+		qWarning() << QStringLiteral("User id(%0) stil not fetched from server.").arg(usr_id);
+		return;
+	}
+	user->m_typing = true;
+//	emit
+	channel->m_user_typing.push_back(user);
+	emit updateChannel(channel, QVectorInt() << ChannelsModel::RoleUsersTyping );
+
+	QTimer::singleShot(5000, this, [this, channel, user]() {
+		int index  = channel->m_user_typing.indexOf(user);
+		if( index != -1 ) {
+			user->m_typing = false;
+			channel->m_user_typing.removeAt( index );
+			emit updateChannel(channel, QVectorInt() << ChannelsModel::RoleUsersTyping );
+		}
+	});
 }
 
-void MattermostQt::event_channel_viewed(MattermostQt::ServerPtr sc, QJsonObject data)
+void MattermostQt::event_channel_viewed(MattermostQt::ServerPtr sc, QJsonObject object)
 {
 	/*\"data\": {
 	 * \"channel_id\":\"dmtkwe7atfbytq3pwm3uikgwmw\"
@@ -3864,42 +3931,10 @@ void MattermostQt::event_channel_viewed(MattermostQt::ServerPtr sc, QJsonObject 
 	 *   \"team_id\":\"\"
 	 * }
 	*/
+	QJsonObject data  = object["data"].toObject();
 	QString channel_id = data["channel_id"].toString();
-	ChannelPtr channel;
-	// TODO add qHash for all channels in session/server
 
-	for( int i = 0 ; i < sc->m_direct_channels.size(); i++ )
-		if( sc->m_direct_channels[i]->m_id == channel_id )
-		{
-			channel = sc->m_direct_channels[i];
-			break;
-		}
-
-	if( channel.isNull() )
-	for( int t = 0; t < sc->m_teams.size(); t++ )
-	{
-		TeamPtr team = sc->m_teams[t];
-		// Public channels
-		for( int i = 0 ; i < team->m_public_channels.size(); i++ )
-			if( team->m_public_channels[i]->m_id == channel_id )
-			{
-				channel = team->m_public_channels[i];
-				break;
-			}
-
-		if(!channel.isNull())
-			break;
-		// Private channels
-		for( int i = 0 ; i < team->m_private_channels.size(); i++ )
-			if( team->m_public_channels[i]->m_id == channel_id )
-			{
-				channel = team->m_public_channels[i];
-				break;
-			}
-
-		if(!channel.isNull())
-			break;
-	}
+	ChannelPtr channel = id2channel(sc, channel_id);
 
 	if(channel.isNull())
 	{
@@ -3934,6 +3969,50 @@ MattermostQt::UserPtr MattermostQt::id2user(ServerPtr sc, const QString &id) con
 			return sc->m_user[i];
 	}
 	return UserPtr();
+}
+
+MattermostQt::ChannelPtr MattermostQt::id2channel(MattermostQt::ServerPtr sc, const QString &channel_id) const
+{
+	ChannelPtr channel;
+	// use qHash
+	auto it = sc->m_channels_hash.find(channel_id);
+	if( it != sc->m_channels_hash.end() ) {
+		return it.value();
+	}
+
+	// if something went wrong, try find it with many cycles
+	for( int i = 0 ; i < sc->m_direct_channels.size(); i++ )
+		if( sc->m_direct_channels[i]->m_id == channel_id )
+		{
+			channel = sc->m_direct_channels[i];
+			break;
+		}
+
+	if( channel.isNull() )
+	for( int t = 0; t < sc->m_teams.size(); t++ )
+	{
+		TeamPtr team = sc->m_teams[t];
+		// Public channels
+		for( int i = 0 ; i < team->m_public_channels.size(); i++ )
+			if( team->m_public_channels[i]->m_id == channel_id )
+			{
+				channel = team->m_public_channels[i];
+				break;
+			}
+		if(!channel.isNull())
+			break;
+
+		// Private channels
+		for( int i = 0 ; i < team->m_private_channels.size(); i++ )
+			if( team->m_public_channels[i]->m_id == channel_id )
+			{
+				channel = team->m_public_channels[i];
+				break;
+			}
+		if(!channel.isNull())
+			break;
+	}
+	return channel;
 }
 
 void MattermostQt::event_post_deleted(MattermostQt::ServerPtr sc, QJsonObject data)
@@ -4508,7 +4587,7 @@ void MattermostQt::onWebSocketTextMessageReceived(const QString &message)
 	QJsonDocument json = QJsonDocument::fromJson(message.toUtf8());
 	QJsonObject object = json.object();
 	QString event = object["event"].toString();
-	QJsonObject data = object["data"].toObject();
+//	QJsonObject data = object["data"].toObject();
 	QJsonObject broadcast = object["broadcast"].toObject();
 
 	_compare(hello) // that mean we are logged in
@@ -4519,50 +4598,75 @@ void MattermostQt::onWebSocketTextMessageReceived(const QString &message)
 		m_user_status_timer.start();
 		emit serverConnected(sc->m_self_index);
 	}
-	else _compare(posted)
-	    event_posted(sc,data);
-	else _compare(post_edited)
-	    event_post_edited(sc,object);
-	else _compare(post_deleted)
-	    event_post_deleted(sc,data);
-	else _compare(status_change)
-	    event_status_change(sc,data);
-	else _compare(typing)
-	    event_typing(sc,object);
-	else
-	    qWarning() << QStringLiteral("Unhandled event(%0) : %1").arg(event).arg(message);
-/** that need release first */
-//response
-//channel_created
-//channel_deleted
-//channel_updated
-//direct_added
-//group_added
+	else if (!event.isEmpty() )
+	{
+		bool skip_event = false;
+		if( !broadcast.isEmpty() ) {
+			QJsonObject omit_users = broadcast["omit_users"].toObject();
+			if( !omit_users.isEmpty() ) {
+				QStringList ids = omit_users.keys();
+				auto it = omit_users.constBegin(), end = omit_users.constEnd();
+				for(/*auto it = ids.constBegin(), end = ids.constEnd()*/; it != end; it++ )
+				{
+					//QJsonObject current = *it;
+					if( it.key() == sc->m_user_id ) {
+						if( (*it).toBool(false) ) {
+							skip_event = true;
+							break;
+						}
+					}
+				}
+			}
+		}
+		if ( !skip_event )
+		{
+			QVariant variant(QStringLiteral("et_") + event);
+			int event_num = variant.value<EventType>();
+			if ( event_num > 0 && event_num < EventTypeCount && m_event_func[event_num] != 0 )
+			{
+				(this->*m_event_func[event_num])(sc, object);
+			}
+			else {
+				qWarning() << QStringLiteral("Unhandled event(%0) : %1").arg(event).arg(message);
+			}
+		}
+	}
+	else {
+		qWarning() << QStringLiteral("Unhandled web socket text message: %0").arg(message);
+	}
 
-//leave_team
-//update_team
-//delete_team
-//reaction_added
-//reaction_removed
-//emoji_added
+	/** that need release first */
+	//response
+	//channel_created
+	//channel_deleted
+	//channel_updated
+	//direct_added
+	//group_added
 
-//ephemeral_message
-//events
-//channel_viewed
-//added_to_team
-//new_user
-//user_added
-//user_updated
-//user_role_updated
-//memberrole_updated
-//user_removed
-//preference_changed
-//preferences_changed
-//preferences_deleted
-//webrtc
-//authentication_challenge
-//license_changed
-		//config_changed
+	//leave_team
+	//update_team
+	//delete_team
+	//reaction_added
+	//reaction_removed
+	//emoji_added
+
+	//ephemeral_message
+	//events
+	//channel_viewed
+	//added_to_team
+	//new_user
+	//user_added
+	//user_updated
+	//user_role_updated
+	//memberrole_updated
+	//user_removed
+	//preference_changed
+	//preferences_changed
+	//preferences_deleted
+	//webrtc
+	//authentication_challenge
+	//license_changed
+	//config_changed
 }
 
 void MattermostQt::onWebSocketPong(quint64 elapsedTime, QByteArray payload)
@@ -4687,6 +4791,8 @@ void MattermostQt::slot_settingsChanged()
 
 void MattermostQt::slot_channelAdded(ChannelPtr channel)
 {
+	ServerPtr server = m_server[channel->m_server_index];
+	server->m_channels_hash.insert(channel->m_id,channel);
 	get_channel_unread(channel);
 }
 

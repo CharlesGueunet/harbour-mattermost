@@ -16,6 +16,7 @@ Item {
     property string directChannelImage
     property int directChannelUserStatus: MattermostQt.UserNoStatus
     property int _channel_unread: 0 // summary count of unread messages and mention
+    property int _users_typing: 0
     property Context context
 
     height: loader.itemHeight
@@ -208,6 +209,30 @@ Item {
                     public_channel
                 }
             }
+    }
+
+    Label {
+        id: usersTyping
+        visible: opacity > 0
+        opacity: 0
+
+        anchors {
+            bottom: parent.bottom
+            horizontalCenter: parent.horizontalCenter
+        }
+
+        Behavior on opacity {
+            NumberAnimation { duration: 200 }
+        }
+        font.pixelSize: Theme.fontSizeTiny
+        text: "Typing:" + _users_typing
+    }
+
+    on_Users_typingChanged: {
+        if( _users_typing > 0 )
+            usersTyping.opacity = 1
+        else
+            usersTyping.opacity = 0
     }
 
     Rectangle {

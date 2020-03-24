@@ -125,19 +125,23 @@ QVariant ChannelsModel::data(const QModelIndex &index, int role) const
 		}
 		break;
 	case MessageUnread :
-	    {
-		    if(channel.isNull())
+		{
+			if(channel.isNull())
 				return QVariant(0);
 			return channel->m_msg_unread;
-	    }
+		}
 		break;
 	case MentionCount :
-	    {
-		    if(channel.isNull())
+		{
+			if(channel.isNull())
 				return QVariant(0);
 			return channel->m_mention_count;
-	    }
+		}
 		break;
+	case RoleUsersTyping: // count of users
+		if ( channel.isNull() )
+			return QVariant(0);
+		return channel->m_user_typing.size();
 	}
 	return QVariant();
 }
@@ -181,19 +185,20 @@ QHash<int, QByteArray> ChannelsModel::roleNames() const
 {
 	// thx to @Kaffeine for that optimization (static const)
 	static const QHash<int, QByteArray> names = {
-	{ DataRoles::DisplayName,   "m_display_name" },
-	{ DataRoles::Purpose,       "m_purpose" },
-	{ DataRoles::Header,        "m_header" },
-	{ DataRoles::Email,         "m_email" },
-	{ DataRoles::Index,         "m_index" },
-	{ DataRoles::Type,          "m_type" },
-	{ DataRoles::ServerIndex,   "server_index" },
-	{ DataRoles::TeamIndex,     "team_index" },
-	{ DataRoles::ChannelType,   "channel_type" },
-	{ DataRoles::AvatarPath,    "avatar_path" },
-	{ DataRoles::UserStatus,    "user_status" },
-	{ DataRoles::MessageUnread, "role_msg_unread" },
-	{ DataRoles::MentionCount,  "role_mention_count" }};
+	{ DataRoles::DisplayName,     "m_display_name" },
+	{ DataRoles::Purpose,         "m_purpose" },
+	{ DataRoles::Header,          "m_header" },
+	{ DataRoles::Email,           "m_email" },
+	{ DataRoles::Index,           "m_index" },
+	{ DataRoles::Type,            "m_type" },
+	{ DataRoles::ServerIndex,     "server_index" },
+	{ DataRoles::TeamIndex,       "team_index" },
+	{ DataRoles::ChannelType,     "channel_type" },
+	{ DataRoles::AvatarPath,      "avatar_path" },
+	{ DataRoles::UserStatus,      "user_status" },
+	{ DataRoles::MessageUnread,   "role_msg_unread" },
+	{ DataRoles::MentionCount,    "role_mention_count" },
+	{ DataRoles::RoleUsersTyping, "role_users_typing" }};
 	return names;
 }
 
@@ -293,7 +298,8 @@ void ChannelsModel::slot_channelsList(QList<MattermostQt::ChannelPtr> list)
 
 void ChannelsModel::slot_updateChannel(MattermostQt::ChannelPtr channel,  QVectorInt roles)
 {
-	int headerIndex, endIndex;
+	int headerIndex = 0;
+	int endIndex = m_channel.size();
 
 	switch( channel->m_type )
 	{
@@ -307,13 +313,20 @@ void ChannelsModel::slot_updateChannel(MattermostQt::ChannelPtr channel,  QVecto
 		break;
 	case MattermostQt::ChannelDirect:
 		headerIndex = m_header_index[ItemType::HeaderDirect] + 1;
-		endIndex = m_header.size();
+		endIndex = m_channel.size();
 		break;
 //	case MattermostQt::ChannelTypeCount:
 	default:
 		headerIndex = m_header_index[ItemType::HeaderDirect] + 1;
-		endIndex = m_header.size();
+		endIndex = m_channel.size();
 		break;
+	}
+	//Q_ASSERT( endIndex < 0 || endIndex > m_channel.size() );
+	if( endIndex < 0 || endIndex > m_channel.size() ) {
+		qCritical() << QStringLiteral("Somethig went worng! Reset whole model");
+		beginResetModel();
+		endResetModel();
+		return;
 	}
 	for(int i = headerIndex; i < endIndex; i++)
 	{

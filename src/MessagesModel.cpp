@@ -308,6 +308,13 @@ QString MessagesModel::getChannelId() const
 	return m_channel_id;
 }
 
+int MessagesModel::messageCount() const
+{
+	if(m_channel)
+		return m_channel->m_message.size();
+	return 0;
+}
+
 int MessagesModel::getFileType(int row,int i) const
 {
 	if(!m_channel || row < 0 || i < 0 || row >= m_channel->m_message.size() || i >= m_channel->m_message[row]->m_file.size() )
@@ -478,6 +485,7 @@ void MessagesModel::slot_messagesAdded(MattermostQt::ChannelPtr channel)
 
 	emit messagesInitialized();
 	emit atEndChanged();
+	emit messageCountChanged();
 }
 
 void MessagesModel::slot_messagesIsEnd(MattermostQt::ChannelPtr channel)
@@ -516,6 +524,7 @@ void MessagesModel::slot_messageAdded(QList<MattermostQt::MessagePtr> messages)
 //	m_channel->m_message.swap(m_channel->m_message);
 	endInsertRows();
 	emit newMessage();
+	emit messageCountChanged();
 }
 
 void MessagesModel::slot_messageUpdated(QList<MattermostQt::MessagePtr> messages)
@@ -572,6 +581,7 @@ void MessagesModel::slot_messageDeleted(QList<MattermostQt::MessagePtr> messages
 //		m_channel->m_message.remove(message->m_self_index - count);
 		endRemoveRows();
 	}
+	emit messageCountChanged();
 }
 
 void MessagesModel::slot_updateMessage(MattermostQt::MessagePtr message, int role)
@@ -627,6 +637,7 @@ void MessagesModel::slot_messageAddedBefore(MattermostQt::ChannelPtr channel, in
 	emit atEndChanged();
 	if(count < 60)
 		emit messagesEnded();
+	emit messageCountChanged();
 }
 
 void MessagesModel::slot_usersUpdated(QVector<MattermostQt::UserPtr> users,  QVectorInt roles)
