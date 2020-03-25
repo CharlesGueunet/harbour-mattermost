@@ -37,8 +37,8 @@ Page {
     /** setting up Messages Model Object */
     /** send requset to server, for messages for this chat,
     when Page innitialization is done */
-    onStatusChanged: {
-        if(status === PageStatus.Active) {
+    Component.onCompleted: {
+//        if(status === PageStatus.Active) {
             if(channel_index >= 0)
             {
                 context.mattermost.get_posts(server_index,team_index,channel_type,channel_index)
@@ -54,7 +54,7 @@ Page {
                                 }
                             })
             }
-        }
+//        }
     }
 
 

@@ -649,6 +649,8 @@ void MessagesModel::slot_usersUpdated(QVector<MattermostQt::UserPtr> users,  QVe
 
 void MessagesModel::slot_userUpdated(MattermostQt::UserPtr user,  QVectorInt roles)
 {
+	if( !m_channel )
+		return;
 	QModelIndex end = index(m_channel->m_message.size() - 1);
 	QModelIndex begin = index(0);
 	dataChanged(begin,end, roles);

@@ -4362,7 +4362,11 @@ void MattermostQt::replyDownloadProgress(qint64 bytesReceived, qint64 bytesTotal
 	FilePtr file = reply->property(P_FILE_PTR).value<FilePtr>();
 	if(!file)
 		return;
-	emit fileDownloadingProgress(file->m_id, (qreal)bytesReceived/bytesTotal);
+	if( bytesTotal <= 0 )
+	{
+		bytesTotal = file->m_file_size;
+	}
+	emit fileDownloadingProgress(file->m_id, (qreal)bytesReceived/(qreal)bytesTotal);
 }
 
 void MattermostQt::replyUploadProgress(qint64 bytesReceived, qint64 bytesTotal)

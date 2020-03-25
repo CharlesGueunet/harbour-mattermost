@@ -91,6 +91,8 @@ MouseArea {
         id: imageWithName
         spacing: inBlobContent.spacing
         height: fileNameRow.height + spacing + pictureMaxWidth * sizeCoef.y
+        anchors.horizontalCenter: parent.horizontalCenter
+
         Row {
             id: fileNameRow
             width:
@@ -234,31 +236,41 @@ MouseArea {
             }
         }
 
-        Loader {
-            id: imageComponentLoader
-            sourceComponent: fileType === MattermostQt.FileAnimatedImage ? animatedImage : staticImage
+        Item {
             width: pictureMaxWidth * sizeCoef.x
             height: pictureMaxWidth * sizeCoef.y
+            anchors.horizontalCenter: parent.horizontalCenter
+
+            Loader {
+                id: imageComponentLoader
+                sourceComponent: fileType === MattermostQt.FileAnimatedImage ? animatedImage : staticImage
+                anchors.fill: parent
+            }
+
+            ProgressCircle {
+                id:  progressCircle
+                anchors.verticalCenter: parent.verticalCenter
+                anchors.horizontalCenter: parent.horizontalCenter
+//                property point begin : parent.mapFromItem(imageWithName,imageComponentLoader.x,imageComponentLoader.y)
+//                x: begin.x + imageComponentLoader.width * 0.5 - width * 0.5
+//                y: begin.y + imageComponentLoader.height * 0.5 - height * 0.5
+                value: 0
+                visible: false
+
+                onVisibleChanged: {
+                    if(!visible)
+                        return;
+                    context.mattermost.fileDownloadingProgress.connect(
+                        function onDownloading(id_of_file,progress) {
+                            if( id_of_file === fileId )
+                                value = progress
+                        }
+                    )
+                }
+            }//*/
         }
     }
 
-    ProgressCircle {
-        id:  progressCircle
-        anchors.verticalCenter: parent.verticalCenter
-        anchors.horizontalCenter: parent.horizontalCenter
-        value: 0
-        visible: false
 
-        onVisibleChanged: {
-            if(!visible)
-                return;
-            context.mattermost.fileDownloadingProgress.connect(
-                function onDownloading(id_of_file,progress) {
-                    if( id_of_file === fileId )
-                        value = progress
-                }
-            )
-        }
-    }//*/
 }
 
