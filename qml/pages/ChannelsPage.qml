@@ -117,9 +117,9 @@ Page {
                 anchors {
                     fill: parent
                     verticalCenter: parent.verticalCenter
-                    //                        left: parent.left
-                    //                        right: parent.right
-                    //                        top: parent.top
+                    //left: parent.left
+                    //right: parent.right
+                    //top: parent.top
                 }
                 //                    anchors.topMargin: Theme.paddingSmall
                 anchors.leftMargin: Theme.paddingLarge

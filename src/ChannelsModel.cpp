@@ -327,7 +327,7 @@ void ChannelsModel::slot_updateChannel(MattermostQt::ChannelPtr channel,  QVecto
 		beginResetModel();
 		endResetModel();
 		return;
-	}
+	}// TODO change computing of index (from real channel index + nype of channel (favorite-1,public-2,private-3,direct-4) )
 	for(int i = headerIndex; i < endIndex; i++)
 	{
 		if(m_channel[i] == channel)

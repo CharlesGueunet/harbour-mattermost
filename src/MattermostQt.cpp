@@ -3888,7 +3888,7 @@ void MattermostQt::event_typing(MattermostQt::ServerPtr sc, QJsonObject object)
 	 * }*/
 	QJsonObject data  = object["data"].toObject();
 	QJsonObject broadcast = object["broadcast"].toObject();
-	qDebug() << object;
+//	qDebug() << object;
 	QString channel_id = broadcast["channel_id"].toString();
 	QString usr_id = data["user_id"].toString();
 	ChannelPtr channel = id2channel(sc, channel_id);
@@ -3896,6 +3896,10 @@ void MattermostQt::event_typing(MattermostQt::ServerPtr sc, QJsonObject object)
 	if( channel.isNull() )
 	{
 		qWarning() << QStringLiteral("Cant find channel id=\"%0\", need requset it from server.").arg(channel_id);
+//		qDebug() << object;
+		// TODO here need create another implementation of get channel, or separate get_channel
+		// and get_posts for channel (now in response it automatically request posts)
+//		get_channel(sc->m_self_index, channel_id);
 		return;
 	}
 
@@ -3963,7 +3967,7 @@ MattermostQt::UserStatus MattermostQt::str2status(const QString &s) const
 MattermostQt::UserPtr MattermostQt::id2user(ServerPtr sc, const QString &id) const
 {
 	// is not fast algorith. but now use it
-	for(int i = 0; sc->m_user.size(); i++)
+	for(int i = 0, count = sc->m_user.size(); i < count ; i++)
 	{
 		if( sc->m_user[i]->m_id == id )
 			return sc->m_user[i];
@@ -3979,7 +3983,7 @@ MattermostQt::ChannelPtr MattermostQt::id2channel(MattermostQt::ServerPtr sc, co
 	if( it != sc->m_channels_hash.end() ) {
 		return it.value();
 	}
-
+	// the channels info stil not requested from server
 	// if something went wrong, try find it with many cycles
 	for( int i = 0 ; i < sc->m_direct_channels.size(); i++ )
 		if( sc->m_direct_channels[i]->m_id == channel_id )
@@ -4628,6 +4632,7 @@ void MattermostQt::onWebSocketTextMessageReceived(const QString &message)
 			int event_num = variant.value<EventType>();
 			if ( event_num > 0 && event_num < EventTypeCount && m_event_func[event_num] != 0 )
 			{
+				qDebug() << QStringLiteral("Run event handler for: %0").arg(event);
 				(this->*m_event_func[event_num])(sc, object);
 			}
 			else {
