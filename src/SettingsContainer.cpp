@@ -8,15 +8,17 @@ SET_SETTINGS_PROPERTY(int,   autoDownloadImageSize)
 SET_SETTINGS_PROPERTY(bool,  showBlobs)
 SET_SETTINGS_PROPERTY(float, blobOpacity)
 SET_SETTINGS_PROPERTY(float, pageMargin)
-SET_SETTINGS_PROPERTY(bool, formatedText)
+SET_SETTINGS_PROPERTY(int,   pageMarginEnum)
+SET_SETTINGS_PROPERTY(bool,  formatedText)
 SET_SETTINGS_PROPERTY(bool,  debug)
+SET_SETTINGS_PROPERTY(bool,  sendIcon)
 
 SettingsContainer::SettingsContainer(QObject *parent) : QObject(parent)
 {
 	resetToDefault();
 }
 
-SettingsContainer *SettingsContainer::getInstance()
+SettingsContainer *SettingsContainer::	getInstance()
 {
 	static SettingsContainer *singleton = new SettingsContainer();
 //	if(singleton->debug())
@@ -38,7 +40,9 @@ void SettingsContainer::resetToDefault()
 	m_blobOpacity           = 0.7;
 	m_formatedText          = true;
 	m_pageMargin            = Silica::Theme::instance()->paddingMedium();
+	m_pageMarginEnum        = SettingsContainer::MarginMedium;
 	m_debug                 = false;
+	m_sendIcon              = true;
 }
 
 #define ADD_VALUE(x) settings[#x] = x
@@ -51,7 +55,8 @@ QJsonObject SettingsContainer::asJsonObject() const
 	ADD_VALUE(m_showBlobs);
 	ADD_VALUE(m_blobOpacity);
 	ADD_VALUE(m_formatedText);
-	ADD_VALUE(m_pageMargin);
+	ADD_VALUE(m_pageMarginEnum);
+	ADD_VALUE(m_sendIcon); // if false, use old icon-m-mail
 	return settings;
 }
 
@@ -61,5 +66,21 @@ void SettingsContainer::fromJsonObject(const QJsonObject &settings)
 	FROM_VALUE(m_showBlobs,toBool());
 	FROM_VALUE(m_blobOpacity,toDouble());
 	FROM_VALUE(m_formatedText,toBool());
-	FROM_VALUE(m_pageMargin,toDouble());
+	FROM_VALUE(m_pageMarginEnum,toInt());
+	FROM_VALUE(m_sendIcon  ,toBool());
+
+	switch(m_pageMarginEnum) {
+	case Margin::MarginNone:
+		m_pageMargin = 0;
+		break;
+	case Margin::MarginSmall:
+		m_pageMargin = Silica::Theme::instance()->paddingSmall();
+		break;
+	case Margin::MarginMedium:
+		m_pageMargin = Silica::Theme::instance()->paddingMedium();
+		break;
+	case Margin::MarginLarge:
+		m_pageMargin = Silica::Theme::instance()->paddingLarge();
+		break;
+	}
 }

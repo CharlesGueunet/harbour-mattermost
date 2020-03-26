@@ -385,6 +385,18 @@
         <source>Clear cache</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Send message icon</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Mail Icon</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Send Icon</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>QObject</name>

@@ -3,6 +3,7 @@ import Sailfish.Silica 1.0
 import QtGraphicalEffects 1.0
 import ru.sashikknox 1.0
 import "../model"
+import "../components"
 
 Item {
     id: channellabel
@@ -17,161 +18,99 @@ Item {
     property int directChannelUserStatus: MattermostQt.UserNoStatus
     property int _channel_unread: 0 // summary count of unread messages and mention
     property int _users_typing: 0
+    property real user_typeing_opacity : 0
     property Context context
 
     height: loader.itemHeight
 
+    on_Users_typingChanged: {
+        if( _users_typing > 0 )
+            user_typeing_opacity = 1
+        else
+            user_typeing_opacity = 0
+    }
+
     Component {
-        id: public_channel
-        Row {
-            spacing: Theme.paddingMedium
-            Image {
-                id: userimage
-                source: "image://theme/icon-m-chat"
-                width: Theme.iconSizeMedium
-                height: Theme.iconSizeMedium
-            }
-            Label {
-                id: labelname
-                text: _display_name
-                height: contentHeight
-                onHeightChanged: itemHeight = height
-            }
+        id: simpleIcon
+        Icon {
+            source:
+                switch(channelType) {
+                case MattermostQt.HeaderPrivate:
+                    "image://theme/icon-m-device-lock"
+                    break
+                default: // MattermostQt.HeaderPublic:
+                    "image://theme/icon-m-chat"
+                }
+            width: Theme.iconSizeMedium
+            height: Theme.iconSizeMedium
         }
     }
 
     Component {
-        id: private_channel
-        Row {
-            spacing: Theme.paddingMedium
-            Image {
-                id: userimage
-                source: "image://theme/icon-m-device-lock"
-                width: Theme.iconSizeMedium
-                height: Theme.iconSizeMedium
-            }
-            Label {
-                id: labelname
-                text: _display_name
-                height: contentHeight
-                onHeightChanged: itemHeight = height
-            }
+        id: avatarIcon
+        UserAvatar {
+            context: channellabel.context
+            userStatus: directChannelUserStatus
+            imagePath: directChannelImage
         }
     }
 
     Component {
-        id: direct_channel
+        id: channel_line
         Row {
             spacing: Theme.paddingMedium
-            BackgroundItem {
-                id: avataritem
-                enabled: false
-
-                width: context.avatarSize
-                height: context.avatarSize
-
-                Image {
-                    id: userimage
-                    source: directChannelImage
-                    anchors.fill: parent
-
-                    Image {
-                        id: roundmask
-                        anchors.fill: parent
-                        width: parent.width
-                        height: parent.width
-                        source: Qt.resolvedUrl("qrc:/resources/status/status_mask.svg")
-                        visible: false
+            Loader {
+                id: channel_icon
+                sourceComponent:
+                    switch(channelType) {
+                    case MattermostQt.ChannelDirect:
+                        avatarIcon
+                        break
+                    default:
+                        simpleIcon
                     }
+            }
 
-                    // TODO generate avatars in CPP code!!!!
-                    layer.enabled:true
-                    layer.effect: OpacityMask {
-                        maskSource: roundmask
-                    }
+            Column {
+                Label {
+                    id: labelname
+                    text: _display_name
+                    height: contentHeight
+                    onHeightChanged: itemHeight = height
                 }
 
-                Image {
-                    id: statusindicator
-                    anchors {
-                        fill: parent
-                    }
-                    property int userStatus : directChannelUserStatus
-                    source:
-                        switch(userStatus) {
-                        case MattermostQt.UserOnline:
-                            Qt.resolvedUrl("qrc:/resources/status/status_online.svg")
-                            break;
-                        case MattermostQt.UserAway:
-                            Qt.resolvedUrl("qrc:/resources/status/status_away.svg")
-                            break;
-                        case MattermostQt.UserDnd:
-                            Qt.resolvedUrl("qrc:/resources/status/status_dnd.svg")
-                            break;
-                        default:
-                        case MattermostQt.UserOffline:
-                            Qt.resolvedUrl("qrc:/resources/status/status_offline.svg")
-                            break;
-                        }
+                Label {
+                    id: usersTyping
+                    visible: opacity > 0
+                    opacity: user_typeing_opacity
 
-                    onUserStatusChanged:
-                        switch(userStatus) {
-                        case MattermostQt.UserOnline:
-                            Qt.resolvedUrl("qrc:/resources/status/status_online.svg")
-                            break;
-                        case MattermostQt.UserAway:
-                            Qt.resolvedUrl("qrc:/resources/status/status_away.svg")
-                            break;
-                        case MattermostQt.UserDnd:
-                            Qt.resolvedUrl("qrc:/resources/status/status_dnd.svg")
-                            break;
-                        default:
-                        case MattermostQt.UserOffline:
-                            Qt.resolvedUrl("qrc:/resources/status/status_offline.svg")
-                            break;
-                        }
+                    Behavior on opacity {
+                        NumberAnimation { duration: 200 }
+                    }
+                    font.pixelSize: Theme.fontSizeTiny
+                    text: "Typing:" + _users_typing
                 }
             }
-            Label {
-                id: labelname
-                text: _display_name
-                height: contentHeight
-                onHeightChanged: itemHeight = height
-            }
         }
     }
 
     Component {
-        id: header_public
+        id: channel_goup
         SectionHeader {
             TouchBlocker {
                      anchors.fill: parent
             }
-            text: qsTr("Public channes")
-            height: contentHeight
-            onHeightChanged: itemHeight = height
-        }
-    }
-
-    Component {
-        id: header_private
-        SectionHeader {
-            TouchBlocker {
-                     anchors.fill: parent
-            }
-            text: qsTr("Private channes")
-            height: contentHeight
-            onHeightChanged: itemHeight = height
-        }
-    }
-
-    Component {
-        id: header_direct
-        SectionHeader {
-            TouchBlocker {
-                     anchors.fill: parent
-            }
-            text: qsTr("Direct channes")
+            text: switch(_type) {
+                  case ChannelsModel.HeaderPublic:
+                      qsTr("Public channes")
+                      break;
+                  case ChannelsModel.HeaderPrivate:
+                      qsTr("Private channes")
+                      break;
+                  case ChannelsModel.HeaderDirect:
+                      qsTr("Direct channes")
+                      break;
+                 }
             onHeightChanged: itemHeight = height
         }
     }
@@ -189,50 +128,13 @@ Item {
             switch(_type)
             {
             case ChannelsModel.HeaderPublic:
-                header_public;
-                break;
             case ChannelsModel.HeaderPrivate:
-                header_private;
-                break;
             case ChannelsModel.HeaderDirect:
-                header_direct;
+                channel_goup
                 break;
             default:
-                switch(channelType) {
-                case MattermostQt.ChannelDirect:
-                    direct_channel
-                    break
-                case MattermostQt.ChannelPrivate:
-                    private_channel
-                    break
-                default:
-                    public_channel
-                }
+                channel_line
             }
-    }
-
-    Label {
-        id: usersTyping
-        visible: opacity > 0
-        opacity: 0
-
-        anchors {
-            bottom: parent.bottom
-            horizontalCenter: parent.horizontalCenter
-        }
-
-        Behavior on opacity {
-            NumberAnimation { duration: 200 }
-        }
-        font.pixelSize: Theme.fontSizeTiny
-        text: "Typing:" + _users_typing
-    }
-
-    on_Users_typingChanged: {
-        if( _users_typing > 0 )
-            usersTyping.opacity = 1
-        else
-            usersTyping.opacity = 0
     }
 
     Rectangle {

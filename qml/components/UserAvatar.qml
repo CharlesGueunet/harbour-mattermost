@@ -11,11 +11,16 @@ BackgroundItem {
     enabled: false
 
     property alias imagePath : userImage.source
-     property int  userStatus
+    property int  userStatus
     property Context context
 
     width: context.avatarSize
     height: context.avatarSize
+
+    onContextChanged: {
+        width = context.avatarSize
+        height = context.avatarSize
+    }
 
     Image {
         id: userImage

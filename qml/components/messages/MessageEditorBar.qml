@@ -38,10 +38,6 @@ BackgroundItem {
     signal attachFile
     signal takePhoto
 
-//    function fileUploaded(s_index,f_index) {
-
-//    }
-
     Component {
         id: imagepicker
         ImagePickerPage {
@@ -205,7 +201,7 @@ BackgroundItem {
                 verticalCenter: textedit.verticalCenter
             }
             x: messageeditor.width - menu.width - Theme.paddingMedium - width
-            icon.source: "image://theme/icon-m-mail"
+            icon.source: "image://theme/" + (Settings.sendIcon === true ? "icon-m-send" : "icon-m-mail")
             onClicked: {
                 if( textedit.text.length === 0 && attachCount === 0 )
                     textedit.focus = true;

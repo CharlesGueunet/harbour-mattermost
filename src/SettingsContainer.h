@@ -15,12 +15,23 @@ class SettingsContainer : public QObject
 	Q_OBJECT
 
 	/** download image automaticly, when its size lower than autoDownloadImageSize */
-	MT_PROPERTY(int,   autoDownloadImageSize);
-	MT_PROPERTY(bool,  showBlobs);
-	MT_PROPERTY(float, blobOpacity);
-	MT_PROPERTY(float, pageMargin);
-	MT_PROPERTY(bool,  formatedText); // show Markdown text
-	MT_PROPERTY(bool,  debug);
+	MT_PROPERTY(int,     autoDownloadImageSize);
+	MT_PROPERTY(bool,    showBlobs);
+	MT_PROPERTY(float,   blobOpacity);
+	MT_PROPERTY(float,   pageMargin);
+	MT_PROPERTY(int,     pageMarginEnum);
+	MT_PROPERTY(bool,    formatedText); // show Markdown text
+	MT_PROPERTY(bool,    debug);
+	MT_PROPERTY(bool,    sendIcon); // ability change send message icon to icon-m-send from icon-m-mail
+
+public:
+	enum Margin {
+		MarginNone,
+		MarginSmall,
+		MarginMedium,
+		MarginLarge
+	};
+	Q_ENUM(Margin)
 
 public:
 	explicit SettingsContainer(QObject *parent = nullptr);

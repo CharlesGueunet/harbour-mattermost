@@ -3943,6 +3943,7 @@ void MattermostQt::event_channel_viewed(MattermostQt::ServerPtr sc, QJsonObject 
 	if(channel.isNull())
 	{
 		qCritical() << QStringLiteral("Channel not loaded to app, need request data from server.");
+		return;
 	}
 
 	channel->m_mention_count = 0;
@@ -3985,32 +3986,31 @@ MattermostQt::ChannelPtr MattermostQt::id2channel(MattermostQt::ServerPtr sc, co
 	}
 	// the channels info stil not requested from server
 	// if something went wrong, try find it with many cycles
-	for( int i = 0 ; i < sc->m_direct_channels.size(); i++ )
-		if( sc->m_direct_channels[i]->m_id == channel_id )
+	for( auto channel : sc->m_direct_channels)
+		if( channel->m_id == channel_id )
 		{
-			channel = sc->m_direct_channels[i];
+			channel = channel;
 			break;
 		}
 
 	if( channel.isNull() )
-	for( int t = 0; t < sc->m_teams.size(); t++ )
+	for( auto team : sc->m_teams )
 	{
-		TeamPtr team = sc->m_teams[t];
 		// Public channels
-		for( int i = 0 ; i < team->m_public_channels.size(); i++ )
-			if( team->m_public_channels[i]->m_id == channel_id )
+		for( auto channel : team->m_public_channels )
+			if( channel->m_id == channel_id )
 			{
-				channel = team->m_public_channels[i];
+				channel = channel;
 				break;
 			}
 		if(!channel.isNull())
 			break;
 
 		// Private channels
-		for( int i = 0 ; i < team->m_private_channels.size(); i++ )
-			if( team->m_public_channels[i]->m_id == channel_id )
+		for( auto channel : team->m_private_channels)
+			if( channel->m_id == channel_id )
 			{
-				channel = team->m_public_channels[i];
+				channel = channel;
 				break;
 			}
 		if(!channel.isNull())

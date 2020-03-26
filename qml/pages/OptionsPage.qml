@@ -79,6 +79,50 @@ Page {
         }
 
         ComboBox {
+            id: sendMessageIcon
+            label: qsTr("Send message icon")
+
+            menu: ContextMenu {
+                id: menuIconChoose
+
+                MenuItem {
+                    text: qsTr("Mail Icon")
+
+                    Icon {
+                        anchors.verticalCenter: parent.verticalCenter
+                        source: "image://theme/icon-m-mail"
+                    }
+
+                    onClicked: {
+                        Settings.sendIcon = false;
+                    }
+                }
+
+                MenuItem {
+                    text: qsTr("Send Icon")
+
+                    Icon {
+                        anchors.verticalCenter: parent.verticalCenter
+                        source: "image://theme/icon-m-send"
+                    }
+
+                    onClicked: {
+                        Settings.sendIcon = true;
+                    }
+                }
+
+                Component.onCompleted: {
+                    if( Settings.sendIcon ) {
+                        sendMessageIcon.currentIndex = 1;
+                    }
+                    else  {
+                        sendMessageIcon.currentIndex = 0;
+                    }
+                }
+            }
+        }// Page padding size
+
+        ComboBox {
             id: pagePaddingSize
 //            visible: false
             label: qsTr("Page padding")
@@ -89,6 +133,7 @@ Page {
                     text: qsTr("None")
                     onClicked: {
                         Settings.pageMargin = 0;
+                        Settings.pageMarginEnum = Settings.MarginNone;
                     }
                 }
 
@@ -96,6 +141,7 @@ Page {
                     text: qsTr("Small")
                     onClicked: {
                         Settings.pageMargin = Theme.paddingSmall;
+                        Settings.pageMarginEnum = Settings.MarginSmall;
                     }
                 }
 
@@ -103,6 +149,7 @@ Page {
                     text: qsTr("Medium")
                     onClicked: {
                         Settings.pageMargin = Theme.paddingMedium;
+                        Settings.pageMarginEnum = Settings.MarginMedium;
                     }
                 }
 
@@ -110,21 +157,22 @@ Page {
                     text: qsTr("Large")
                     onClicked: {
                         Settings.pageMargin = Theme.paddingLarge;
+                        Settings.pageMarginEnum = Settings.MarginLarge;
                     }
                 }
 
                 Component.onCompleted: {
-                    if( Settings.pageMargin === 0 ) {
+                    if( Settings.pageMarginEnum === Settings.MarginNone ) {
                         pagePaddingSize.currentIndex = 0;
                     }
-                    else if( Settings.pageMargin === Theme.paddingSmall ) {
+                    else if( Settings.pageMarginEnum === Settings.MarginSmall ) {
                         pagePaddingSize.currentIndex = 1;
                     }
-                    else if( Settings.pageMargin === Theme.paddingMedium ) {
+                    else if( Settings.pageMarginEnum === Settings.MarginMedium ) {
                         pagePaddingSize.currentIndex = 2;
                     }
-                    else if( Settings.pageMargin === Theme.paddingLarge ) {
-                        pagePaddingSize.currentIndex = Settings.pageMargin;
+                    else if( Settings.pageMarginEnum === Settings.MarginLarge ) {
+                        pagePaddingSize.currentIndex = 3;
                     }
                 }
             }
@@ -137,13 +185,13 @@ Page {
         Label {
             id: cacheLabel
             text: qsTr("Cache size: ") + cacheSize;
-            anchors.horizontalCenter: parent
+            anchors.horizontalCenter: parent.horisontalCenter
         }
 
         Button {
             id: clearCache
             text: qsTr("Clear cache")
-            anchors.horizontalCenter: parent
+            anchors.horizontalCenter: parent.horisontalCenter
             onClicked: {
                 context.mattermost.clearCache()
                 cacheSize = context.mattermost.cacheSize()

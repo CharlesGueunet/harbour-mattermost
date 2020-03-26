@@ -82,7 +82,6 @@ DISTFILES += \
     harbour-mattermost.desktop \
     server.pri \
     translations/harbour-mattermost-ru.ts \
-    rpm/harbour-mattermost.yaml \
     dbus/sashikknox.mattermost.service \
     CHANGELOG \
     CHANGELOG \
