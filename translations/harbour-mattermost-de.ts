@@ -133,6 +133,10 @@
         <source>Direct channes</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Typing</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>ChannelsPage</name>

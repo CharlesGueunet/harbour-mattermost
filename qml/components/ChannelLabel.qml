@@ -35,7 +35,7 @@ Item {
         Icon {
             source:
                 switch(channelType) {
-                case MattermostQt.HeaderPrivate:
+                case MattermostQt.ChannelPrivate:
                     "image://theme/icon-m-device-lock"
                     break
                 default: // MattermostQt.HeaderPublic:
@@ -88,7 +88,30 @@ Item {
                         NumberAnimation { duration: 200 }
                     }
                     font.pixelSize: Theme.fontSizeTiny
-                    text: "Typing:" + _users_typing
+                    // TODO make beautiful string with user names, or its count if it too much
+                    text: qsTr("Typing") + ": " + _users_typing
+                }
+            }
+
+            Rectangle {
+                id: unreadLabelRect
+                visible: _channel_unread > 0
+                color: Theme.rgba(Theme.primaryColor,0.8)
+                width: Math.max(context.avatarSize * 0.5, labelUnreadCount.contentWidth  + labelUnreadCount.anchors.margins + labelUnreadCount.contentHeight )
+                height: labelUnreadCount.contentHeight + labelUnreadCount.anchors.margins
+                radius: height * 0.5
+
+//                anchors.right: parent.right
+                anchors.verticalCenter: parent.verticalCenter
+                anchors.margins: Theme.paddingMedium
+
+                Label {
+                    id: labelUnreadCount
+                    anchors.centerIn: parent
+//                    color: Theme.highlightColor
+                    color: "black"
+                    text: String(_channel_unread)
+                    font.pixelSize: Theme.fontSizeSmall
                 }
             }
         }
@@ -135,24 +158,5 @@ Item {
             default:
                 channel_line
             }
-    }
-
-    Rectangle {
-        id: unreadLabelRect
-        visible: _channel_unread > 0
-        color: Theme.highlightBackgroundColor
-        width: context.avatarSize * 0.5
-        radius: width * 0.5
-
-        anchors.right: parent.right
-        anchors.verticalCenter: parent.verticalCenter
-        anchors.rightMargin: Settings.pageMargin
-
-        Label {
-            anchors.centerIn: parent
-            color: Theme.highlightColor
-            text: _channel_unread
-            font.pixelSize: Theme.fontSizeSmall
-        }
     }
 }

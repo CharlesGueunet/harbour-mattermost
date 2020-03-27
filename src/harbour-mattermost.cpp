@@ -45,7 +45,7 @@ void myMessageOutput(QtMsgType type, const QMessageLogContext &context, const QS
 {
 //	if(!SettingsContainer::getInstance()->debug())
 //		return; // TODO test no stdout
-	// TODO write log to databse it separate thread
+	// TODO write log to databse in separate thread
 	QByteArray localMsg = msg.toLocal8Bit();
 	switch (type) {
 	case QtDebugMsg:
