@@ -133,6 +133,10 @@
         <source>Direct channes</source>
         <translation>私信频道</translation>
     </message>
+    <message>
+        <source>Typing</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>ChannelsPage</name>
@@ -384,6 +388,18 @@
     <message>
         <source>Clear cache</source>
         <translation>清空缓存</translation>
+    </message>
+    <message>
+        <source>Send message icon</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Mail Icon</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Send Icon</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>

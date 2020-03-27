@@ -102,6 +102,7 @@ CONFIG += sailfishapp_i18n
 TRANSLATIONS += \
     translations/harbour-mattermost.ts \
     translations/harbour-mattermost-ru.ts \
+    translations/harbour-mattermost-zh_CN.ts \
     translations/harbour-mattermost-de.ts
 
 HEADERS += \

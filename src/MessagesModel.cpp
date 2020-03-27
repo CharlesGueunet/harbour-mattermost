@@ -278,6 +278,8 @@ void MessagesModel::setMattermost(MattermostQt *mattermost)
 	        this, &MessagesModel::slot_messageUpdated );
 	connect(m_mattermost.data(), &MattermostQt::messageDeleted,
 	        this, &MessagesModel::slot_messageDeleted );
+	connect(m_mattermost.data(), &MattermostQt::messageBeginDelete,
+	        this, &MessagesModel::slot_beginMessageDeleted );
 	connect(m_mattermost.data(), &MattermostQt::updateMessage,
 	        this, &MessagesModel::slot_updateMessage );
 
@@ -559,7 +561,7 @@ void MessagesModel::slot_messageUpdated(QList<MattermostQt::MessagePtr> messages
 	}
 }
 
-void MessagesModel::slot_messageDeleted(QList<MattermostQt::MessagePtr> messages)
+void MessagesModel::slot_beginMessageDeleted(QList<MattermostQt::MessagePtr> messages)
 {
 	if(messages.isEmpty() || !m_channel )
 		return;
@@ -568,19 +570,48 @@ void MessagesModel::slot_messageDeleted(QList<MattermostQt::MessagePtr> messages
 	if(!message || message->m_channel_id.compare(m_channel->m_id) != 0)
 		return;
 
-	int count = 0;
+//	int count = 0;
 
-	for(QList<MattermostQt::MessagePtr>::iterator
-	    it = messages.begin(), end = messages.end();
-	    it != end; it++, count++ )
-	{
-		MattermostQt::MessagePtr current = *it;
-		int row = m_channel->m_message.size() - 1 - current->m_self_index + count;
-		QModelIndex i = index(row);
-		beginRemoveRows(QModelIndex(), row, row);
-//		m_channel->m_message.remove(message->m_self_index - count);
-		endRemoveRows();
-	}
+//	// todo тут уже должна быть модель с удаленными сообщениями
+//	// т.е. либо
+//	for(QList<MattermostQt::MessagePtr>::iterator
+//	    it = messages.begin(), end = messages.end();
+//	    it != end; it++, count++ )
+//	{
+//		MattermostQt::MessagePtr current = *it;
+//		int row = m_channel->m_message.size() - current->m_self_index + count;
+//		QModelIndex i = index(row);
+//		beginRemoveRows(QModelIndex(), row, row);
+//	}
+	int row = m_channel->m_message.size() - 1 - message->m_self_index;
+	beginRemoveRows(QModelIndex(), row, row);
+}
+
+void MessagesModel::slot_messageDeleted(QList<MattermostQt::MessagePtr> messages)
+{
+//	if(messages.isEmpty() || !m_channel )
+//		return;
+
+//	MattermostQt::MessagePtr message = messages.first();
+//	if(!message || message->m_channel_id.compare(m_channel->m_id) != 0)
+//		return;
+
+//	int count = 0;
+
+//	// todo тут уже должна быть модель с удаленными сообщениями
+//	// т.е. либо
+//	for(QList<MattermostQt::MessagePtr>::iterator
+//	    it = messages.begin(), end = messages.end();
+//	    it != end; it++, count++ )
+//	{
+//		MattermostQt::MessagePtr current = *it;
+//		int row = m_channel->m_message.size() - current->m_self_index + count;
+//		QModelIndex i = index(row);
+//		beginRemoveRows(QModelIndex(), row, row);
+////		m_channel->m_message.remove(message->m_self_index - count);
+//		endRemoveRows();
+//	}
+	endRemoveRows();
 	emit messageCountChanged();
 }
 

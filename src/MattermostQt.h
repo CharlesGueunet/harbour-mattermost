@@ -630,7 +630,9 @@ Q_SIGNALS:
 	void newMessage(MessagePtr message);
 	void messageUpdated(QList<MessagePtr> messages);
 	void updateMessage(MessagePtr m,int role);
+	void messageBeginDelete(QList<MessagePtr> messages);
 	void messageDeleted(QList<MessagePtr> messages);
+	void messageEndDelete();
 	void userUpdated(UserPtr user,  QVectorInt roles);
 	void usersUpdated(QVector<UserPtr> users,  QVectorInt roles);
 	void fileStatusChanged(QString file_id, int status);

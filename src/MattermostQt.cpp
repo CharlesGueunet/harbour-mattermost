@@ -3996,35 +3996,31 @@ MattermostQt::ChannelPtr MattermostQt::id2channel(MattermostQt::ServerPtr sc, co
 	if( channel.isNull() )
 	for( auto team : sc->m_teams )
 	{
-		// Public channels
-		for( auto channel : team->m_public_channels )
-			if( channel->m_id == channel_id )
-			{
-				channel = channel;
-				break;
-			}
-		if(!channel.isNull())
-			break;
+		for( int i = 0 ; i < 2; i++ ) {
+			QVector<ChannelPtr> *channels = nullptr;
+			if( i == 0 )
+				channels = &team->m_public_channels;
+			else
+				channels = &team->m_private_channels;
+			// Public channels
+			for( auto channel : *channels )
+				if( channel->m_id == channel_id )
+				{
+					channel = channel;
+					break;
+				}
+		}
 
-		// Private channels
-		for( auto channel : team->m_private_channels)
-			if( channel->m_id == channel_id )
-			{
-				channel = channel;
-				break;
-			}
 		if(!channel.isNull())
 			break;
 	}
 	return channel;
 }
 
-void MattermostQt::event_post_deleted(MattermostQt::ServerPtr sc, QJsonObject data)
+void MattermostQt::event_post_deleted(MattermostQt::ServerPtr sc, QJsonObject object)
 {
 	ChannelPtr channel;
-
-	qDebug() << data;
-
+	QJsonObject data = object["data"].toObject();
 	QJsonObject post = data["post"].toObject();
 	if( post.isEmpty() )
 	{
@@ -4043,40 +4039,8 @@ void MattermostQt::event_post_deleted(MattermostQt::ServerPtr sc, QJsonObject da
 	MessagePtr message( new MessageContainer(post) );
 
 	// search for channel
-	// TODO make na optimized search! maybe use QMap?
-	for(int ci = 0; ci < sc->m_direct_channels.size(); ci++ )
-	{
-		ChannelPtr c = sc->m_direct_channels[ci];
-		if( c->m_id == message->m_channel_id )
-		{
-			channel = c;
-			break;
-		}
-	}
-	if(channel.isNull())
-	for(int ti = 0; ti < sc->m_teams.size(); ti++ )
-	{
-		TeamPtr tc = sc->m_teams[ti];
-		for(int ci = 0; ci < tc->m_private_channels.size(); ci++ )
-		{
-			ChannelPtr c = tc->m_private_channels[ci];
-			if( c->m_id == message->m_channel_id )
-			{
-				channel = c;
-				break;
-			}
-		}
-		for(int ci = 0; ci < tc->m_public_channels.size(); ci++ )
-		{
-			ChannelPtr c = tc->m_public_channels[ci];
-			if( c->m_id == message->m_channel_id )
-			{
-				channel = c;
-				break;
-			}
-		}
-	}
-//	qDebug() << post; //search channel
+	channel = id2channel(sc, message->m_channel_id);
+
 	if( channel )
 	{
 		MessagePtr deleted;
@@ -4091,14 +4055,19 @@ void MattermostQt::event_post_deleted(MattermostQt::ServerPtr sc, QJsonObject da
 				index = i;
 				mc->m_delete_at = message->m_delete_at;
 				//mc->m_message = message->m_message;
+				QList<MessagePtr> messages;
+				messages << mc;
+
+				emit messageBeginDelete( messages );
 				channel->m_message.remove(i);
+				emit messageDeleted( messages );
+
 				break;
 			}
 		}
 		if(deleted && index >= 0)
 		{
 			// here we update all messages, with link to this message
-
 			if(!deleted->m_thread_messages.isEmpty())
 			{
 				for(QList<MattermostQt::MessagePtr>::iterator
@@ -4111,7 +4080,12 @@ void MattermostQt::event_post_deleted(MattermostQt::ServerPtr sc, QJsonObject da
 					{
 						if( ans == channel->m_message[i] )
 						{
+							QList<MessagePtr> messages;
+							messages << channel->m_message[i];
+							channel->m_message[i]->m_self_index = i;
+							emit messageBeginDelete( messages );
 							channel->m_message.remove(i);
+							emit messageDeleted(messages);
 						}
 						else {
 							i++;
@@ -4122,16 +4096,17 @@ void MattermostQt::event_post_deleted(MattermostQt::ServerPtr sc, QJsonObject da
 
 			for(int i = index; i < channel->m_message.size(); i++ )
 				channel->m_message[i]->m_self_index = i;
-			deleted->m_thread_messages.prepend(deleted);
-			emit messageDeleted(deleted->m_thread_messages);
-			deleted->m_thread_messages.pop_front();
+//			deleted->m_thread_messages.prepend(deleted);
+//			emit messageBeginDelete( deleted->m_thread_messages );
+//			emit messageDeleted(deleted->m_thread_messages);
+//			deleted->m_thread_messages.pop_front();
 
 			for(QList<MattermostQt::MessagePtr>::iterator
 			    it = deleted->m_thread_messages.begin(), end = deleted->m_thread_messages.end();
 			    it != end; it++ )
-			{
+			{	// nothing to do here
 				// check if messages has its own replies
-				// (its possible ony by API, but not in ofccicial client)
+				// (its possible ony by API, but not in official client)
 				MessagePtr answer = *it;
 				if(!answer->m_thread_messages.isEmpty())
 				{

@@ -135,6 +135,7 @@ Page {
 
             property string rootId:  role_root_id
             property real messagesListHeight: messagesListView.height
+            property bool is_last: false
 
             context: messagesPage.context
             width: messagesListView.width
@@ -142,12 +143,18 @@ Page {
 
             Component.onCompleted: {
                 if( role_row_index >= messagesModel.count - 1 ) {
-                    context.mattermost.post_channel_view(
-                            server_index,
-                            team_index,
-                            channel_type,
-                            channel_index
-                        )
+                    is_last = true;
+                    messagesPage.onStatusChanged.connect(function view() {
+                        if( messagesPage.status === PageStatus.Active ) {
+                            console.debug( "[" + String(messagesModel.count - role_row_index) + "] Call signal: channel_viewed")
+                            context.mattermost.post_channel_view(
+                                    server_index,
+                                    team_index,
+                                    channel_type,
+                                    channel_index
+                                )
+                        }
+                    })
                 }
             }
 
