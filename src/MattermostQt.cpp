@@ -308,7 +308,7 @@ void MattermostQt::post_login(QString server, QString login, QString password,
 	        + QLatin1String("/users/login");
 
 	QUrl url(server);
-	url.setPath(urlString);
+	url.setPath(url.path() + urlString);
 	QNetworkRequest request;
 	QJsonDocument json;
 	QJsonObject data;
@@ -410,7 +410,7 @@ void MattermostQt::get_login(MattermostQt::ServerPtr sc)
 	        + QLatin1String("/users/me");
 
 	QUrl url(sc->m_url);
-	url.setPath(urlString);
+	url.setPath(url.path() + urlString);
 	QNetworkRequest request;
 
 	request.setUrl(url);
@@ -473,7 +473,7 @@ void MattermostQt::get_teams(int server_index)
 	        + QLatin1String("/users/me/teams");
 
 	QUrl url(sc->m_url);
-	url.setPath(urlString);
+	url.setPath(url.path() + urlString);
 	QNetworkRequest request;
 
 	request.setUrl(url);
@@ -540,7 +540,7 @@ void MattermostQt::get_public_channels(int server_index, QString team_id)
 	        + QLatin1String("/channels");
 
 	QUrl url(sc->m_url);
-	url.setPath(urlString);
+	url.setPath(url.path() + urlString);
 	QNetworkRequest request;
 
 	request.setUrl(url);
@@ -569,7 +569,7 @@ void MattermostQt::get_channel(int server_index, QString channel_id)
 	        + channel_id;
 
 	QUrl url(sc->m_url);
-	url.setPath(urlString);
+	url.setPath(url.path() + urlString);
 	QNetworkRequest request;
 
 	request.setUrl(url);
@@ -607,7 +607,7 @@ void MattermostQt::get_team(int server_index, int team_index)
 	        + team_id;
 
 	QUrl url(sc->m_url);
-	url.setPath(urlString);
+	url.setPath(url.path() + urlString);
 	QNetworkRequest request;
 
 	request.setUrl(url);
@@ -638,7 +638,7 @@ void MattermostQt::get_file_thumbnail(int server_index, int file_sc_index)
 	        + QLatin1String("/thumbnail");
 
 	QUrl url(sc->m_url);
-	url.setPath(urlString);
+	url.setPath(url.path() + urlString);
 	QNetworkRequest request;
 
 	request.setUrl(url);
@@ -672,7 +672,7 @@ void MattermostQt::get_file_preview(int server_index, int file_sc_index)
 	        + QLatin1String("/preview");
 
 	QUrl url(sc->m_url);
-	url.setPath(urlString);
+	url.setPath(url.path() + urlString);
 	QNetworkRequest request;
 
 	request.setUrl(url);
@@ -762,7 +762,7 @@ void MattermostQt::get_file_info(int server_index, int team_index, int channel_t
 	        + QLatin1String("/info");
 
 	QUrl url(sc->m_url);
-	url.setPath(urlString);
+	url.setPath(url.path() + urlString);
 	QNetworkRequest request;
 
 	request.setUrl(url);
@@ -806,7 +806,7 @@ void MattermostQt::get_file(int server_index, int team_index,
 	        + file->m_id;
 
 	QUrl url(sc->m_url);
-	url.setPath(urlString);
+	url.setPath(url.path() + urlString);
 	QNetworkRequest request;
 
 	request.setUrl(url);
@@ -854,7 +854,7 @@ void MattermostQt::post_file_upload(int server_index, int team_index, int channe
 	query.addQueryItem("filename", fileinfo.fileName());
 
 	QUrl url(sc->m_url);
-	url.setPath(urlString);
+	url.setPath(url.path() + urlString);
 	url.setQuery(query);
 
 	QNetworkRequest request;
@@ -908,7 +908,7 @@ void MattermostQt::post_send_message(QString message, int server_index, int team
 	        + QLatin1String("/posts");
 
 	QUrl url(sc->m_url);
-	url.setPath(urlString);
+	url.setPath(url.path() + urlString);
 	QNetworkRequest request;
 
 	request.setUrl(url);
@@ -994,7 +994,7 @@ void MattermostQt::delete_message(int server_index, int team_index, int channel_
 	        + message->m_id;
 
 	QUrl url(sc->m_url);
-	url.setPath(urlString);
+	url.setPath(url.path() + urlString);
 	QNetworkRequest request;
 
 	request.setUrl(url);
@@ -1023,7 +1023,7 @@ void MattermostQt::put_message_edit(QString text, int server_index, int team_ind
 	        + QLatin1String("/patch");
 
 	QUrl url(sc->m_url);
-	url.setPath(urlString);
+	url.setPath(url.path() + urlString);
 	QNetworkRequest request;
 
 	request.setUrl(url);
@@ -1073,7 +1073,7 @@ void MattermostQt::post_channel_view(int server_index, int team_index, int chann
 	}
 
 	QUrl url(sc->m_url);
-	url.setPath(urlString);
+	url.setPath(url.path() + urlString);
 	QNetworkRequest request;
 
 	request.setUrl(url);
@@ -1124,7 +1124,7 @@ void MattermostQt::get_channel_unread(MattermostQt::ChannelPtr channel)
 	        + QLatin1String("/unread");
 
 	QUrl url(sc->m_url);
-	url.setPath(urlString);
+	url.setPath(url.path() + urlString);
 	QNetworkRequest request;
 
 	request.setUrl(url);
@@ -1171,7 +1171,7 @@ void MattermostQt::get_user_image(int server_index, int user_index)
 	        + QLatin1String("/image");
 
 	QUrl url(sc->m_url);
-	url.setPath(urlString);
+	url.setPath(url.path() + urlString);
 	QNetworkRequest request;
 
 	request.setUrl(url);
@@ -1207,7 +1207,7 @@ void MattermostQt::get_user_info(int server_index, QString userId, int team_inde
 	        + userId;
 
 	QUrl url(sc->m_url);
-	url.setPath(urlString);
+	url.setPath(url.path() + urlString);
 	QNetworkRequest request;
 
 	request.setUrl(url);
@@ -1289,7 +1289,7 @@ void MattermostQt::get_post(int server_index, QString post_id, MattermostQt::Mes
 	        + post_id;
 
 	QUrl url(sc->m_url);
-	url.setPath(urlString);
+	url.setPath(url.path() + urlString);
 	QNetworkRequest request;
 
 	request.setUrl(url);
@@ -1340,7 +1340,7 @@ void MattermostQt::get_posts(int server_index, int team_index, int channel_type,
 //	        + per_page;
 
 	QUrl url(sc->m_url);
-	url.setPath(urlString);
+	url.setPath(url.path() + urlString);
 	QNetworkRequest request;
 
 	request.setUrl(url);
@@ -1395,7 +1395,7 @@ void MattermostQt::get_posts_before(int server_index, int team_index,
 	QUrlQuery query;
 	query.addQueryItem("before", before->m_id);
 	QUrl url(sc->m_url);
-	url.setPath(urlString);
+	url.setPath(url.path() + urlString);
 	url.setQuery(query.query());
 	QNetworkRequest request;
 
@@ -1427,7 +1427,7 @@ void MattermostQt::post_users_status(int server_index)
 	        + QLatin1String("/users/status/ids");
 
 	QUrl url(sc->m_url);
-	url.setPath(urlString);
+	url.setPath(url.path() + urlString);
 	QNetworkRequest request;
 
 	if(sc->m_user.isEmpty())
@@ -1662,7 +1662,7 @@ void MattermostQt::get_teams_unread(MattermostQt::ServerPtr server)
 
 
 	QUrl url(server->m_url);
-	url.setPath(urlString);
+	url.setPath(url.path() + urlString);
 	QNetworkRequest request;
 
 	request.setUrl(url);
@@ -2095,7 +2095,7 @@ void MattermostQt::websocket_connect(ServerPtr server)
 	serUrl.replace("https://","wss://")
 	        .replace("http://","ws://");
 	QUrl url(serUrl);
-	url.setPath(urlString);
+	url.setPath(url.path() + urlString);
 
 //	QNetworkRequest request;
 //	request_set_headers(request,server);
@@ -4727,7 +4727,7 @@ void MattermostQt::slot_recconect_servers()
 			serUrl.replace("https://","wss://")
 			        .replace("http://","ws://");
 			QUrl url(serUrl);
-			url.setPath(urlString);
+			url.setPath(url.path() + urlString);
 			m_server[i]->m_socket->open(url);
 		}
 	}
