@@ -17,6 +17,7 @@ class MessagesModel : public QAbstractListModel
 	Q_PROPERTY(QString channelId READ getChannelId WRITE setChannelId)
 	Q_PROPERTY(bool atEnd READ atEnd NOTIFY atEndChanged)
 	Q_PROPERTY(int count READ messageCount NOTIFY messageCountChanged)
+	Q_PROPERTY(bool pageActive READ isPageActive WRITE setPageActive NOTIFY pageStatusChanged)
 public:
 	enum DataRoles : int {
 		Text = Qt::UserRole,
@@ -45,6 +46,7 @@ public:
 		RootMessageUserName,
 		ItemHeight,
 		PageOrientation,
+		RoleMessageUnread,
 		UserStatus = MattermostQt::UserStatusRole,
 	};
 	Q_ENUM(DataRoles)
@@ -85,12 +87,15 @@ public:
 	bool    atEnd() const;
 //	Q_INVOKABLE int   getImageSize(int row, int i) const;
 
+	int isPageActive() const;
+	void setPageActive(bool active);
 Q_SIGNALS:
 	void messagesInitialized();
 	void newMessage();
 	void atEndChanged();
 	void messagesEnded();
 	void messageCountChanged();
+	void pageStatusChanged();
 protected slots:
 	void slot_messagesAdded(MattermostQt::ChannelPtr channel);
 	void slot_messagesIsEnd(MattermostQt::ChannelPtr channel);
@@ -107,8 +112,10 @@ private:
 	QString                            m_channel_id;
 	MattermostQt::ChannelPtr           m_channel;
 //	QVector<MattermostQt::MessagePtr>  m_messages;
-//	xxQVector<MattermostQt::UserPtr>     m_users;
+//	xxQVector<MattermostQt::UserPtr>   m_users;
 	QPointer<MattermostQt>             m_mattermost;
+	bool                               m_isPageActive = false;
+	mutable bool                       m_request_channel_viewed = false;
 };
 
 #endif // MESSAGESMODEL_H

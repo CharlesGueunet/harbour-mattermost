@@ -135,9 +135,38 @@ CoverBackground {
         font.pixelSize: Theme.fontSizeLarge
     }
 
+    Row {
+        id: unreadRow
+
+        anchors.top: statusLabel.bottom
+        anchors.horizontalCenter: parent.horizontalCenter
+//        anchors.left: parent.left
+        anchors.topMargin: Theme.paddingLarge
+        anchors.leftMargin: Theme.paddingLarge
+        anchors.rightMargin: Theme.paddingLarge
+        spacing: Theme.paddingLarge
+
+        Icon {
+            id: messageIcon
+            verticalAlignment: "AlignVCenter"
+            source: "image://theme/icon-m-message"
+        }
+
+        Label {
+            id: unreadLabel
+            anchors.verticalCenter: messageIcon.verticalCenter
+            text: context.mattermost.messageUnread
+            wrapMode: Text.Wrap
+            elide: Text.ElideMiddle
+            horizontalAlignment: Text.AlignHCenter
+            verticalAlignment: Text.AlignVCenter
+            font.pixelSize: Theme.fontSizeLarge
+        }
+    }
+
     Label {
         id: error_label
-        anchors.top: statusLabel.bottom
+        anchors.top: unreadRow.bottom
         text: error
         anchors.left: parent.left
         anchors.right: parent.right

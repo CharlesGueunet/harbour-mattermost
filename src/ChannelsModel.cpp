@@ -315,13 +315,13 @@ void ChannelsModel::slot_updateChannel(MattermostQt::ChannelPtr channel,  QVecto
 		headerIndex = m_header_index[ItemType::HeaderDirect] + 1;
 		endIndex = m_channel.size();
 		break;
-//	case MattermostQt::ChannelTypeCount:
+	// case MattermostQt::ChannelTypeCount:
 	default:
 		headerIndex = m_header_index[ItemType::HeaderDirect] + 1;
 		endIndex = m_channel.size();
 		break;
 	}
-	//Q_ASSERT( endIndex < 0 || endIndex > m_channel.size() );
+	// Q_ASSERT( endIndex < 0 || endIndex > m_channel.size() );
 	if( endIndex < 0 || endIndex > m_channel.size() ) {
 		qCritical() << QStringLiteral("Somethig went worng! Reset whole model");
 		beginResetModel();

@@ -122,18 +122,18 @@ void MattermostQt::init_reply_functions()
 void MattermostQt::init_event_functions()
 {
 //	staticMetaObject.indexOfEnumerator("ReplyType");
-	for(int et = 0; et < EventTypeCount; et++ )
-	{
+//	for(int et = 0; et < EventTypeCount; et++ )
+//	{
 //		const QMetaObject *mo = qt_getEnumMetaObject( (EventType)et );
 //		const char *name = qt_getEnumName( (EventType)et );
 //		int enumIdx = mo->indexOfEnumerator(name);
 //		qDebug() << QStringLiteral("ET: %0 with Idx( %1 ) and i( %2 );").arg(name).arg(enumIdx).arg(et);
-		QVariant e = QVariant::fromValue<EventType>((EventType)et);
+//		QVariant e = QVariant::fromValue<EventType>((EventType)et);
 		//qDebug() << QStringLiteral("EventType: ") << (EventType)et << qt_getEnumName( (EventType)et );;
-		qDebug() << QStringLiteral("From QVariant: %0").arg(e.toString());
+//		qDebug() << QStringLiteral("From QVariant: %0").arg(e.toString());
 //		QVariant e2 = QVariant( e.toString() );
 //		qDebug() << QStringLiteral("From string to Variant int: [%0] %1").arg((int)e2.value<EventType>()).arg(e2.toString());
-	}
+//	}
 //	int enumIdx = mo->indexOfEnumerator(qt_getEnumName(enumValue));
 //	return dbg << mo->enumerator(enumIdx).valueToKey(enumValue);
 
@@ -183,6 +183,14 @@ MattermostQt::MattermostQt(QObject *parent )
 
 	m_data_path = QStandardPaths::writableLocation(QStandardPaths::DataLocation);
 	m_cache_path = QStandardPaths::writableLocation(QStandardPaths::CacheLocation);
+
+	if( m_cache_path.isEmpty() ) {
+		qCritical() << QStringLiteral("Cant get CacheLocation");
+//		m_cache_path = "/home/nemo/.cache";
+	}
+
+	qDebug() << QStringLiteral("Global data path is: %0").arg(m_data_path);
+	qDebug() << QStringLiteral("Global cache path is: %0").arg(m_cache_path);
 
 	m_documents_path = QDir(QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation))
 	        .filePath(QCoreApplication::applicationName());
@@ -1758,8 +1766,11 @@ bool MattermostQt::load_settings()
 {
 	QJsonDocument json;
 	QFile jsonFile( m_data_path + QDir::separator() + QLatin1String(F_CONFIG_FILE) );
-	if( !jsonFile.open(QFile::ReadOnly | QFile::Text) )
+	if( !jsonFile.open(QFile::ReadOnly | QFile::Text) ) {
+		qWarning() << QStringLiteral("No config file found.");
 		return false;
+	}
+	qDebug() << QStringLiteral("Read settings from config file: %0").arg(m_data_path + QDir::separator() + QLatin1String(F_CONFIG_FILE));
 
 	QJsonParseError error;
 	json = QJsonDocument::fromJson(jsonFile.readAll(), &error);
@@ -2031,12 +2042,31 @@ SettingsContainer *MattermostQt::settings()
 	return m_settings;
 }
 
+int MattermostQt::messageUnread() const
+{
+	int result = 0;
+	for(ServerPtr server : m_server)
+	{
+		for(TeamPtr team : server->m_teams )
+		{
+			result += team->m_unread_messages + team->m_unread_mentions;
+		}
+		for(ChannelPtr channel : server->m_direct_channels )
+		{
+			result += channel->m_msg_unread + channel->m_mention_count;
+		}
+	}
+	return result;
+}
+
 void MattermostQt::websocket_connect(ServerPtr server)
 {
+	qDebug() << QStringLiteral("Configure WebSocket connetion for server[%0] %1").arg(server->m_self_index).arg(server->m_display_name);
+//	QString origin( QUuid::createUuid().toString() );
 	// server get us authentificztion token, time to open WebSocket!
-	QSharedPointer<QWebSocket> socket(new QWebSocket(QString(), QWebSocketProtocol::VersionLatest, this));
+	QSharedPointer<QWebSocket> socket(new QWebSocket( server->m_url, QWebSocketProtocol::VersionLatest, this));
 	server->m_socket = socket;
-	socket->setProperty(P_SERVER_INDEX,server->m_self_index);
+	socket->setProperty(P_SERVER_INDEX, server->m_self_index);
 
 	if( server->m_trust_cert )
 	{
@@ -2100,7 +2130,7 @@ void MattermostQt::websocket_connect(ServerPtr server)
 //	QNetworkRequest request;
 //	request_set_headers(request,server);
 //	request.setUrl(url);
-
+	qDebug() << QStringLiteral("Try connect to websocket: %0").arg(url.toString());
 	socket->open(url);
 }
 
@@ -2127,9 +2157,9 @@ void MattermostQt::reply_login(QNetworkReply *reply)
 			get_user_info(server_id, server->m_user_id, GET_USER_INFO_current_user);
 		}
 		QString server_dir = QString("%0_%1").arg(server->m_self_index).arg(server->m_user_id);
-		if( server->m_data_path.isEmpty() )
+		if( server->m_data_path.isEmpty() || server->m_data_path != m_data_path + QDir::separator() +  server_dir )
 			server->m_data_path = m_data_path + QDir::separator() +  server_dir;
-		if( server->m_cache_path.isEmpty() )
+		if( server->m_cache_path.isEmpty() || server->m_cache_path != m_cache_path + QDir::separator() +  server_dir )
 			server->m_cache_path = m_cache_path + QDir::separator() +  server_dir;
 		websocket_connect(server);
 		// TODO add singnal server Added
@@ -2303,6 +2333,7 @@ void MattermostQt::reply_get_teams_unread(QNetworkReply *reply)
 		emit teamChanged(team, QVectorInt()
 		                 << TeamsModel::RoleUnreadMentionCount
 		                 << TeamsModel::RoleUnreadMessageCount);
+		emit messageUnreadChanged();
 	}
 }
 
@@ -2807,6 +2838,7 @@ void MattermostQt::reply_post_channel_view(QNetworkReply *reply)
 	channel->m_mention_count = 0;
 	channel->m_msg_unread = 0;
 	emit updateChannel(channel, QVectorInt() << ChannelsModel::MentionCount << ChannelsModel::MessageUnread );
+	emit messageUnreadChanged();
 }
 
 void MattermostQt::reply_get_channel_unread(QNetworkReply *reply)
@@ -2825,6 +2857,7 @@ void MattermostQt::reply_get_channel_unread(QNetworkReply *reply)
 	channel->m_msg_unread    = object["msg_count"].toInt();
 	channel->m_mention_count = object["mention_count"].toInt();
 	emit updateChannel( channel, QVectorInt() << ChannelsModel::MessageUnread << ChannelsModel::MentionCount );
+	emit messageUnreadChanged();
 }
 
 void MattermostQt::reply_get_user_info(QNetworkReply *reply)
@@ -2854,7 +2887,7 @@ void MattermostQt::reply_get_user_info(QNetworkReply *reply)
 
 	QJsonDocument json = QJsonDocument::fromJson(reply->readAll());
 
-	qDebug() << json;
+	// qDebug() << json; // protected data
 
 	if( !json.isObject() )
 	{
@@ -3462,6 +3495,29 @@ void MattermostQt::reply_get_user_image(QNetworkReply *reply)
 	QByteArray replyData = reply->readAll();
 	//qDebug() << replyData;
 	{
+		if( m_cache_path.isEmpty() || m_cache_path != QStandardPaths::writableLocation(QStandardPaths::CacheLocation) )
+		{
+			qCritical() << QStringLiteral("Wrong cache path. %0").arg(m_cache_path);
+			m_cache_path = QStandardPaths::writableLocation(QStandardPaths::CacheLocation);
+		}
+		// strange, check m_cache_path
+		if(  sc->m_cache_path.isEmpty() || sc->m_cache_path != m_cache_path  )
+		{
+			qCritical() << QStringLiteral("Wrong cache path for account: %0").arg(sc->m_cache_path);
+			sc->m_cache_path = m_cache_path + QStringLiteral("/%0_%1").arg(sc->m_self_index).arg(sc->m_user_id);
+			qDebug() << QStringLiteral("Cache path set to: %0").arg(sc->m_cache_path);
+		}
+		else {
+			qDebug() << QStringLiteral("Account cache path is: %0").arg(sc->m_cache_path);
+		}
+
+		if( sc->m_data_path.isEmpty() || sc->m_data_path != m_data_path )
+		{
+			qCritical() << QStringLiteral("Wrong data path for account: %0").arg(sc->m_data_path);
+			sc->m_data_path = m_data_path + QStringLiteral("/%0_%1").arg(sc->m_self_index).arg(sc->m_user_id);
+			qDebug() << QStringLiteral("Data path set to: %0").arg(sc->m_data_path);
+		}
+
 		QString file_path = sc->m_cache_path
 		        + QLatin1String("/users/")
 		        + user->m_id;
@@ -3621,6 +3677,7 @@ void MattermostQt::event_posted(ServerPtr sc, QJsonObject object)
 //				if( mentionsv.isArray() )
 //					qDebug() << mentionsv;
 				emit updateChannel(channel, QVector<int>()<< ChannelsModel::MessageUnread  );
+				emit messageUnreadChanged();
 			}
 		}
 	}
@@ -3677,6 +3734,7 @@ void MattermostQt::event_posted(ServerPtr sc, QJsonObject object)
 			}
 			message->m_team_index = team_index;
 			teamChanged(team, QVectorInt() << TeamsModel::RoleUnreadMessageCount << TeamsModel::RoleUnreadMentionCount );
+			emit messageUnreadChanged();
 		}
 		if( channel && channel_index >= 0)
 		{
@@ -3739,6 +3797,7 @@ void MattermostQt::event_posted(ServerPtr sc, QJsonObject object)
 				}
 				channel->m_msg_unread++;
 				emit updateChannel(channel, QVector<int>() << ChannelsModel::MessageUnread << ChannelsModel::MentionCount );
+				emit messageUnreadChanged();
 			}
 		}
 	}
@@ -4474,8 +4533,8 @@ void MattermostQt::onWebSocketError(QAbstractSocket::SocketError error)
 			server->m_ping_timer.stop();
 			qDebug() << QStringLiteral("Server[%0] (%1)  stop ping timer.").arg(server->m_self_index).arg(server->m_display_name);
 			m_user_status_timer.stop();
-			m_reconnect_server.stop();
-			qDebug() << QStringLiteral("Recconect timer started.");
+			m_reconnect_server.start();
+			qDebug() << QStringLiteral("Reconnect timer started.");
 			server->m_socket->close(QWebSocketProtocol::CloseCodeAbnormalDisconnection, QString("Client closing") );
 		}
 		break;

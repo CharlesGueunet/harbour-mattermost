@@ -45,12 +45,40 @@ QVariant MessagesModel::data(const QModelIndex &index, int role) const
 	case MessagesModel::OriginalId:
 		return QVariant(message->m_original_id);
 	case MessagesModel::Text:
-		return QVariant(message->m_message);
+		{
+			bool have_unread = (m_channel->m_mention_count + m_channel->m_msg_unread > 0) && index.row() == 0;
+			if( have_unread ) {
+				if( m_isPageActive )
+					m_mattermost->post_channel_view(
+					            m_channel->m_server_index,
+					            m_channel->m_team_index,
+					            m_channel->m_type,
+					            m_channel->m_self_index
+					            );
+				else
+					m_request_channel_viewed = true;
+			}
+			return QVariant(message->m_message);
+		}
 		break;
 	case MessagesModel::FormatedText:
-		if( message->m_formated_message.isEmpty() )
-			message->m_formated_message = m_mattermost->parseMD(message->m_message);
-		return QVariant(message->m_formated_message);
+		{
+			bool have_unread = (m_channel->m_mention_count + m_channel->m_msg_unread > 0) && index.row() == 0;
+			if( have_unread ) {
+				if( m_isPageActive )
+					m_mattermost->post_channel_view(
+					            m_channel->m_server_index,
+					            m_channel->m_team_index,
+					            m_channel->m_type,
+					            m_channel->m_self_index
+					            );
+				else
+					m_request_channel_viewed = true;
+			}
+			if( message->m_formated_message.isEmpty() )
+				message->m_formated_message = m_mattermost->parseMD(message->m_message);
+			return QVariant(message->m_formated_message);
+		}
 		break;
 	case MessagesModel::MessageIndex:
 		return QVariant(message->m_self_index);
@@ -253,7 +281,8 @@ QHash<int, QByteArray> MessagesModel::roleNames() const
 	{MessagesModel::RootMessage,         "role_root_message"},
 	{MessagesModel::RootMessageUserName, "role_root_username"},
 	{MessagesModel::ItemHeight,          "role_item_height"},
-	{MessagesModel::PageOrientation,     "role_page_orientation"}};
+	{MessagesModel::PageOrientation,     "role_page_orientation"},
+	{MessagesModel::RoleMessageUnread,   "role_message_unread"}};
 	return names;
 }
 
@@ -463,6 +492,28 @@ bool MessagesModel::atEnd() const
 	if(!m_channel)
 		return false;
 	return m_channel->m_message.size() == m_channel->m_total_msg_count;
+}
+
+int MessagesModel::isPageActive() const
+{
+	return m_isPageActive;
+}
+
+void MessagesModel::setPageActive(bool active)
+{
+	m_isPageActive = active;
+	// if status == 2 - Page is Active
+	if( m_isPageActive && m_request_channel_viewed )
+	{
+		m_request_channel_viewed = false;
+		m_mattermost->post_channel_view(
+		        m_channel->m_server_index,
+		        m_channel->m_team_index,
+		        m_channel->m_type,
+		        m_channel->m_self_index
+		        );
+	}
+	emit pageStatusChanged();
 }
 
 void MessagesModel::slot_messagesAdded(MattermostQt::ChannelPtr channel)

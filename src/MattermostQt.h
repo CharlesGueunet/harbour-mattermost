@@ -478,6 +478,8 @@ public:
 	void (MattermostQt::*m_reply_func[ReplyTypeCount])(QNetworkReply* reply);
 	void init_reply_functions();
 	void init_event_functions();
+
+	Q_PROPERTY(int messageUnread READ messageUnread NOTIFY messageUnreadChanged)
 public:
 	MattermostQt(QObject *parent = nullptr);
 
@@ -612,7 +614,16 @@ public:
 	Q_INVOKABLE void setSettingsContainer(SettingsContainer *settings);
 
 	SettingsContainer *settings();
+	/**
+	 * @brief messageUnread
+	 * get count of message unread for all teams and accounts
+	 * @return unread count
+	 */
+	int messageUnread() const;
+
 Q_SIGNALS:
+	void messageUnreadChanged();
+
 	void serverAdded(ServerPtr server);
 	void serverConnected(int server_index);
 	void serverStateChanged(int server_index, int state);

@@ -34,27 +34,31 @@ Page {
         }
     }
 
+    onStatusChanged: {
+        if( messagesModel !== null ) {
+            messagesModel.pageActive = (status == PageStatus.Active)
+        }
+    }
+
     /** setting up Messages Model Object */
     /** send requset to server, for messages for this chat,
     when Page innitialization is done */
     Component.onCompleted: {
-//        if(status === PageStatus.Active) {
-            if(channel_index >= 0)
-            {
-                context.mattermost.get_posts(server_index,team_index,channel_type,channel_index)
-            }
-            else
-            {
-                context.mattermost.get_channel(server_index,channel_id)
-                context.mattermost.updateChannelInfo.connect(
-                            function onUpdateChannelInfo(ch_id,tm_index,ch_index) {
-                                if( messagesPage.channel_id === ch_id ) {
-                                    messagesPage.team_index = tm_index
-                                    messagesPage.channel_index = ch_index
-                                }
-                            })
-            }
-//        }
+        if(channel_index >= 0)
+        {
+            context.mattermost.get_posts(server_index,team_index,channel_type,channel_index)
+        }
+        else
+        {
+            context.mattermost.get_channel(server_index,channel_id)
+            context.mattermost.updateChannelInfo.connect(
+                        function onUpdateChannelInfo(ch_id,tm_index,ch_index) {
+                            if( messagesPage.channel_id === ch_id ) {
+                                messagesPage.team_index = tm_index
+                                messagesPage.channel_index = ch_index
+                            }
+                        })
+        }
     }
 
 
@@ -104,20 +108,6 @@ Page {
             }// MenuItem
         }// PullDownMenu
 
-        /*delegate: ListItem {
-            id: listItem
-            contentHeight: richTextLabel.height
-            ListView.onRemove: animateRemoval(listItem)
-            Label {
-                id: richTextLabel
-                text: "<style>a:link { color: " + Theme.highlightColor + "; }</style>" + role_formated_text
-                wrapMode: Text.Wrap
-                textFormat: Text.RichText
-                width: messagesListView.width
-            }
-        }*/
-
-
         delegate: MessageLabel {
             id: messageLabel
             messagesModel:    messagesPage.messagesModel
@@ -140,23 +130,6 @@ Page {
             context: messagesPage.context
             width: messagesListView.width
             showMenuOnPressAndHold: isMessageMineOrOther
-
-            Component.onCompleted: {
-                if( role_row_index >= messagesModel.count - 1 ) {
-                    is_last = true;
-                    messagesPage.onStatusChanged.connect(function view() {
-                        if( messagesPage.status === PageStatus.Active ) {
-                            console.debug( "[" + String(messagesModel.count - role_row_index) + "] Call signal: channel_viewed")
-                            context.mattermost.post_channel_view(
-                                    server_index,
-                                    team_index,
-                                    channel_type,
-                                    channel_index
-                                )
-                        }
-                    })
-                }
-            }
 
             menu: ContextMenu {
                 id: contextmenu
