@@ -1,0 +1,287 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>mdMain</class>
+ <widget class="QMainWindow" name="mdMain">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>810</width>
+    <height>653</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>MainWindow</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <layout class="QVBoxLayout" name="verticalLayout">
+    <item>
+     <widget class="QSplitter" name="splitter_2">
+      <property name="orientation">
+       <enum>Qt::Vertical</enum>
+      </property>
+      <widget class="QSplitter" name="splitter">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <widget class="QTabWidget" name="tabWidget_2">
+        <property name="tabPosition">
+         <enum>QTabWidget::North</enum>
+        </property>
+        <property name="tabShape">
+         <enum>QTabWidget::Rounded</enum>
+        </property>
+        <property name="currentIndex">
+         <number>1</number>
+        </property>
+        <widget class="QWidget" name="html_tab">
+         <attribute name="title">
+          <string>HTML</string>
+         </attribute>
+         <layout class="QVBoxLayout" name="verticalLayout_6">
+          <property name="spacing">
+           <number>3</number>
+          </property>
+          <property name="leftMargin">
+           <number>3</number>
+          </property>
+          <property name="topMargin">
+           <number>3</number>
+          </property>
+          <property name="rightMargin">
+           <number>3</number>
+          </property>
+          <property name="bottomMargin">
+           <number>3</number>
+          </property>
+          <item>
+           <widget class="QPlainTextEdit" name="htmlArea">
+            <property name="readOnly">
+             <bool>false</bool>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+        <widget class="QWidget" name="md_tab">
+         <attribute name="title">
+          <string>MD</string>
+         </attribute>
+         <layout class="QVBoxLayout" name="verticalLayout_7">
+          <property name="spacing">
+           <number>3</number>
+          </property>
+          <property name="leftMargin">
+           <number>3</number>
+          </property>
+          <property name="topMargin">
+           <number>3</number>
+          </property>
+          <property name="rightMargin">
+           <number>3</number>
+          </property>
+          <property name="bottomMargin">
+           <number>3</number>
+          </property>
+          <item>
+           <widget class="QPlainTextEdit" name="sourceText">
+            <property name="styleSheet">
+             <string notr="true">font: 10pt &quot;Monospace&quot;;</string>
+            </property>
+            <property name="plainText">
+             <string>:man_office_worker:
+# Hello
+## Second level
+### Another level
+:smile: - try smile
+**bold**
+*italic*
+***bold italic***
+```c++
+void main(int argc, char **argv) {
+    printf(&quot;Hello world \n&quot;);
+    return 0;
+}
+```
+![my image](http://192.168.10.133/share/designer/edit16.png)
+* first
+* second
+* third
+1. cmon
+2. cmon
+3. cmon
+need table and something like that later</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </widget>
+       <widget class="QWidget" name="layoutWidget">
+        <layout class="QVBoxLayout" name="verticalLayout_5">
+         <item>
+          <widget class="QLabel" name="label_3">
+           <property name="text">
+            <string>Discout-2.2.4 Flags</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QListWidget" name="m_flagsWidget">
+           <property name="editTriggers">
+            <set>QAbstractItemView::NoEditTriggers</set>
+           </property>
+           <property name="showDropIndicator" stdset="0">
+            <bool>false</bool>
+           </property>
+           <property name="alternatingRowColors">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </widget>
+      <widget class="QWidget" name="layoutWidget">
+       <layout class="QVBoxLayout" name="verticalLayout_4">
+        <item>
+         <widget class="QLabel" name="label_2">
+          <property name="text">
+           <string>Форматированный текст</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QTabWidget" name="tabWidget">
+          <property name="currentIndex">
+           <number>1</number>
+          </property>
+          <widget class="QWidget" name="tab">
+           <attribute name="title">
+            <string>TextArea</string>
+           </attribute>
+           <layout class="QVBoxLayout" name="verticalLayout_3">
+            <property name="spacing">
+             <number>3</number>
+            </property>
+            <property name="leftMargin">
+             <number>3</number>
+            </property>
+            <property name="topMargin">
+             <number>3</number>
+            </property>
+            <property name="rightMargin">
+             <number>3</number>
+            </property>
+            <property name="bottomMargin">
+             <number>3</number>
+            </property>
+            <item>
+             <widget class="QTextEdit" name="textArea"/>
+            </item>
+           </layout>
+          </widget>
+          <widget class="QWidget" name="tab_2">
+           <attribute name="title">
+            <string>QML</string>
+           </attribute>
+           <layout class="QVBoxLayout" name="verticalLayout_2">
+            <property name="spacing">
+             <number>3</number>
+            </property>
+            <property name="leftMargin">
+             <number>3</number>
+            </property>
+            <property name="topMargin">
+             <number>3</number>
+            </property>
+            <property name="rightMargin">
+             <number>3</number>
+            </property>
+            <property name="bottomMargin">
+             <number>3</number>
+            </property>
+            <item>
+             <widget class="QQuickWidget" name="quickArea">
+              <property name="resizeMode">
+               <enum>QQuickWidget::SizeRootObjectToView</enum>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </widget>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>810</width>
+     <height>22</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menuFile">
+    <property name="title">
+     <string>Файл</string>
+    </property>
+    <addaction name="actSaveKeyLayout"/>
+    <addaction name="separator"/>
+    <addaction name="actExit"/>
+   </widget>
+   <addaction name="menuFile"/>
+  </widget>
+  <widget class="QStatusBar" name="statusbar"/>
+  <widget class="QToolBar" name="toolBar">
+   <property name="windowTitle">
+    <string>toolBar</string>
+   </property>
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+   <addaction name="actEmojiTest"/>
+  </widget>
+  <action name="actEmojiTest">
+   <property name="icon">
+    <iconset resource="res.qrc">
+     <normaloff>:/resources/emoji/feelsgood.png</normaloff>:/resources/emoji/feelsgood.png</iconset>
+   </property>
+   <property name="text">
+    <string>Emoji тест</string>
+   </property>
+   <property name="toolTip">
+    <string>Загрузить Emoji тест</string>
+   </property>
+  </action>
+  <action name="actSaveKeyLayout">
+   <property name="text">
+    <string>Сохранить QML клавиатуру</string>
+   </property>
+  </action>
+  <action name="actExit">
+   <property name="text">
+    <string>Выход</string>
+   </property>
+  </action>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>QQuickWidget</class>
+   <extends>QWidget</extends>
+   <header>QtQuickWidgets/QQuickWidget</header>
+  </customwidget>
+ </customwidgets>
+ <resources>
+  <include location="res.qrc"/>
+ </resources>
+ <connections/>
+</ui>
