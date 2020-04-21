@@ -48,7 +48,7 @@ void mdMain::updateText()
 {
 	QString text = ui->sourceText->toPlainText();
 	// first replace emiji
-	if (true)
+	if (false) // now it should work inside discout
 	{
 		QRegExp em("\\:([a-zA-Z_0-9\\-\\+]+)\\:");
 		int last_pos = em.indexIn(text, 0);
@@ -350,7 +350,7 @@ void parse_emoji_html()
 
 void mdMain::on_actEmojiTest_triggered()
 {
-	QFile file(":/gistfile1.md");
+	QFile file(":/resources/gistfile1.md");
 	file.open(QFile::ReadOnly);
 	ui->sourceText->setPlainText( QString::fromUtf8(file.readAll()) );
 }

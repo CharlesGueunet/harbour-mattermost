@@ -9,7 +9,9 @@
 #include <QHash>
 #include <QFile>
 
+#ifndef DESKTOP_APP
 #include <libsailfishsilica/silicatheme.h>
+#endif
 
 class CppHash
 {
@@ -33,8 +35,11 @@ CppHash::CppHash()
 {
 	if(!parse_emoji_json( QString("%0/emoji.json").arg(EMOJI_PATH) ))
 		qCritical() << "Cant read emoji.json file! Path:" << QString("%0/emoji.json").arg(EMOJI_PATH);
-
+#ifdef DESKTOP_APP
+	h0 = 14;
+#else
 	h0 = Silica::Theme::instance()->fontSizeSmall();
+#endif
 	h5 = h0 + INCRASE_FONT;
 	h4 = h5 + INCRASE_FONT;
 	h3 = h4 + INCRASE_FONT;
@@ -69,7 +74,9 @@ bool CppHash::parse_emoji_json(QString path)
 	{
 		QJsonObject current = ar[i].toObject();
 		QString image_name = current["image"].toString();
-        QString image = QStringLiteral("svg/") + image_name.replace(".png",".svg");
+		if( image_name.indexOf(QStringLiteral("00")) == 0 ) // if name bgins with 00, just remove it
+			image_name = image_name.mid(2);
+		QString image = QStringLiteral("svg/") + image_name.replace(".png",".svg");
 		QRegExp re(".*[a-z]+\\-[a-z]+.*");
 		//short_names
 		QJsonArray short_names = current["short_names"].toArray();

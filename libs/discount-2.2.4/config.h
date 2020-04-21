@@ -1,6 +1,6 @@
 /*
- * configuration for markdown, generated Вт фев  5 23:00:42 MSK 2019
- * by andreev@andreev.fontanka.local
+ * configuration for markdown, generated Thu Feb  5 23:00:42 MSK 2019
+ * by sashikknox@gmail.com
  */
 #ifndef __AC_MARKDOWN_D
 #define __AC_MARKDOWN_D 1
