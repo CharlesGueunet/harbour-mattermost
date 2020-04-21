@@ -69,7 +69,7 @@ bool CppHash::parse_emoji_json(QString path)
 	{
 		QJsonObject current = ar[i].toObject();
 		QString image_name = current["image"].toString();
-		QString image = image_name.replace(".png",".svg");
+        QString image = QStringLiteral("svg/") + image_name.replace(".png",".svg");
 		QRegExp re(".*[a-z]+\\-[a-z]+.*");
 		//short_names
 		QJsonArray short_names = current["short_names"].toArray();
@@ -113,7 +113,7 @@ int CppHash::find_emoji(const char *emoji_short_name, int size, char **picture_p
 	QHash<QString, QString>::iterator it =  emoji.find(short_name);
 	if ( it != emoji.end() )
 	{
-		QString path_pic = QStringLiteral("%0/svg/%1").arg(EMOJI_PATH).arg(it.value());
+        QString path_pic = QStringLiteral("%0/%1").arg(EMOJI_PATH).arg(it.value());
 		buffer = path_pic.toLocal8Bit();
 		*picture_path = buffer.data();
 		return path_pic.size();
