@@ -1505,17 +1505,17 @@ text(Paragraph *pp, MMIOT *f)
 						Qstring("\"/>", f);
 						mmiotseek(f, mmiottell(f) + i );
 						f->last = '>';
+						i = -1;
 					}
-					else
-					{
-						Qchar(':', f);
-						for(rep = 1; rep < i; rep++)
-							Qchar( T(f->in)[rep + f->isp-1], f );
-						mmiotseek(f, mmiottell(f) + i );
-						f->last = ':';
-						Qchar(':', f);
-					}
-					i = -1;
+//					else
+//					{ // this bug #23
+//						f->last = ':';
+//						for(rep = 1; rep < i; rep++)
+//							Qchar( T(f->in)[rep + f->isp-1], f );
+//						Qchar(':', f);
+//						mmiotseek(f, mmiottell(f) + i );
+//						Qchar(':', f);
+//					}
 					break;
 				}
 			}
@@ -1526,9 +1526,10 @@ text(Paragraph *pp, MMIOT *f)
 			break;
 		}
 	/* fall through to default */
-	default:    f->last = c;
-		    Qchar(c, f);
-		    break;
+	default:
+		f->last = c;
+		Qchar(c, f);
+		break;
 	}
     }
     /* truncate the input string after we've finished processing it */
