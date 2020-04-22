@@ -310,7 +310,7 @@ need table and something like that later</string>
   <action name="actEmojiTest">
    <property name="icon">
     <iconset resource="res.qrc">
-     <normaloff>:/resources/emoji/feelsgood.png</normaloff>:/resources/emoji/feelsgood.png</iconset>
+     <normaloff>:/resources/emoji/png/feelsgood.png</normaloff>:/resources/emoji/png/feelsgood.png</iconset>
    </property>
    <property name="text">
     <string>Emoji тест</string>

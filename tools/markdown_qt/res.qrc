@@ -1,7 +1,7 @@
 <RCC>
     <qresource prefix="/">
-        <file>../../resources/emoji/feelsgood.png</file>
         <file>resources/gistfile1.md</file>
         <file>qml/TextView.qml</file>
+        <file>../../resources/emoji/png/feelsgood.png</file>
     </qresource>
 </RCC>

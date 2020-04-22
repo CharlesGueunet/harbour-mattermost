@@ -33,7 +33,7 @@ mdMain::mdMain(QWidget *parent) :
 	QQmlProperty(quickText, "text").write("Hello!");
 	//object->setProperty("text", QString("Ebana rot!"));
 
-//	parse_emoji_json();
+	parse_emoji_json();
 
 	generateFlags();
 	updateText();
@@ -253,7 +253,7 @@ QString toUnicode(QString &s)
 
 bool mdMain::parse_emoji_json()
 {
-	QFile file( QStringLiteral("%0/emoji.json").arg(EMOJI_PATH) );
+	QFile file( QStringLiteral("%0/emoji__.json").arg(EMOJI_PATH) );
 	file.open(QFile::ReadOnly);
 	QJsonParseError error;
 	QJsonDocument doc = QJsonDocument::fromJson(file.readAll(), &error);
@@ -319,21 +319,21 @@ bool mdMain::parse_emoji_json()
 		QString short_name =current.left(current.length() - 4);
 		QString image = current;
 		out_names.push_back( short_name );
-		out_item["image"]  = image;
+		out_item["image"]  = QString("png/") + image;
 		out_item["short_names"] = out_names;
 		out_item["category"] = QStringLiteral("Other");
 		out_array.push_back(out_item);
 	}
-//	doc.setArray( out_array );
-//	if( output.isNull() )
-//		output = QJsonDocument(doc);
-//	else
-//		output = doc;
-//	QFile out_file( QStringLiteral("%0/emoji_out.json").arg(EMOJI_PATH) );
-//	out_file.open(QFile::WriteOnly);
-//	QByteArray data = output.toJson(QJsonDocument::Indented);
-//	out_file.write( data );
-//	out_file.close();
+	doc.setArray( out_array );
+	if( output.isNull() )
+		output = QJsonDocument(doc);
+	else
+		output = doc;
+	QFile out_file( QStringLiteral("%0/emoji_out.json").arg(EMOJI_PATH) );
+	out_file.open(QFile::WriteOnly);
+	QByteArray data = output.toJson(QJsonDocument::Indented);
+	out_file.write( data );
+	out_file.close();
 }
 
 

@@ -55,7 +55,9 @@ emoji.files = $$PWD/resources/emoji/emoji.json
 emoji.path = /usr/share/$$TARGET/emoji/
 emoji_svg.files = $$PWD/resources/emoji/svg
 emoji_svg.path = /usr/share/$$TARGET/emoji/
-INSTALLS += emoji emoji_svg
+emoji_png.files = $$PWD/resources/emoji/png
+emoji_png.path = /usr/share/$$TARGET/emoji/
+INSTALLS += emoji emoji_svg emoji_png
 
 debug: DEFINES += _DEBUG
 !debug: DEFINES += _RELEASE
