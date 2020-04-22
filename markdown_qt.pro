@@ -13,6 +13,7 @@ TARGET = markdown_qt
 QMAKE_CFLAGS += -fno-permissive 
 
 SOURCES += \
+    tools/markdown_qt/jsonmodel.cpp \
     tools/markdown_qt/main.cpp \
     tools/markdown_qt/mdMain.cpp \
     src/cpphash.cpp
@@ -23,6 +24,8 @@ FORMS += \
     tools/markdown_qt/mdMain.ui
 
 HEADERS += \
+    src/cpphash.h \
+    tools/markdown_qt/jsonmodel.h \
     tools/markdown_qt/mdMain.h \
     src/c_cpphash.h
 
@@ -33,7 +36,7 @@ include(libs/discount.pri)
 
 DISTFILES += \
     .gitignore \
-    emoji.json \
+    resources/emoji/emoji.json \
     emoji_pretty.json \
     emoji_utf8.rb \
     gistfile1.md

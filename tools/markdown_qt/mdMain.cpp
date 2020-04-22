@@ -251,80 +251,89 @@ QString toUnicode(QString &s)
 	return QString::fromUtf16(&r, 1);
 }
 
-void mdMain::parse_emoji_json()
+bool mdMain::parse_emoji_json()
 {
-	QFile file( QStringLiteral(EMOJI_PATH) + "/emoji_pretty.json");
+	QFile file( QStringLiteral("%0/emoji.json").arg(EMOJI_PATH) );
 	file.open(QFile::ReadOnly);
 	QJsonParseError error;
 	QJsonDocument doc = QJsonDocument::fromJson(file.readAll(), &error);
-
+	file.close();
 	if (!error.errorString().isEmpty())
 		qWarning() << error.errorString();
 	if (doc.isEmpty())
-		return;
+		return false;
 	if (!doc.isArray())
-		return;
+		return false;
 
 	QJsonArray ar = doc.array();
-//	Hash *simple_hash = hash_new();
+	QJsonArray out_array;
 	for (int i = 0; i < ar.size(); i ++ )
 	{
+		QJsonObject out_item;
+
 		QJsonObject current = ar[i].toObject();
-		QString unicode = current["unified"].toString();
-		//unicode.insert(0, "\\u");
-		QString une = toUnicode(unicode);
-		//qrc:/emoji/64/0023.png
-		QString short_name = current["short_name"].toString();
 		QString image_name = current["image"].toString();
-		QString image = QString("<img width=\"16\" height=\"16\" src=\"qrc:/emoji/32/") + image_name + QString("\"/>");
-		emoji.insert( short_name, image );
-		QByteArray utf8_name = short_name.toLatin1();
-		QByteArray utf8_image = image_name.toLatin1();
-//		hash_add_entry(simple_hash, utf8_name.data(), utf8_name.size(), utf8_image.data(), utf8_image.size() );
+		if( image_name.indexOf(QStringLiteral("00")) == 0 ) // if name bgins with 00, just remove it
+			image_name = image_name.mid(2);
+		QString image = QStringLiteral("svg/") + image_name.replace(".png",".svg");
+		QRegExp re(".*[a-z]+\\-[a-z]+.*");
+
+		out_item["image"] = image;
 		//short_names
 		QJsonArray short_names = current["short_names"].toArray();
+		QJsonArray out_names;
 		for( int j = 0; j < short_names.size(); j++)
-			emoji.insert( short_names[j].toString(), image );
+		{
+			QString short_name = short_names[j].toString();
+			if( re.indexIn(short_name) != -1 )
+				short_name.replace("-","_");
+			emoji.insert( short_name, image );
+			out_names.push_back( short_name );
+		}
+		out_item["short_names"] = out_names;
+		out_item["category"] = current["category"];
+		out_array.push_back(out_item);
 	}
-	
-	qDebug() << "All done!";
-}
-
-void mdMain::parse_emoji_json2()
-{
-	QFile file(QStringLiteral(EMOJI_PATH) + "/emoji.json");
-	file.open(QFile::ReadOnly);
-	QJsonParseError error;
-	QJsonDocument doc = QJsonDocument::fromJson(file.readAll(), &error);
-
-	if (!error.errorString().isEmpty())
-		qWarning() << error.errorString();
-	if (doc.isEmpty())
-		return;
-	if (!doc.isArray())
-		return;
-
-	QJsonArray ar = doc.array();
-	for (int i = 0; i < ar.size(); i ++ )
+	// save result now! ( just for test )
+	// for now, just modify it by code
+	QStringList other;
+	other << "bowtie.png";
+	other << "feelsgood.png";
+	other << "finnadie.png";
+	other << "goberserk.png";
+	other << "godmode.png";
+	other << "hurtrealbad.png";
+	other << "neckbeard.png";
+	other << "octocat.png";
+	other << "rage1.png";
+	other << "rage2.png";
+	other << "rage3.png";
+	other << "rage4.png";
+	other << "shipit.png";
+	other << "suspect.png";
+	other << "trollface.png";
+	for(QString current : other)
 	{
-		QJsonObject current = ar[i].toObject();
-		QString unicode = current["emoji"].toString();
-		//unicode.insert(0, "\\u");
-		QString une = toUnicode(unicode);
-		//qrc:/emoji/64/0023.png
-		QString image = QString("<img width=\"16\" height=\"16\" src=\"qrc:/emoji/32/") + current["image"].toString() + QString("\"/>");
-		
-		QJsonArray aliases = current["aliases"].toArray();
-		for( int j = 0; j < aliases.size(); j++)
-			emoji.insert( aliases[j].toString(), image );
+		QJsonObject out_item;
+		QJsonArray out_names;
+		QString short_name =current.left(current.length() - 4);
+		QString image = current;
+		out_names.push_back( short_name );
+		out_item["image"]  = image;
+		out_item["short_names"] = out_names;
+		out_item["category"] = QStringLiteral("Other");
+		out_array.push_back(out_item);
 	}
-	qDebug() << "All done!";
-}
-
-void mdMain::parse_emoji_from_rb()
-{
-	QFile file(QStringLiteral(EMOJI_PATH) + "/emoji_utf8.rb");
-	file.open(QFile::ReadOnly);
+//	doc.setArray( out_array );
+//	if( output.isNull() )
+//		output = QJsonDocument(doc);
+//	else
+//		output = doc;
+//	QFile out_file( QStringLiteral("%0/emoji_out.json").arg(EMOJI_PATH) );
+//	out_file.open(QFile::WriteOnly);
+//	QByteArray data = output.toJson(QJsonDocument::Indented);
+//	out_file.write( data );
+//	out_file.close();
 }
 
 
@@ -358,4 +367,12 @@ void mdMain::on_actEmojiTest_triggered()
 void mdMain::on_actExit_triggered()
 {
 	QApplication::exit(0);
+}
+
+void mdMain::on_act_saveJson_triggered()
+{
+	QFile out_file( QStringLiteral("%0/emoji_out.json").arg(EMOJI_PATH) );
+	out_file.open(QFile::WriteOnly);
+	out_file.write( output.toJson(QJsonDocument::Indented) );
+	out_file.close();
 }

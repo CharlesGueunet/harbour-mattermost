@@ -4,6 +4,7 @@
 
 #include <QMainWindow>
 #include <QListWidgetItem>
+#include <QJsonDocument>
 
 namespace Ui
 {
@@ -33,11 +34,7 @@ public:
 protected:
 	void changeEvent(QEvent *e);
 
-	void parse_emoji_json();
-	void parse_emoji_json2();
-
-	void parse_emoji_from_rb();
-
+	bool parse_emoji_json();
 private slots:
 	void on_pushButton_clicked();
 
@@ -51,10 +48,13 @@ private slots:
 	
 	void on_actExit_triggered();
 	
+	void on_act_saveJson_triggered();
+
 private:
 	Ui::mdMain *ui;
 	QObject *quickText;
 	QHash<QString, QString> emoji;
+	QJsonDocument output;
 };
 
 #endif // MDMAIN_H
