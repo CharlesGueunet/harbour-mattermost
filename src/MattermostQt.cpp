@@ -54,8 +54,8 @@
 #define P_CERT_PATH          "cert_path"
 #define P_NEED_SAVE_SETTINGS "save_settings"
 // config file name
-#define F_CONFIG_FILE       "config.json"
-#define F_SETTINGS_FILE       "settings.json"
+#define F_CONFIG_FILE        "config.json"
+#define F_SETTINGS_FILE      "settings.json"
 // some helpers defines
 #define cmp(s,t) s.compare(#t) == 0
 #define scmp(s1,s2) s1.compare(s2) == 0
@@ -182,7 +182,43 @@ MattermostQt::MattermostQt(QObject *parent )
 	        .filePath(QCoreApplication::applicationName());
 
 	m_data_path = QStandardPaths::writableLocation(QStandardPaths::DataLocation);
+	if( m_data_path.indexOf( QCoreApplication::organizationName()) != -1 )
+	{	// this wrong path, try fix it
+		// its /home/nemo/.local/share/sashikknox/harbour-mattermost
+		QDir dataDir(m_data_path);
+
+		QString wrong_path = m_data_path;
+		m_data_path.remove( QCoreApplication::organizationName().append("/") );
+
+		if( dataDir.exists() )
+		{ // try it move to right location
+			if( dataDir.rename(wrong_path, m_data_path) ) {
+				qInfo() << QStringLiteral("Data dir moved from '%0' to '%1'").arg(wrong_path).arg(m_data_path);
+				dataDir.remove( wrong_path.remove(QCoreApplication::applicationName().append("/")) );
+			}
+			else
+				qWarning() << QStringLiteral("Cant move dir from '%0' to '%1'").arg(wrong_path).arg(m_data_path);
+		}
+	}
 	m_cache_path = QStandardPaths::writableLocation(QStandardPaths::CacheLocation);
+	if( m_cache_path.indexOf( QCoreApplication::organizationName()) != -1 )
+	{	// this wrong path, try fix it
+		// its /home/nemo/.local/share/sashikknox/harbour-mattermost
+		QDir dataDir(m_cache_path);
+
+		QString wrong_path = m_cache_path;
+		m_cache_path.remove( QCoreApplication::organizationName().append("/") );
+
+		if( dataDir.exists() )
+		{ // try it move to right location
+			if( dataDir.rename(wrong_path, m_cache_path) ) {
+				qInfo() << QStringLiteral("Cache dir moved from '%0' to '%1'").arg(wrong_path).arg(m_cache_path);
+				dataDir.remove( wrong_path.remove(QCoreApplication::applicationName().append("/")) );
+			}
+			else
+				qWarning() << QStringLiteral("Cache move dir from '%0' to '%1'").arg(wrong_path).arg(m_cache_path);
+		}
+	}
 
 	if( m_cache_path.isEmpty() ) {
 		qCritical() << QStringLiteral("Cant get CacheLocation");
