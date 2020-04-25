@@ -252,6 +252,20 @@ MattermostQt::~MattermostQt()
 	delete m_mdParser;
 }
 
+MattermostQt::ApplicationStatus MattermostQt::getApplicationStatus() const
+{
+	return m_appStatus;
+}
+
+void MattermostQt::setApplicationStatus(MattermostQt::ApplicationStatus status)
+{
+	if( m_appStatus == status )
+		return;
+	m_appStatus = status;
+	qDebug() << QStringLiteral("Appcliaction status changed: %0").arg( QVariant::fromValue<ApplicationStatus>( status ).toString() );
+	emit onApplciationStatusChanged();
+}
+
 QString MattermostQt::getVersion() const
 {
 	return MATTERMOSTQT_VERSION;

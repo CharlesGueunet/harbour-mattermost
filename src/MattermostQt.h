@@ -147,6 +147,12 @@ public:
 	};
 	Q_ENUM(UserSystemRole)
 
+	enum ApplicationStatus : int {
+		AppActive,
+		AppInactive
+	};
+	Q_ENUM(ApplicationStatus)
+
 	/**
 	 * @brief The FileContainer struct
 	 * all files list stored in serverptr
@@ -480,10 +486,14 @@ public:
 	void init_event_functions();
 
 	Q_PROPERTY(int messageUnread READ messageUnread NOTIFY messageUnreadChanged)
+	Q_PROPERTY(ApplicationStatus applicationStatus READ getApplicationStatus WRITE setApplicationStatus NOTIFY onApplciationStatusChanged)
 public:
 	MattermostQt(QObject *parent = nullptr);
 
 	~MattermostQt();
+
+	ApplicationStatus getApplicationStatus() const;
+	void setApplicationStatus(ApplicationStatus status);
 
 	Q_INVOKABLE QString getVersion() const;
 	// Server helper functions
@@ -622,6 +632,7 @@ public:
 	int messageUnread() const;
 
 Q_SIGNALS:
+	void onApplciationStatusChanged();
 	void messageUnreadChanged();
 
 	void serverAdded(ServerPtr server);
@@ -809,6 +820,7 @@ protected:
 	int    m_ping_server_timeout;
 	/** channels, need update before put to model */
 	//	QList<ChannelContainer>   m_stackedChannels;
+	ApplicationStatus m_appStatus = ApplicationStatus::AppInactive;
 };
 
 #endif // MATTERMOSTQT_H

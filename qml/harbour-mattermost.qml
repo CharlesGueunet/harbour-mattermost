@@ -49,7 +49,7 @@ ApplicationWindow
         previewBody: previewString
     }
 
-    onStateChanged: {
+    Component.onCompleted: {
         context.mattermost.newMessage.connect(
             function onNewMessage(channel_name, user_name){
                 mainwindow.previewString =
@@ -60,6 +60,20 @@ ApplicationWindow
                 notification.publish()
             }
         )
+    }
+
+    Connections {
+        target: Qt.application
+        onActiveChanged : {
+            if( Qt.application.active ) {
+//                console.debug( "Application is active")
+                context.mattermost.applicationStatus = MattermostQt.AppActive
+            }
+            else {
+//                console.debug( "Application is NOT active")
+                context.mattermost.applicationStatus = MattermostQt.AppInactive
+            }
+        }
     }
 
     initialPage: Component {

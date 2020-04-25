@@ -322,6 +322,9 @@ void MessagesModel::setMattermost(MattermostQt *mattermost)
 
 	connect( m_mattermost.data(), &MattermostQt::attachedFilesChanged,
 	         this, &MessagesModel::slot_attachedFilesChanged );
+
+	connect( m_mattermost.data(), &MattermostQt::onApplciationStatusChanged,
+	         this, &MessagesModel::slot_appStatusChanged );
 }
 
 MattermostQt *MessagesModel::getMattermost() const
@@ -501,9 +504,12 @@ int MessagesModel::isPageActive() const
 
 void MessagesModel::setPageActive(bool active)
 {
+	if( m_isPageActive == active )
+		return;
+	qDebug() << QStringLiteral("Messages page status changed: active is %0").arg(active?"true":"false");
 	m_isPageActive = active;
 	// if status == 2 - Page is Active
-	if( m_isPageActive && m_request_channel_viewed )
+	if( m_isPageActive && m_request_channel_viewed  && m_mattermost->getApplicationStatus() == MattermostQt::AppActive )
 	{
 		m_request_channel_viewed = false;
 		m_mattermost->post_channel_view(
@@ -515,6 +521,21 @@ void MessagesModel::setPageActive(bool active)
 	}
 	emit pageStatusChanged();
 }
+
+void MessagesModel::slot_appStatusChanged()
+{
+	if( m_isPageActive && m_request_channel_viewed  && m_mattermost->getApplicationStatus() == MattermostQt::AppActive )
+	{
+		m_request_channel_viewed = false;
+		m_mattermost->post_channel_view(
+		        m_channel->m_server_index,
+		        m_channel->m_team_index,
+		        m_channel->m_type,
+		        m_channel->m_self_index
+		        );
+	}
+}
+
 
 void MessagesModel::slot_messagesAdded(MattermostQt::ChannelPtr channel)
 {
@@ -759,6 +780,7 @@ void MessagesModel::slot_attachedFilesChanged(MattermostQt::MessagePtr message, 
 		dataChanged(i, i, roles);
 	}
 }
+
 
 
 

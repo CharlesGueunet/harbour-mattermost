@@ -108,6 +108,7 @@ protected slots:
 	void slot_usersUpdated(QVector<MattermostQt::UserPtr> users,  QVectorInt roles);
 	void slot_userUpdated(MattermostQt::UserPtr user,  QVectorInt roles);
 	void slot_attachedFilesChanged(MattermostQt::MessagePtr message, QVector<QString> file_ids,  QVectorInt roles);
+	void slot_appStatusChanged();
 private:
 	QString                            m_channel_id;
 	MattermostQt::ChannelPtr           m_channel;
