@@ -186,16 +186,19 @@ MattermostQt::MattermostQt(QObject *parent )
 	if( m_data_path.indexOf( QCoreApplication::organizationName()) != -1 )
 	{	// this wrong path, try fix it
 		// its /home/nemo/.local/share/sashikknox/harbour-mattermost
-		QDir dataDir(m_data_path);
 
-		QString wrong_path = m_data_path;
+		QString wrong_path = m_data_path + QStringLiteral("/");
+		QDir dataDir(wrong_path);
 		m_data_path.remove( QCoreApplication::organizationName().append("/") );
 
 		if( dataDir.exists() )
 		{ // try it move to right location
 			if( dataDir.rename(wrong_path, m_data_path) ) {
 				qInfo() << QStringLiteral("Data dir moved from '%0' to '%1'").arg(wrong_path).arg(m_data_path);
-				dataDir.remove( wrong_path.remove(QCoreApplication::applicationName().append("/")) );
+				wrong_path.remove(QCoreApplication::applicationName().append("/"));
+				QDir removeDir( wrong_path );
+				if( removeDir.removeRecursively() )
+					qWarning() << QStringLiteral("Old data dir removed %0").arg(wrong_path);
 			}
 			else
 				qWarning() << QStringLiteral("Cant move dir from '%0' to '%1'").arg(wrong_path).arg(m_data_path);
@@ -205,16 +208,20 @@ MattermostQt::MattermostQt(QObject *parent )
 	if( m_cache_path.indexOf( QCoreApplication::organizationName()) != -1 )
 	{	// this wrong path, try fix it
 		// its /home/nemo/.local/share/sashikknox/harbour-mattermost
-		QDir dataDir(m_cache_path);
 
-		QString wrong_path = m_cache_path;
+		QString wrong_path = m_cache_path + QStringLiteral("/");
+		QDir dataDir(wrong_path);
 		m_cache_path.remove( QCoreApplication::organizationName().append("/") );
 
 		if( dataDir.exists() )
 		{ // try it move to right location
 			if( dataDir.rename(wrong_path, m_cache_path) ) {
 				qInfo() << QStringLiteral("Cache dir moved from '%0' to '%1'").arg(wrong_path).arg(m_cache_path);
-				dataDir.remove( wrong_path.remove(QCoreApplication::applicationName().append("/")) );
+//				dataDir.remove( wrong_path.remove(QCoreApplication::applicationName().append("/")) );
+				wrong_path.remove(QCoreApplication::applicationName().append("/"));
+				QDir removeDir( wrong_path );
+				if( removeDir.removeRecursively() )
+					qWarning() << QStringLiteral("Old cache dir removed %0").arg(wrong_path);
 			}
 			else
 				qWarning() << QStringLiteral("Cache move dir from '%0' to '%1'").arg(wrong_path).arg(m_cache_path);

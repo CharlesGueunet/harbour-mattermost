@@ -5,6 +5,15 @@
 # Add newest entries to the top of the list.
 # Separate entries from eachother with a blank line.
 #
+* Sun Apr 26  2020 sashikknox <sashikknox@gmail.com> - 0.1.4-8
+- fix #28 - change cache and data paths (with moving old cache and data to new paths).
+- fix #29 - now teams/channels labels show unread/mentions count.
+- fix #23 - wrong MD parsing, when use double ':' like here `this awesome link:https://customlink.com/subpage` - link is not clickable... now it fixed
+- fix some emoji recognition, and add some special emojis ( like `rage[1-4] , trollface, godmode and other`
+- fix #27 - show teams icons
+- fix #30 - cant connect to mattermost, if it runs in subdirectory
+- some progress in #6 - recieve `is typing` event from channels.
+- bug fixes, refactoring, new bugs!
 
 * Fri Mar 27  2020 sashikknox <sashikknox@gmail.com> - 0.1.4-3
 - fix #30 , cant connect to server, if it in subfolder on sever. like https://example.com/mattermost

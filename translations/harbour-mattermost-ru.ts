@@ -135,7 +135,7 @@
     </message>
     <message>
         <source>Typing</source>
-        <translation type="unfinished"></translation>
+        <translation>Печатает</translation>
     </message>
 </context>
 <context>
@@ -391,15 +391,15 @@
     </message>
     <message>
         <source>Send message icon</source>
-        <translation type="unfinished"></translation>
+        <translation>Значек кнопки послать сообщение</translation>
     </message>
     <message>
         <source>Mail Icon</source>
-        <translation type="unfinished"></translation>
+        <translation>Значек &quot;Письмо&quot;</translation>
     </message>
     <message>
         <source>Send Icon</source>
-        <translation type="unfinished"></translation>
+        <translation>Значек &quot;Бумажный самолет&quot;</translation>
     </message>
 </context>
 <context>
