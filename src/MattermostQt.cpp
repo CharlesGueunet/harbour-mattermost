@@ -97,6 +97,7 @@ void MattermostQt::init_reply_functions()
 	//func_pointer = (reply_func)&MattermostQt::reply_login;
 	BIND_REPLY_FUNCTION(login);
 	BIND_REPLY_FUNCTION(get_teams);
+	BIND_REPLY_FUNCTION(get_team_icon);
 	BIND_REPLY_FUNCTION(get_public_channels);
 	BIND_REPLY_FUNCTION(get_channel);
 	BIND_REPLY_FUNCTION(post_channel_view);
@@ -548,6 +549,62 @@ void MattermostQt::get_teams(int server_index)
 	QNetworkReply *reply = m_networkManager->get(request);
 	reply->setProperty(P_REPLY_TYPE, QVariant(ReplyType::rt_get_teams) );
 	reply->setProperty(P_SERVER_INDEX, QVariant(server_index) );
+}
+
+void MattermostQt::get_team_icon(int server_index, int team_index)
+{
+	if( server_index < 0 || server_index >= m_server.size() )
+		return;
+	ServerPtr sc = m_server[server_index];
+
+	if( team_index < 0 || team_index >= sc->m_teams.size() )
+	{
+		return;
+	}
+	TeamPtr team = sc->m_teams[team_index];
+	qDebug() << QStringLiteral("Request: Get team [%0.%1] id(%2) icon").arg(server_index).arg(team_index).arg(team->m_id);
+
+//	if(!team->m_image_path.isEmpty())
+//	{
+	    if( QFile::exists(sc->m_cache_path + QStringLiteral("/teams/%0/image.png").arg(team->m_id) ) )
+		{
+			team->m_image_path = sc->m_cache_path + QStringLiteral("/teams/%0/image.png").arg(team->m_id);
+			QFileInfo fileInfo(team->m_image_path);
+			QDateTime modified = fileInfo.lastModified();
+//			fileInfo.
+			qlonglong team_modified = modified.toMSecsSinceEpoch();
+			// check file date? and teams last update date
+			if( team->m_update_at <= modified.toMSecsSinceEpoch() )
+			{
+				QVectorInt roles;
+				roles << TeamsModel::TeamIcon;
+				emit teamChanged(team, roles);
+				return;
+			}
+		}
+//	}
+
+	QString urlString = QLatin1String("/api/v")
+	        + QString::number(sc->m_api)
+	        + QLatin1String("/teams/")
+	        + team->m_id
+	        + QLatin1String("/image");
+
+	QUrl url(sc->m_url);
+	url.setPath(url.path() + urlString);
+	QNetworkRequest request;
+
+	request.setUrl(url);
+	request_set_headers(request,sc);
+	request_urlencoded(request);
+
+	if(sc->m_trust_cert)
+		request.setSslConfiguration(sc->m_cert);
+
+	QNetworkReply *reply = m_networkManager->get(request);
+	reply->setProperty(P_REPLY_TYPE, QVariant(ReplyType::rt_get_team_icon) );
+	reply->setProperty(P_SERVER_INDEX, QVariant(server_index) );
+	reply->setProperty(P_TEAM_INDEX, QVariant(team_index) );
 }
 
 void MattermostQt::get_public_channels(int server_index, QString team_id)
@@ -1289,6 +1346,43 @@ void MattermostQt::get_teams_unread(int server_index)
 		return;
 	get_teams_unread(m_server[server_index]);
 }
+
+//void MattermostQt::get_users(int server_index)
+//{
+//	if( server_index < 0 || server_index >= m_server.size() )
+//		return;
+//	ServerPtr sc = m_server[server_index];
+
+//	// first check if user requested allready
+//	for(int u = 0; u < sc->m_requested_users.size(); u++ )
+//	{
+//		if( sc->m_requested_users[u] == userId )
+//			return;
+//	}
+
+//	QString urlString = QLatin1String("/api/v")
+//	        + QString::number(sc->m_api)
+//	        + QLatin1String("/users/")
+//	        + userId;
+
+//	QUrl url(sc->m_url);
+//	url.setPath(url.path() + urlString);
+//	QNetworkRequest request;
+
+//	request.setUrl(url);
+//	request_set_headers(request,sc);
+//	request_urlencoded(request);
+
+//	if(sc->m_trust_cert)
+//		request.setSslConfiguration(sc->m_cert);
+
+//	QNetworkReply *reply = m_networkManager->get(request);
+//	reply->setProperty(P_REPLY_TYPE, QVariant(ReplyType::rt_get_user_info) );
+//	reply->setProperty(P_SERVER_INDEX, QVariant(server_index) );
+//	reply->setProperty(P_TEAM_INDEX, QVariant(team_index) );
+//	reply->setProperty(P_DIRECT_CHANNEL, QVariant(direct_channel) );
+//	reply->setProperty(P_USER_ID, QVariant(userId));
+//}
 
 void MattermostQt::get_post(int server_index, QString post_id, MattermostQt::MessagePtr message)
 {
@@ -2300,11 +2394,12 @@ void MattermostQt::reply_get_teams(QNetworkReply *reply)
 				TeamPtr tc(new TeamContainer(object) );
 				tc->m_server_index = server_index;
 				tc->m_self_index = m_server[server_index]->m_teams.size();
-				m_server[server_index]->m_teams.append(tc);
+				m_server[server_index]->m_teams.push_back(tc);
 				// TODO move to Thread all filesystem operations
 				tc->save_json( m_server[server_index]->m_data_path );
 				// ---------------------------------------------
 				emit teamAdded(tc);
+				get_team_icon(tc->m_server_index, tc->m_self_index);
 			}
 			else
 				qDebug() << "array[" << i << "]: " << array.at(i);
@@ -2385,6 +2480,58 @@ void MattermostQt::reply_get_teams_unread(QNetworkReply *reply)
 		                 << TeamsModel::RoleUnreadMessageCount);
 		emit messageUnreadChanged();
 	}
+}
+
+void MattermostQt::reply_get_team_icon(QNetworkReply *reply)
+{
+	bool is_ok;
+	int server_index = reply->property(P_SERVER_INDEX).toInt(&is_ok);
+//	Q_UNUSED(server_index)
+	if(!is_ok)
+		return;
+	int team_index = reply->property(P_TEAM_INDEX).toInt(&is_ok);
+	if(!is_ok)
+		return;
+	if(server_index < 0 || server_index >= m_server.size())
+		return;
+	ServerPtr server = m_server[server_index];
+	if(team_index < 0 || team_index >= server->m_teams.size() )
+		return;
+	TeamPtr team = server->m_teams[team_index];
+
+	QByteArray replyData = reply->readAll();
+	{
+		QString file_path = server->m_cache_path
+		        + QLatin1String("/teams/")
+		        + team->m_id;
+		QDir dir;
+		if( QFile::exists(file_path + QLatin1String("/image.png")) )
+		{
+			qWarning() << QStringLiteral("Remove old team id(%0) image: %1").arg(team->m_id).arg(file_path + QLatin1String("/image.png"));
+			dir.remove(file_path + QLatin1String("/image.png"));
+		}
+
+		dir.mkpath(file_path);
+		file_path += QLatin1String("/image.png");
+		QFile save(file_path);
+		if(save.open(QIODevice::WriteOnly))
+		{
+			save.write( replyData );
+			save.close();
+			team->m_image_path = file_path;
+			qInfo() << QStringLiteral("Team \"%0\" id(%1) image saved: %2").arg(team->m_display_name).arg(team->m_id).arg(file_path);
+		}
+		else
+			qWarning() << QStringLiteral("Cant save team id(%1) image: %0").arg(file_path).arg(team->m_id);
+	}
+	if(!team->m_image_path.isEmpty())
+	{
+		QVectorInt roles;
+		roles << TeamsModel::TeamIcon;
+		emit teamChanged(team, roles);
+	}
+	else
+		qWarning() << QStringLiteral("Team id(%0) image not saved!").arg(team->m_id);
 }
 
 void MattermostQt::reply_get_post(QNetworkReply *reply)

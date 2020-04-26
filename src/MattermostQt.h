@@ -50,6 +50,7 @@ public:
 		rt_delete_message,
 		rt_post_message_edit,
 		rt_get_channel_unread,
+		rt_get_team_icon,
 		//======================
 		ReplyTypeCount
 	};
@@ -411,6 +412,7 @@ public:
 		qlonglong  m_delete_at = 0;
 		int        m_server_index; /**< server index in QVector */
 		int        m_self_index;   /**< self index in vector */
+		QString    m_image_path;
 
 		// unread data
 		int  m_unread_messages = 0;
@@ -516,6 +518,7 @@ public:
 	                                     bool trustCertificate = false, QString ca_cert_path = QString(), QString cert_path = QString());
 	void get_login(ServerPtr sc);
 	Q_INVOKABLE void get_teams(int server_index);
+	Q_INVOKABLE void get_team_icon(int server_index, int team_index);
 	Q_INVOKABLE void get_public_channels(int server_index, QString team_id);
 	Q_INVOKABLE void get_channel(int server_index, QString channel_id);
 	Q_INVOKABLE void get_channel(int server_index, int team_index, int channel_type, int channel_index);
@@ -547,6 +550,8 @@ public:
 	Q_INVOKABLE void get_user_image(int server_index, int user_index);
 	Q_INVOKABLE void get_user_info(int server_index, QString userId,  int team_index = -1);
 	Q_INVOKABLE void get_teams_unread(int server_index);
+//	Q_INVOKABLE void get_users(int server_index);
+
 //	Q_INVOKABLE void get_posts(int server_index, int team_index, QString channel_id);
 	/**
 	 * @brief get_post download post by its id
@@ -736,8 +741,10 @@ protected:
 	// repliest
 	void reply_login(QNetworkReply *reply);
 	void reply_get_teams(QNetworkReply *reply);
+
 	void reply_get_team(QNetworkReply *reply);
 	void reply_get_teams_unread(QNetworkReply *reply);
+	void reply_get_team_icon(QNetworkReply *reply);
 	void reply_get_post(QNetworkReply *reply);
 	void reply_get_posts(QNetworkReply *reply);
 	void reply_get_posts_before(QNetworkReply *reply);

@@ -46,20 +46,32 @@ Page {
     // The effective value will be restricted by ApplicationWindow.allowedOrientations
     allowedOrientations: Orientation.All
 
+
     property TeamsModel teamsmodel : TeamsModel {
         id: teamsmodel_id
-        mattermost: context.mattermost
+        //        mattermost: context.mattermost
         server_index: teamsPage.server_index
     }
 
-    onStatusChanged: {
-        if( status === PageStatus.Active ) {
-            context.mattermost.get_teams(server_index)
-        }
+    onContextChanged: {
+        teamsmodel.mattermost = context.mattermost
     }
 
-    SilicaFlickable {
-        anchors.fill: parent
+    Component.onCompleted: {
+
+        //        if( status === PageStatus.Active ) {
+        if( context && context.mattermost)
+            context.mattermost.get_teams(server_index)
+        //        }
+    }
+
+    SilicaListView {
+        id: teamlist
+
+        header: PageHeader {
+            id: pageHeader
+            title: servername
+        }
 
         PullDownMenu {
             MenuItem {
@@ -72,34 +84,14 @@ Page {
             }
         }
 
-         VerticalScrollDecorator {}
-//        // Tell SilicaFlickable the height of its content.
-//        contentHeight: teamlist.height +
+        VerticalScrollDecorator {}
+        anchors.fill: parent
+        spacing: Theme.paddingMedium
 
-        SilicaListView {
-            id: teamlist
-            anchors.fill: parent
-//            anchors.top: parent.top
-            width: parent.width
-            spacing: Theme.paddingSmall
 
-            VerticalScrollDecorator {}
+        model: teamsmodel
 
-            header: PageHeader {
-                id: pageHeader
-                title: servername
-            }
-
-            model: teamsmodel
-
-            delegate: TeamLabel {
-                anchors {
-                    left:parent.left;
-                    right:parent.right;
-                    leftMargin: Settings.pageMargin
-                    rightMargin: Settings.pageMargin
-                }
-            }
+        delegate: TeamLabel {
         }
     }
 }

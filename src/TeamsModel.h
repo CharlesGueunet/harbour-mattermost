@@ -37,7 +37,8 @@ public:
 		Index,
 		ServerIndex,
 		ServerCustomName,
-		ItemType
+		ItemType,
+		TeamIcon
 	};
 
 public:

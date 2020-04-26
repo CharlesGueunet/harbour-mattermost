@@ -1,5 +1,6 @@
 import QtQuick 2.0
 import Sailfish.Silica 1.0
+import QtGraphicalEffects 1.0
 import "../model"
 import "../components"
 import ru.sashikknox 1.0
@@ -17,6 +18,7 @@ Page {
     property int unread_messages : 0
     property string teamid
     property string team_label
+    property string teamIcon
 
     property int ct_public: MattermostQt.ChannelPublic
     property int ct_private: MattermostQt.ChannelPrivate
@@ -66,6 +68,29 @@ Page {
         header: PageHeader {
             id: pageheader
             title: team_label
+            extraContent.children : [
+                Image {
+                    id: teamIcon
+                    source: channelsPage.teamIcon
+                    anchors.left: parent.left
+                    anchors.leftMargin: Theme.paddingLarge
+                    anchors.verticalCenter: parent.verticalCenter
+                    width: Theme.itemSizeSmall
+                    height: width
+
+                    layer.enabled: true
+                    layer.effect: OpacityMask {
+                        maskSource: maskRect
+                    }
+
+                    Rectangle {
+                        id: maskRect
+                        anchors.fill: teamIcon
+                        radius: Theme.paddingMedium
+                        visible: false
+                    }
+                }
+            ]
         }
 
         delegate: ListItem {
@@ -123,7 +148,7 @@ Page {
                 }
                 //                    anchors.topMargin: Theme.paddingSmall
                 anchors.leftMargin: Theme.paddingLarge
-                anchors.rightMargin: Theme.paddingMedium
+                anchors.rightMargin: Theme.paddingLarge
             }
             onClicked: {
                 var messages = pageStack.pushAttached(

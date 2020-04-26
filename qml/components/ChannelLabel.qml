@@ -96,7 +96,7 @@ Item {
             Rectangle {
                 id: unreadLabelRect
                 visible: _channel_unread > 0
-                color: Theme.rgba(Theme.primaryColor,0.8)
+                color: Theme.rgba("white",0.8)
                 width: Math.max(context.avatarSize * 0.5, labelUnreadCount.contentWidth  + labelUnreadCount.anchors.margins + labelUnreadCount.contentHeight )
                 height: labelUnreadCount.contentHeight + labelUnreadCount.anchors.margins
                 radius: height * 0.5

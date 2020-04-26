@@ -11,6 +11,7 @@ class ChannelsModel : public QAbstractListModel
 	Q_OBJECT
 
 	Q_PROPERTY(MattermostQt *mattermost READ mattermost WRITE setMattermost)
+	Q_PROPERTY(QString teamIcon READ teamIcon NOTIFY teamIconChanged)
 public:
 	enum DataRoles {
 		DisplayName = Qt::UserRole + 1,
@@ -70,8 +71,14 @@ public:
 	MattermostQt *mattermost();
 	void setMattermost(MattermostQt *mattermost);
 
+	QString teamIcon() const;
+
+Q_SIGNALS:
+	void teamIconChanged();
+
 protected:
 	void clear();
+
 
 protected Q_SLOTS:
 	void slot_channelAdded(MattermostQt::ChannelPtr channel);
@@ -79,6 +86,7 @@ protected Q_SLOTS:
 	void slot_updateChannel(MattermostQt::ChannelPtr channel,  QVectorInt roles);
 	void slot_usersUpdated(QVector<MattermostQt::UserPtr> users,  QVectorInt roles);
 	void slot_userUpdated(MattermostQt::UserPtr user,  QVectorInt roles);
+	void slot_teamChanged(MattermostQt::TeamPtr team, QVectorInt roles);
 private:
 //	QVector<QString> m_display_name;
 	QVector<QString> m_header;
@@ -87,6 +95,7 @@ private:
 	 QVectorInt     m_type;
 //	QVector<QString> m
 	// indexes of headers
+	 MattermostQt::TeamPtr m_team;
 	int m_header_index[HeadersCount];
 	QPointer<MattermostQt> m_mattermost;
 };

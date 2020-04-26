@@ -60,6 +60,9 @@ QVariant TeamsModel::data(const QModelIndex &index, int role) const
 	else if(role == DataRoles::ServerCustomName) {
 		return QVariant( m_mattermost->get_server_name(m_server_index) );
 	}
+	else if(role == DataRoles::TeamIcon ) {
+		return team->m_image_path;
+	}
 	return QVariant();
 }
 
@@ -77,7 +80,8 @@ QHash<int, QByteArray> TeamsModel::roleNames() const
 	{ DataRoles::UserCount,               "user_count" },
 	{ DataRoles::Index,                   "role_team_index" },
 	{ DataRoles::ServerIndex,             "role_server_index" },
-	{ DataRoles::ServerCustomName,        "role_server_display_name" } };
+	{ DataRoles::ServerCustomName,        "role_server_display_name" },
+	{ DataRoles::TeamIcon,                "role_team_icon" } };
 	return names;
 }
 

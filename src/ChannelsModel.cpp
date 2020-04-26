@@ -1,4 +1,5 @@
 #include "ChannelsModel.h"
+//#include "TeamsModel.h"
 
 ChannelsModel::ChannelsModel(QObject *parent)
     : QAbstractListModel(parent)
@@ -218,6 +219,13 @@ void ChannelsModel::setMattermost(MattermostQt *mattermost)
 	connect( m_mattermost.data(), &MattermostQt::userUpdated, this, &ChannelsModel::slot_userUpdated );
 }
 
+QString ChannelsModel::teamIcon() const
+{
+	if( !m_team )
+		return QString();
+	return m_team->m_image_path;
+}
+
 void ChannelsModel::clear()
 {
 	if( m_header.size() == 3 )
@@ -254,6 +262,10 @@ void ChannelsModel::slot_channelAdded(MattermostQt::ChannelPtr channel)
 	case MattermostQt::ChannelPublic:
 		insertIndex = m_header_index[ItemType::HeaderPrivate]++;
 		m_header_index[ItemType::HeaderDirect]++;
+//		if( !m_team ) {
+//			m_team = m_mattermost->teamAt(channel->m_server_index, channel->m_team_index);
+//			connect( m_mattermost.data(), &MattermostQt::teamChanged, this, &ChannelsModel::slot_teamChanged );
+//		}
 		break;
 	case MattermostQt::ChannelPrivate:
 		insertIndex = m_header_index[ItemType::HeaderDirect]++;
@@ -366,6 +378,14 @@ void ChannelsModel::slot_userUpdated(MattermostQt::UserPtr user,  QVectorInt rol
 
 	QModelIndex ibegin = index(headerIndex);
 	dataChanged(ibegin,ibegin,roles);
+}
+
+void ChannelsModel::slot_teamChanged(MattermostQt::TeamPtr team, QVectorInt roles)
+{
+	// TODO
+	if( m_team != team )
+		return;
+//	if( roles.contains(TeamsModel::) )
 }
 
 //void ChannelsModel::setMattermost(MattermostQt *mattermost)
