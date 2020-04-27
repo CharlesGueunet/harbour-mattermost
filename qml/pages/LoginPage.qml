@@ -61,6 +61,8 @@ Page {
                     cert_text_field.text = context.mattermost.get_server_ca_cert_path(server_index);
                 }
                 connectionStatus = status_server_unconnected
+                specialmessage.text = message
+                specialmessage.opacity = 1
             }
         );
         if ( context.mattermost.get_server_count() === 1 ) {
@@ -151,6 +153,7 @@ Page {
                 anchors { left: parent.left; right: parent.right }
                 EnterKey.enabled: text || inputMethodComposing
                 EnterKey.iconSource: "image://theme/icon-m-enter-next"
+                inputMethodHints: Qt.ImhNoAutoUppercase
                 EnterKey.onClicked: {
                     isComplete = true;
                     login_id.focus = true;
@@ -182,6 +185,7 @@ Page {
                 anchors { left: parent.left; right: parent.right }
                 label: qsTr("Username or Email address")
                 placeholderText: label
+                inputMethodHints: Qt.ImhEmailCharactersOnly | Qt.ImhNoAutoUppercase
                 EnterKey.enabled: text || inputMethodComposing
                 EnterKey.iconSource: "image://theme/icon-m-enter-next"
                 EnterKey.onClicked: {
@@ -195,6 +199,7 @@ Page {
             TextField {
                 id: password
                 property bool isComplete: false
+                inputMethodHints: Qt.ImhNoPredictiveText | Qt.ImhHiddenText
                 echoMode: TextInput.Password
                 anchors { left: parent.left; right: parent.right }
                 label: qsTr("Password"); placeholderText: label

@@ -35,11 +35,11 @@ Page {
         {
             isuptodate = true;
             context.mattermost.get_public_channels(server_index,teamid)
-            context.mattermost.replyFinished.connect( function func(request_type) {
-                if( request_type == MattermostQt.rt_get_public_channels ) {
-                    first_run = false
-                }
-            })
+//            context.mattermost.replyFinished.connect( function func(request_type) {
+//                if( request_type == MattermostQt.rt_get_public_channels ) {
+//                    first_run = false
+//                }
+//            })
         }
     }
 

@@ -486,15 +486,4 @@
         <translation>关于</translation>
     </message>
 </context>
-<context>
-    <name>harbour-mattermost</name>
-    <message>
-        <source>New post on </source>
-        <translation>新张贴</translation>
-    </message>
-    <message>
-        <source> by user </source>
-        <translation>通过用户</translation>
-    </message>
-</context>
 </TS>

@@ -13,7 +13,7 @@ ListItem {
     contentHeight: Theme.itemSizeLarge
     property int unread_count : role_unread_message + role_unread_mention
 
-    property string imagePath : (role_team_icon.length !== 0) ? role_team_icon : "image://theme/icon-lock-social"
+    property string imagePath : (role_team_icon.length !== 0) ? role_team_icon : Qt.resolvedUrl("qrc:/resources/logo_rect_white.png") + String("?") + Theme.rgba(Theme.primaryColor,Theme.opacityLow)
     Image {
         id: teamIcon
         source: bgitem.imagePath

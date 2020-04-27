@@ -61,6 +61,7 @@ Item {
             spacing: Theme.paddingMedium
             Loader {
                 id: channel_icon
+                anchors.verticalCenter: parent.verticalCenter
                 sourceComponent:
                     switch(channelType) {
                     case MattermostQt.ChannelDirect:
@@ -72,6 +73,7 @@ Item {
             }
 
             Column {
+                anchors.verticalCenter: parent.verticalCenter
                 Label {
                     id: labelname
                     text: _display_name
@@ -146,6 +148,7 @@ Item {
             topMargin: _type == ChannelsModel.Channel ? Theme.horizontalPageMargin : Theme.paddingSmall
             bottomMargin: loader.topMargin
         }
+        anchors.verticalCenter: parent.verticalCenter
 
         sourceComponent:
             switch(_type)

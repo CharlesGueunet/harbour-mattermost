@@ -6,7 +6,7 @@
 Name:       harbour-mattermost
 
 # >> macros
-%define __requires_exclude ^libQt5Core.so.5(Qt_5_PRIVATE_API)|libQt5Core.so.*|libQt5WebSockets.so.5(Qt_5)|libgcrypt*$
+#%define __requires_exclude ^libQt5Core.so.5(Qt_5_PRIVATE_API)|libQt5Core.so.*|libQt5WebSockets.so.5(Qt_5)|libgcrypt*$
 #%define __requires_exclude ^|libQt5WebSockets.so.*$
 # << macros
 
@@ -16,7 +16,7 @@ Name:       harbour-mattermost
 %{?qtc_builddir:%define _builddir %qtc_builddir}
 Summary:    Mattermost Sailfish client
 Version:    0.1.4
-Release:    8
+Release:    11
 Group:      Qt/Qt
 License:    LICENSE
 Source0:    %{name}-%{version}.tar.bz2
@@ -29,6 +29,7 @@ BuildRequires:  pkgconfig(Qt5Qml)
 BuildRequires:  pkgconfig(Qt5Quick)
 BuildRequires:  pkgconfig(Qt5DBus)
 BuildRequires:  pkgconfig(Qt5Svg)
+BuildRequires:  pkgconfig(Qt5WebSockets)
 BuildRequires:  pkgconfig(nemonotifications-qt5)
 BuildRequires:  desktop-file-utils
 

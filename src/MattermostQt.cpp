@@ -65,8 +65,11 @@
 #define GET_USER_INFO_current_user   -2 // request user info for current loggined user
 
 //#ifdef _RELEASE
+#define request_urlencoded(requset) \
+	request.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-urlencoded")
+
 #define request_set_headers(requset, server) \
-	/*request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");*/ \
+	request_urlencoded(request); \
 	request.setHeader(QNetworkRequest::UserAgentHeader, QStringLiteral("Sailfish Mattermost v%0").arg(MATTERMOSTQT_VERSION) ); \
 	if( !server->m_cookie.isEmpty() ) \
 	    request.setHeader(QNetworkRequest::CookieHeader, server->m_cookie); \
@@ -75,8 +78,6 @@
 #define request_json(requset) \
 	request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json")
 
-#define request_urlencoded(requset) \
-	request.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-urlencoded")
 
 Q_DECLARE_METATYPE(MattermostQt::FilePtr)
 Q_DECLARE_METATYPE(MattermostQt::ChannelPtr)
@@ -204,18 +205,19 @@ MattermostQt::MattermostQt(QObject *parent )
 				qWarning() << QStringLiteral("Cant move dir from '%0' to '%1'").arg(wrong_path).arg(m_data_path);
 		}
 	}
+
 	m_cache_path = QStandardPaths::writableLocation(QStandardPaths::CacheLocation);
 	if( m_cache_path.indexOf( QCoreApplication::organizationName()) != -1 )
 	{	// this wrong path, try fix it
 		// its /home/nemo/.local/share/sashikknox/harbour-mattermost
 
 		QString wrong_path = m_cache_path + QStringLiteral("/");
-		QDir dataDir(wrong_path);
+		QDir cacheDir(wrong_path);
 		m_cache_path.remove( QCoreApplication::organizationName().append("/") );
 
-		if( dataDir.exists() )
+		if( cacheDir.exists() )
 		{ // try it move to right location
-			if( dataDir.rename(wrong_path, m_cache_path) ) {
+			if( cacheDir.rename(wrong_path, m_cache_path) ) {
 				qInfo() << QStringLiteral("Cache dir moved from '%0' to '%1'").arg(wrong_path).arg(m_cache_path);
 //				dataDir.remove( wrong_path.remove(QCoreApplication::applicationName().append("/")) );
 				wrong_path.remove(QCoreApplication::applicationName().append("/"));
@@ -224,7 +226,7 @@ MattermostQt::MattermostQt(QObject *parent )
 					qWarning() << QStringLiteral("Old cache dir removed %0").arg(wrong_path);
 			}
 			else
-				qWarning() << QStringLiteral("Cache move dir from '%0' to '%1'").arg(wrong_path).arg(m_cache_path);
+				qWarning() << QStringLiteral("Cant cache move dir from '%0' to '%1'").arg(wrong_path).arg(m_cache_path);
 		}
 	}
 
@@ -372,6 +374,9 @@ void MattermostQt::post_login(QString server, QString login, QString password,
 	QString urlString = QLatin1String("/api/v")
 	        + QString::number(api)
 	        + QLatin1String("/users/login");
+//	QRegExp hasPort(":[0-9]+");
+//	if( server.indexOf("https://") >= 0 && )
+//		server.append(":443")
 
 	QUrl url(server);
 	url.setPath(url.path() + urlString);
@@ -388,6 +393,7 @@ void MattermostQt::post_login(QString server, QString login, QString password,
 	request.setHeader(QNetworkRequest::ServerHeader, "application/json; charset=utf-8");
 	request.setHeader(QNetworkRequest::ContentLengthHeader, QByteArray::number( json.toJson().size() ));
 	request.setHeader(QNetworkRequest::UserAgentHeader, QString("MattermosQt v%0").arg(MATTERMOSTQT_VERSION) );
+	request_urlencoded(request);
 	request.setRawHeader("X-Custom-User-Agent", QString("MattermosQt v%0").arg(MATTERMOSTQT_VERSION).toUtf8());
 
 	QNetworkReply *reply = m_networkManager->post(request, json.toJson() );
@@ -2215,7 +2221,7 @@ void MattermostQt::websocket_connect(ServerPtr server)
 	qDebug() << QStringLiteral("Configure WebSocket connetion for server[%0] %1").arg(server->m_self_index).arg(server->m_display_name);
 //	QString origin( QUuid::createUuid().toString() );
 	// server get us authentificztion token, time to open WebSocket!
-	QSharedPointer<QWebSocket> socket(new QWebSocket( server->m_url, QWebSocketProtocol::VersionLatest, this));
+	QSharedPointer<QWebSocket> socket(new QWebSocket( QString(), QWebSocketProtocol::VersionLatest, this));
 	server->m_socket = socket;
 	socket->setProperty(P_SERVER_INDEX, server->m_self_index);
 
@@ -2273,14 +2279,23 @@ void MattermostQt::websocket_connect(ServerPtr server)
 	        + QLatin1String("/websocket");
 
 	QString serUrl = server->m_url;
-	serUrl.replace("https://","wss://")
-	        .replace("http://","ws://");
+	if( serUrl.indexOf("https://") >= 0 )
+		serUrl.replace("https://","wss://");
+	else if( serUrl.indexOf("http://") >= 0 )
+		serUrl.replace("http://","ws://");
+	else
+		serUrl.replace("https://","wss://")
+		        .replace("http://","ws://");
+
+	/// fix #31
 	QUrl url(serUrl);
 	url.setPath(url.path() + urlString);
 
-//	QNetworkRequest request;
-//	request_set_headers(request,server);
-//	request.setUrl(url);
+	if( url.toString().indexOf("wss://") >= 0 && (url.port() == 80 || url.port() == -1) ) {
+		url.setPort(443);
+		qWarning() << QStringLiteral("Force set port to 443 for WebSocket connection");
+	}
+
 	qDebug() << QStringLiteral("Try connect to websocket: %0").arg(url.toString());
 	socket->open(url);
 }
@@ -3277,22 +3292,53 @@ void MattermostQt::reply_error(QNetworkReply *reply)
 			QString error_id = object["id"].toString();
 			QString message = object["message"].toString();
 			qDebug() << object;
-			if( error_id.compare("api.user.check_user_password.invalid.app_error") == 0 )
-			{
-				emit onConnectionError(ConnectionError::WrongPassword, QObject::trUtf8("Login failed because of invalid password"), -1 );
+			if( error_id.indexOf("api.") == 0 ) {
+				error_id = error_id.mid(4);
+				if( error_id.compare("user.check_user_password.invalid.app_error") == 0 )
+				{
+					emit onConnectionError(ConnectionError::WrongPassword, QObject::tr("Login failed because of invalid password"), -1 );
+				}
+				else if( error_id.compare("context.session_expired.app_error") == 0 )
+				{
+					int server_index  = reply->property(P_SERVER_INDEX).toInt();
+					emit onConnectionError(ConnectionError::SessionExpired, message, server_index);
+				}
+				else if( error_id.compare("user.login.invalid_credentials_email_username") == 0 )
+				{
+					int server_index  = reply->property(P_SERVER_INDEX).toInt();
+					emit onConnectionError(ConnectionError::WrongPasswordOrEmail, message, server_index);
+				}
+				else if( error_id.indexOf("team.") == 0 ) {
+					error_id = error_id.mid(5);
+					if( error_id == QStringLiteral("get_team_icon.read_file.app_error") ){
+						// team has no icon
+						int si = reply->property(P_SERVER_INDEX).toInt();
+						int ti = reply->property(P_TEAM_INDEX).toInt();
+						TeamPtr team = teamAt(si,ti);
+						if(team) {
+							team->m_image_path = "";
+							qWarning() << QStringLiteral("Team id(%0) has no icon.").arg(team->m_id);
+							ServerPtr server = m_server[si];
+							QString file_path = server->m_cache_path
+							        + QLatin1String("/teams/")
+							        + team->m_id;
+							QDir dir;
+							if( QFile::exists(file_path + QLatin1String("/image.png")) )
+							{
+								qWarning() << QStringLiteral("Remove old team id(%0) image: %1").arg(team->m_id).arg(file_path + QLatin1String("/image.png"));
+								dir.remove(file_path + QLatin1String("/image.png"));
+							}
+						}
+						else
+							qWarning() << QStringLiteral("Team has no icon.");
+					}
+				}
 			}
-			else if( error_id.compare("api.context.session_expired.app_error") == 0 )
-			{
+			else {
 				int server_index  = reply->property(P_SERVER_INDEX).toInt();
-				emit onConnectionError(ConnectionError::SessionExpired, message, server_index);
+				emit onConnectionError(ConnectionError::UnknownError, QStringLiteral("(%0): %1").arg(error_id).arg(message), server_index);
+				qWarning() << QStringLiteral("Unparsed error json: %0").arg(QVariant(json).toString());
 			}
-			else if( error_id.compare("api.user.login.invalid_credentials_email_username") == 0 )
-			{
-				int server_index  = reply->property(P_SERVER_INDEX).toInt();
-				emit onConnectionError(ConnectionError::WrongPasswordOrEmail, message, server_index);
-			}
-			else
-				qWarning() << json;
 		}
 #ifdef _DEBUG
 		qWarning() << json;
@@ -3699,13 +3745,13 @@ void MattermostQt::reply_get_user_image(QNetworkReply *reply)
 	QByteArray replyData = reply->readAll();
 	//qDebug() << replyData;
 	{
-		if( m_cache_path.isEmpty() || m_cache_path != QStandardPaths::writableLocation(QStandardPaths::CacheLocation) )
+		if( m_cache_path.isEmpty() || m_cache_path != generateCachePath() )
 		{
 			qCritical() << QStringLiteral("Wrong cache path. %0").arg(m_cache_path);
-			m_cache_path = QStandardPaths::writableLocation(QStandardPaths::CacheLocation);
+			m_cache_path = generateCachePath();
 		}
 		// strange, check m_cache_path
-		if(  sc->m_cache_path.isEmpty() || sc->m_cache_path != m_cache_path  )
+		if(  sc->m_cache_path.isEmpty() || sc->m_cache_path != m_cache_path + QStringLiteral("/%0_%1").arg(sc->m_self_index).arg(sc->m_user_id) )
 		{
 			qCritical() << QStringLiteral("Wrong cache path for account: %0").arg(sc->m_cache_path);
 			sc->m_cache_path = m_cache_path + QStringLiteral("/%0_%1").arg(sc->m_self_index).arg(sc->m_user_id);
@@ -3715,7 +3761,7 @@ void MattermostQt::reply_get_user_image(QNetworkReply *reply)
 			qDebug() << QStringLiteral("Account cache path is: %0").arg(sc->m_cache_path);
 		}
 
-		if( sc->m_data_path.isEmpty() || sc->m_data_path != m_data_path )
+		if( sc->m_data_path.isEmpty() || sc->m_data_path != m_data_path + QStringLiteral("/%0_%1").arg(sc->m_self_index).arg(sc->m_user_id) )
 		{
 			qCritical() << QStringLiteral("Wrong data path for account: %0").arg(sc->m_data_path);
 			sc->m_data_path = m_data_path + QStringLiteral("/%0_%1").arg(sc->m_self_index).arg(sc->m_user_id);
@@ -4280,6 +4326,21 @@ MattermostQt::ChannelPtr MattermostQt::id2channel(MattermostQt::ServerPtr sc, co
 	return channel;
 }
 
+const QString MattermostQt::generateCachePath(bool *isOk) const
+{
+	QString cache_path = QStandardPaths::writableLocation(QStandardPaths::CacheLocation);
+	if( cache_path.indexOf( QCoreApplication::organizationName()) != -1 )
+	{	// this wrong path, try fix it
+		// its /home/nemo/.local/share/sashikknox/harbour-mattermost
+		cache_path.remove( QCoreApplication::organizationName().append("/") );
+		if(isOk)
+			*isOk = false;
+	}
+	if(isOk)
+		*isOk = true;
+	return cache_path;
+}
+
 void MattermostQt::event_post_deleted(MattermostQt::ServerPtr sc, QJsonObject object)
 {
 	ChannelPtr channel;
@@ -4669,7 +4730,7 @@ void MattermostQt::onWebSocketSslError(QList<QSslError> errors)
 	foreach(QSslError error, errors)
 	{
 		qWarning() << QLatin1String("SslError")
-		           << (int)error.error()
+		           << error
 		           << QLatin1String(":")
 		           << error.errorString();
 
@@ -4712,22 +4773,48 @@ void MattermostQt::onWebSocketSslError(QList<QSslError> errors)
 
 void MattermostQt::onWebSocketError(QAbstractSocket::SocketError error)
 {
-	qWarning() << "WebSocket error: " << error;
 	QWebSocket * socket = qobject_cast<QWebSocket*>(sender());
-	if(!socket) // strange situation, if it happens
+	if(!socket) {
+		// strange situation, if it happens
+		qWarning() << "WebSocket error: " << error;
 		return;
-	qWarning() <<"SocetErrorString:" << socket->errorString();
+	}
+	QString message = QStringLiteral("WebSocketError (%0) : %1")
+	        .arg( QVariant::fromValue<QAbstractSocket::SocketError>(error).toString() )
+	        .arg( socket->errorString() );
+
+	QVariant sId = socket->property(P_SERVER_INDEX);
+	if(!sId.isValid()) // that too strange!!! that cant be!
+	{
+		qWarning() << message;
+		return;
+	}
+	int server_index = sId.toInt();
 
 	switch(error)
 	{
+	case QAbstractSocket::SslHandshakeFailedError:
+		{
+			if( server_index < 0 || server_index >= m_server.size() )
+				break;
+			ServerPtr server = m_server[server_index];
+
+			if(server->m_trust_cert) {
+				qInfo() << QStringLiteral("WebSocketError: SslHandshakeFailedError as expected.");
+				server->m_state = (int)QAbstractSocket::ConnectingState;
+				emit serverStateChanged(server_index, (int)server->m_state);
+			}
+			else {
+				qCritical() << QStringLiteral("WebSocketError: SslHandshakeFailedError check servers certificate.");
+				emit onConnectionError(ConnectionError::SslError, message, server_index);
+			}
+			return;
+		}
+		break;
 	case QAbstractSocket::NetworkError:
 	case QAbstractSocket::SocketTimeoutError :
 		// should i reconnect by my self, or its automatically ?
 		{
-			QVariant sId = socket->property(P_SERVER_INDEX);
-			if(!sId.isValid()) // that too strange!!! that cant be!
-				break;
-			int server_index = sId.toInt();
 			if( server_index < 0 || server_index >= m_server.size() )
 				break;
 			ServerPtr server = m_server[server_index];
@@ -4740,9 +4827,13 @@ void MattermostQt::onWebSocketError(QAbstractSocket::SocketError error)
 			m_reconnect_server.start();
 			qDebug() << QStringLiteral("Reconnect timer started.");
 			server->m_socket->close(QWebSocketProtocol::CloseCodeAbnormalDisconnection, QString("Client closing") );
+			emit onConnectionError(error, message, server_index);
 		}
 		break;
+	default:
+		emit onConnectionError(error, message, server_index);
 	}
+	qWarning() << message;
 }
 
 void MattermostQt::onWebSocketStateChanged(QAbstractSocket::SocketState state)
@@ -4899,7 +4990,6 @@ void MattermostQt::onWebSocketTextMessageReceived(const QString &message)
 
 	//ephemeral_message
 	//events
-	//channel_viewed
 	//added_to_team
 	//new_user
 	//user_added
@@ -4966,6 +5056,10 @@ void MattermostQt::slot_recconect_servers()
 			        .replace("http://","ws://");
 			QUrl url(serUrl);
 			url.setPath(url.path() + urlString);
+			if( url.toString().indexOf("wss://") >= 0 && (url.port() == 80 || url.port() == -1) ) {
+				url.setPort(443);
+				qWarning() << QStringLiteral("Force set port to 443 for WebSocket connection");
+			}
 			m_server[i]->m_socket->open(url);
 		}
 	}

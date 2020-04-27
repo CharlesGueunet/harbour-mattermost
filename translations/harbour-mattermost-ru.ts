@@ -486,15 +486,4 @@
         <translation>О программе</translation>
     </message>
 </context>
-<context>
-    <name>harbour-mattermost</name>
-    <message>
-        <source>New post on </source>
-        <translation>Новое сообщение в </translation>
-    </message>
-    <message>
-        <source> by user </source>
-        <translation> от пользователя </translation>
-    </message>
-</context>
 </TS>

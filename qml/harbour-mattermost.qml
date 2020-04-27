@@ -43,23 +43,24 @@ ApplicationWindow
     property Context context: Context {}
     property string previewString: ""
 
-    Notification {
-        id:notification
-        appName: "Mattermost"
-        previewBody: previewString
-    }
+//    Notification {
+//        id:notification
+//        appName: "Mattermost"
+//        category: "im"
+//        previewBody: previewString
+//    }
 
     Component.onCompleted: {
-        context.mattermost.newMessage.connect(
-            function onNewMessage(channel_name, user_name){
-                mainwindow.previewString =
-                        qsTr("New post on ") +
-                        channel_name +
-                        qsTr(" by user ") +
-                        user_name
-                notification.publish()
-            }
-        )
+//        context.mattermost.newMessage.connect(
+//            function onNewMessage(channel_name, user_name){
+//                mainwindow.previewString =
+//                        qsTr("New post on ") +
+//                        channel_name +
+//                        qsTr(" by user ") +
+//                        user_name
+//                notification.publish()
+//            }
+//        )
     }
 
     Connections {

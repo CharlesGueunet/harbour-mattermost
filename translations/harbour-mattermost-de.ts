@@ -486,15 +486,4 @@
         <translation type="unfinished"></translation>
     </message>
 </context>
-<context>
-    <name>harbour-mattermost</name>
-    <message>
-        <source>New post on </source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source> by user </source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
 </TS>

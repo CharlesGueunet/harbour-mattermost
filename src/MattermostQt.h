@@ -780,6 +780,13 @@ protected:
 	inline UserPtr    id2user(ServerPtr sc, const QString &id) const;
 	inline ChannelPtr id2channel(ServerPtr sc, const QString &id) const;
 //	void  message_format(MessagePtr message);
+	/**
+	 * @brief generateCachePath
+	 * @param isOk if cache generated wrong, it set to false ( for fixing paths
+	 * @return cache path
+	 */
+	const QString generateCachePath(bool *isOk = nullptr) const;
+//	const QString generateDataPath() const;
 protected Q_SLOTS:
 	void replyFinished(QNetworkReply *reply);
 	void slotNetworkAccessibleChanged(QNetworkAccessManager::NetworkAccessibility accessible);

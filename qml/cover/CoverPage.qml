@@ -47,8 +47,10 @@ CoverBackground {
     property int server_state: MattermostQt.ServerUnconnected
 
     function onConnectionError(id,message) {
-        status_text = qsTr("Error")
-        error = message
+        if( id != MattermostQt.UnknownError ) {
+            status_text = qsTr("Error")
+            error = message
+        }
     }
 
     function onServerStateChanged(server_index, state) {

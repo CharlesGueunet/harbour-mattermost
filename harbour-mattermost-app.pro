@@ -40,14 +40,14 @@ dbus.path = /usr/share/dbus-1/services/
 
 CONFIG += sailfishapp warnoff
 CONFIG += qt
-QT += gui qml quick network dbus svg
+QT += gui qml quick network dbus svg websockets
 PKGCONFIG += nemonotifications-qt5 sailfishsilica
 #PKGCONFIG += libgcrypt
 
-LIBS += -Llibs -lqt5websockets
+LIBS += -Llibs #-lqt5websockets
 INCLUDEPATH += src/
-INCLUDEPATH += libs/qtwebsockets/include
-INCLUDEPATH += libs/qtwebsockets/src/websockets
+#INCLUDEPATH += libs/qtwebsockets/include
+#INCLUDEPATH += libs/qtwebsockets/src/websockets
 
 include(libs/discount.pri);
 
