@@ -240,6 +240,9 @@ public:
 		qlonglong        m_create_at;
 		qlonglong        m_update_at;
 		qlonglong        m_delete_at;
+		// reactions
+		QVector<QString>  m_reactions_paths; // for simple view only
+		QVector<int>      m_reactions_count;
 
 		// inside types
 		QVector<FilePtr>     m_file;

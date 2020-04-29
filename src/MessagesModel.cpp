@@ -1,5 +1,7 @@
 #include "MessagesModel.h"
 #include <QDateTime>
+#include <QMap>
+#include <QString>
 #include "SettingsContainer.h"
 
 MessagesModel::MessagesModel(QObject *parent)
@@ -221,6 +223,12 @@ QVariant MessagesModel::data(const QModelIndex &index, int role) const
 			return QVariant(message->m_update_at  > 0);
 	    }
 		break;
+	case MessagesModel::RoleReactionsCount:
+		return message->m_reactions_paths.size();
+	case MessagesModel::RoleReactionsPaths:
+		return QVariant::fromValue<QVector<QString>>(message->m_reactions_paths);
+	case MessagesModel::RoleReactionsAddCount:
+		return QVariant::fromValue<QVector<int>>(message->m_reactions_count);
 	default:
 		break;
 	}
@@ -279,10 +287,13 @@ QHash<int, QByteArray> MessagesModel::roleNames() const
 	{MessagesModel::OriginalId,          "role_original_id"},
 	{MessagesModel::ParentId,            "role_parent_id"},
 	{MessagesModel::RootMessage,         "role_root_message"},
-	{MessagesModel::RootMessageUserName, "role_root_username"},
-	{MessagesModel::ItemHeight,          "role_item_height"},
-	{MessagesModel::PageOrientation,     "role_page_orientation"},
-	{MessagesModel::RoleMessageUnread,   "role_message_unread"}};
+	{MessagesModel::RootMessageUserName,   "role_root_username"},
+	{MessagesModel::ItemHeight,            "role_item_height"},
+	{MessagesModel::PageOrientation,       "role_page_orientation"},
+	{MessagesModel::RoleMessageUnread,     "role_message_unread"},
+	{MessagesModel::RoleReactionsCount,    "role_reactions_count"},
+	{MessagesModel::RoleReactionsPaths,    "role_reactions_paths"},
+	{MessagesModel::RoleReactionsAddCount, "role_reactions_add_count"},};
 	return names;
 }
 
@@ -488,6 +499,38 @@ QString MessagesModel::getFileSize(int row, int i) const
 		return QObject::tr("%0 Kb").arg(size,0,'f',1);
 	size = size/1024;
 	return QObject::tr("%0 Mb").arg(size,0,'f',1);
+}
+
+QString MessagesModel::getReactionPath(int row, int reaction_index) const
+{
+	if (!m_channel)
+		return QString();
+
+//	int row = m_channel->m_message.size() - 1 - index.row();
+
+	if ( row < 0 || row >= m_channel->m_message.size() )
+		return QString();
+
+	MattermostQt::MessagePtr message = m_channel->m_message[row];
+	if( reaction_index >= message->m_reactions_paths.size() )
+		return QString();
+	return message->m_reactions_paths[reaction_index];
+}
+
+int MessagesModel::getReactionCount(int row, int reaction_index) const
+{
+	if (!m_channel)
+		return 0;
+
+//	int row = m_channel->m_message.size() - 1 - index.row();
+
+	if ( row < 0 || row >= m_channel->m_message.size() )
+		return 0;
+
+	MattermostQt::MessagePtr message = m_channel->m_message[row];
+	if( reaction_index >= message->m_reactions_paths.size() )
+		return 0;
+	return message->m_reactions_count[reaction_index];
 }
 
 bool MessagesModel::atEnd() const

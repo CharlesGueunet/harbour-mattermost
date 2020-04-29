@@ -173,6 +173,21 @@ int CppHash::find_emoji(const char *emoji_short_name, int size, char **picture_p
 	return 0;
 }
 
+const char *CppHash::find_emoji_path(const char *emoji_short_name, int size)
+{
+	QString short_name( QByteArray(emoji_short_name,size) );
+	QHash<QString, QString>::iterator it =  d->emoji.find(short_name);
+	if ( it != d->emoji.end() )
+	{
+		QString path_pic = QStringLiteral("%0/%1").arg(EMOJI_PATH).arg(it.value());
+		d->buffer = path_pic.toLocal8Bit();
+		return d->buffer.data();
+	}
+	else
+		qDebug() << "No Emoji found: " << short_name;
+	return nullptr;
+}
+
 int CppHash::count() const
 {
 	return d->emoji.size();

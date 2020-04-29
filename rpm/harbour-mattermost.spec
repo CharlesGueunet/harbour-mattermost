@@ -22,6 +22,7 @@ License:    LICENSE
 Source0:    %{name}-%{version}.tar.bz2
 Source100:  harbour-mattermost.yaml
 Requires:   sailfishsilica-qt5 >= 0.10.9
+Requires:   qt5-qtwebsockets
 BuildRequires:  pkgconfig(sailfishapp) >= 1.0.2
 BuildRequires:  pkgconfig(sailfishsilica)
 BuildRequires:  pkgconfig(Qt5Core)

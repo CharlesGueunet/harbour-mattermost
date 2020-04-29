@@ -47,6 +47,9 @@ public:
 		ItemHeight,
 		PageOrientation,
 		RoleMessageUnread,
+		RoleReactionsCount, // summary diferent reactions count
+		RoleReactionsPaths,
+		RoleReactionsAddCount, // how many users add this reaction
 		UserStatus = MattermostQt::UserStatusRole,
 	};
 	Q_ENUM(DataRoles)
@@ -84,6 +87,8 @@ public:
 	Q_INVOKABLE QString getFileName(int row, int i) const;
 	Q_INVOKABLE QString getSenderName(int row) const;
 	Q_INVOKABLE QString getFileSize(int row,int i) const;
+	Q_INVOKABLE QString getReactionPath(int row, int reaction_index) const;
+	Q_INVOKABLE int getReactionCount(int row, int reaction_index) const;
 	bool    atEnd() const;
 //	Q_INVOKABLE int   getImageSize(int row, int i) const;
 
