@@ -12,6 +12,7 @@ SET_SETTINGS_PROPERTY(int,   pageMarginEnum)
 SET_SETTINGS_PROPERTY(bool,  formatedText)
 SET_SETTINGS_PROPERTY(bool,  debug)
 SET_SETTINGS_PROPERTY(bool,  sendIcon)
+SET_SETTINGS_PROPERTY(ReactionSize, reactionSize)
 
 SettingsContainer::SettingsContainer(QObject *parent) : QObject(parent)
 {
@@ -46,8 +47,10 @@ void SettingsContainer::resetToDefault()
 }
 
 #define ADD_VALUE(x) settings[#x] = x
+#define ADD_ENUM(x, _enum)  settings[#x] = QVariant::fromValue<_enum>(x).toString()
 #define FROM_VALUE(x,func) x = settings[#x].func
-
+#define FROM_ENUM(x, _enum) x = QVariant(settings[#x].toString()).value<_enum>()
+// _enum ::CONCAT2(_enum,Default)
 QJsonObject SettingsContainer::asJsonObject() const
 {
 	QJsonObject settings;
@@ -57,6 +60,7 @@ QJsonObject SettingsContainer::asJsonObject() const
 	ADD_VALUE(m_formatedText);
 	ADD_VALUE(m_pageMarginEnum);
 	ADD_VALUE(m_sendIcon); // if false, use old icon-m-mail
+	ADD_ENUM(m_reactionSize, ReactionSize);
 	return settings;
 }
 
@@ -68,6 +72,7 @@ void SettingsContainer::fromJsonObject(const QJsonObject &settings)
 	FROM_VALUE(m_formatedText,toBool());
 	FROM_VALUE(m_pageMarginEnum,toInt());
 	FROM_VALUE(m_sendIcon  ,toBool());
+	FROM_ENUM (m_reactionSize, ReactionSize);
 
 	switch(m_pageMarginEnum) {
 	case Margin::MarginNone:

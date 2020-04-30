@@ -1,4 +1,5 @@
 //#include "MattermostQt.h"
+#include <algorithm>
 
 #include <QNetworkRequest>
 #include <QNetworkReply>
@@ -93,7 +94,7 @@ Q_DECLARE_METATYPE(MattermostQt::MessagePtr)
 #define BIND_REPLY_FUNCTION(name) m_reply_func[ReplyType:: CONCAT2(rt_,name) ] = &MattermostQt:: CONCAT2(reply_, name)
 #define BIND_EVENT_FUNCTION(name) m_event_func[EventType:: CONCAT2(et_,name) ] = &MattermostQt:: CONCAT2(event_, name)
 
-void MattermostQt::init_reply_functions()
+void MattermostQt::bind_reply_functions()
 {
 	memset(m_reply_func, NULL, sizeof(void*)*ReplyTypeCount );
 	//func_pointer = (reply_func)&MattermostQt::reply_login;
@@ -122,7 +123,7 @@ void MattermostQt::init_reply_functions()
 	BIND_REPLY_FUNCTION(get_channel_unread);
 }
 
-void MattermostQt::init_event_functions()
+void MattermostQt::bind_event_functions()
 {
 //	staticMetaObject.indexOfEnumerator("ReplyType");
 //	for(int et = 0; et < EventTypeCount; et++ )
@@ -149,6 +150,8 @@ void MattermostQt::init_event_functions()
 	BIND_EVENT_FUNCTION(status_change);
 	BIND_EVENT_FUNCTION(typing);
 	BIND_EVENT_FUNCTION(channel_viewed);
+	BIND_EVENT_FUNCTION(reaction_added);
+	BIND_EVENT_FUNCTION(reaction_removed);
 }
 
 MattermostQt::MattermostQt(QObject *parent )
@@ -156,8 +159,8 @@ MattermostQt::MattermostQt(QObject *parent )
     , m_mdParser(nullptr)
     , m_settings(nullptr)
 {
-	init_reply_functions();
-	init_event_functions();
+	bind_reply_functions();
+	bind_event_functions();
 	m_networkManager.reset(new QNetworkAccessManager());
 
 	m_update_server_timeout = 5000; // in millisecs
@@ -4262,6 +4265,100 @@ void MattermostQt::event_channel_viewed(MattermostQt::ServerPtr sc, QJsonObject 
 	emit updateChannel(channel, QVectorInt() << ChannelsModel::MessageUnread << ChannelsModel::MentionCount );
 }
 
+void MattermostQt::event_reaction_added(MattermostQt::ServerPtr sc, QJsonObject object)
+{
+	/*{
+	 *  "event": "reaction_added",
+	 *  "data": {
+	 *    "reaction": "{
+	 *       \\"user_id\\":\\"gqr15ebytjg7znhh4boz74foxy\\",
+	 *       \\"post_id\\":\\"bn7s5xj1xprq7b43e3ahkgi98o\\",
+	 *       \\"emoji_name\\":\\"nauseated_face\\",
+	 *       \\"create_at\\":1588252042237
+	 *    }"
+	 *  },
+	 *  "broadcast": {
+	 *    "omit_users":null,
+	 *    "user_id":"",
+	 *    "channel_id":"rw7wbmf7638mtgqpnh5p5aih3y",
+	 *    "team_id":""
+	 *  },
+	 *  "seq": 10
+	 *}
+	 */
+	QJsonObject data  = object["data"].toObject();
+	QJsonObject broadcast  = object["broadcast"].toObject();
+
+	QString channel_id = broadcast["channel_id"].toString();
+	ChannelPtr channel = id2channel(sc, channel_id);
+
+	if(channel.isNull())
+	{
+		qCritical() << QStringLiteral("Channel not loaded to app, need request data from server.");
+		return;
+	}
+	QString reaction_json = data["reaction"].toString();
+	QJsonObject reaction = QJsonDocument::fromJson(reaction_json.toUtf8()).object();
+	QString message_id = reaction["post_id"].toString();
+	QString emoji_name = reaction["emoji_name"].toString();
+	MessagePtr message = id2message(channel, message_id);
+	if(!message)
+	{
+		qWarning() << QStringLiteral("Cant find message in channel. Looks it not loaded for view in model, just skip it.");
+		return;
+	}
+	//TODO add reaction to message
+	message->addReaction(emoji_name);
+	updateMessage(message, MessagesModel::RoleReactionsCount);
+}
+
+void MattermostQt::event_reaction_removed(MattermostQt::ServerPtr sc, QJsonObject object)
+{
+	/*{
+	 *  "event": "reaction_removed",
+	 *  "data\": {
+	 *    "reaction": "{
+	 *       \\"user_id\\":\\"fyrn71gupjdd7e4bh84npwxw8r\\",
+	 *       \\"post_id\\":\\"g8e5gpxiaby9jq661o1mq5njgh\\",
+	 *       \\"emoji_name\\":\\"rage\\",
+	 *       \\"create_at\\":0}"
+	 *    },
+	 *    "broadcast": {
+	 *       "omit_users":null,
+	 *       "user_id":"",
+	 *       "channel_id":"rw7wbmf7638mtgqpnh5p5aih3y",
+	 *       "team_id":""
+	 *    },
+	 *  "seq": 7
+	 *}
+	 * */
+
+	QJsonObject data  = object["data"].toObject();
+	QJsonObject broadcast  = object["broadcast"].toObject();
+
+	QString channel_id = broadcast["channel_id"].toString();
+	ChannelPtr channel = id2channel(sc, channel_id);
+
+	if(channel.isNull())
+	{
+		qCritical() << QStringLiteral("Channel not loaded to app, need request data from server.");
+		return;
+	}
+	QString reaction_json = data["reaction"].toString();
+	QJsonObject reaction = QJsonDocument::fromJson(reaction_json.toUtf8()).object();
+	QString message_id = reaction["post_id"].toString();
+	QString emoji_name = reaction["emoji_name"].toString();
+	MessagePtr message = id2message(channel, message_id);
+	if(!message)
+	{
+		qWarning() << QStringLiteral("Cant find message in channel. Looks it not loaded for view in model, just skip it.");
+		return;
+	}
+	//TODO add reaction to message
+	message->removeReaction(emoji_name);
+	updateMessage(message, MessagesModel::RoleReactionsCount);
+}
+
 MattermostQt::UserStatus MattermostQt::str2status(const QString &s) const
 {
 	if( s.compare("online") == 0 )
@@ -4325,6 +4422,16 @@ MattermostQt::ChannelPtr MattermostQt::id2channel(MattermostQt::ServerPtr sc, co
 				break;
 		}
 	return channel;
+}
+
+MattermostQt::MessagePtr MattermostQt::id2message(MattermostQt::ChannelPtr channel, const QString &id) const
+{
+	QVector<MessagePtr>::iterator it = std::find_if( channel->m_message.begin(), channel->m_message.end(), [id](const MessagePtr &m) {
+		return m->m_id == id;
+	} );
+	if( it != channel->m_message.end() )
+		return *it;
+	return MessagePtr();
 }
 
 const QString MattermostQt::generateCachePath(bool *isOk) const
@@ -5473,6 +5580,66 @@ MattermostQt::MessageContainer::MessageContainer(QJsonObject object)
 			qDebug() << v;
 		}
 	}
+}
+
+bool MattermostQt::MessageContainer::addReaction(const QString &reaction)
+{
+	bool result = true;
+	// first search path to emoji image
+	QString emoji_name;
+	QByteArray name = reaction.toUtf8();
+	const char* emoji_path = CppHash::instance()->find_emoji_path(name.data(),name.size());
+	if( emoji_path != nullptr ) {
+		emoji_name = QString("file://") +QString::fromUtf8(CppHash::instance()->find_emoji_path(name.data(),name.size()));
+	}
+	else {
+		emoji_name = reaction;
+		result = false;
+	}
+	// then check if already has same reaction
+	for( int index = 0; index < m_reactions_paths.size(); index++ )
+	{
+		if( m_reactions_paths[index] ==  emoji_name ) {
+			m_reactions_count[index] += 1;
+			return result;
+		}
+	}
+
+	m_reactions_paths.append( emoji_name);
+	m_reactions_count.append(1);
+	return result;
+}
+
+bool MattermostQt::MessageContainer::removeReaction(const QString &reaction)
+{
+	bool result = true;
+	// first search path to emoji image
+	QString emoji_name;
+	QByteArray name = reaction.toUtf8();
+	const char* emoji_path = CppHash::instance()->find_emoji_path(name.data(),name.size());
+	if( emoji_path != nullptr ) {
+		emoji_name = QString("file://") +QString::fromUtf8(CppHash::instance()->find_emoji_path(name.data(),name.size()));
+	}
+	else {
+		emoji_name = reaction;
+		result = false;
+	}
+	// then check if already has same reaction
+	for( int index = 0; index < m_reactions_paths.size(); index++ )
+	{
+		if( m_reactions_paths[index] ==  emoji_name ) {
+			m_reactions_count[index] -= 1;
+			if( m_reactions_count[index] == 0 ) {
+				m_reactions_paths.remove(index);
+				m_reactions_count.remove(index);
+			}
+			return result;
+		}
+	}
+	qWarning() << QStringLiteral("Cant find reaction %0 in message id(%1)").arg(reaction).arg(m_id);
+//	m_reactions_paths.append( emoji_name);
+//	m_reactions_count.append(1);
+	return result;
 }
 
 bool MattermostQt::MessageContainer::updateRootMessage( MattermostQt *mattermost )

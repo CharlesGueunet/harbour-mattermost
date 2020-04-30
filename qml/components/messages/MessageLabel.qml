@@ -108,20 +108,6 @@ ListItem {
         radius: Theme.paddingLarge
     }
 
-//    Rectangle {
-//        id: reactionsReact
-//        anchors.fill: flow
-//        visible: flow.visible
-////        height: flow.height
-////        width: flow.width
-//        color: Theme.rgba(Theme.primaryColor,0.1)
-//        radius: Theme.paddingSmall
-//        border.width: 1
-//        border.color: Theme.primaryColor
-////        x: flow.x
-////        y: flow.y
-//    }
-
     Flow {
         id: flow
         anchors.top: backroundBlob.bottom
@@ -131,43 +117,21 @@ ListItem {
         width: messageContent.width - Theme.paddingLarge
         visible: role_reactions_count > 0
         spacing: Theme.paddingMedium
-//        contentHeight: Theme.fontSizeMedium
-//        anchors.top: backroundBlob.bottom
+
         Repeater {
             model: role_reactions_count
-            delegate: Item {
-                width: reactionRow.width
-                height: reactionRow.height
+            delegate: ReactionItem {
+                property int rcount: role_reactions_count
 
-                Rectangle {
-                    id: reactionsRect
-                    anchors.fill: reactionRow
-                    color: Theme.rgba(Theme.primaryColor,0.1)
-                    radius: Theme.paddingSmall
-                    border.width: 1
-                    border.color: Theme.primaryColor
+                onRcountChanged: {
+                    reactionPath  = messagesModel.getReactionPath(rowIndex, index)
+                    reactionCount = messagesModel.getReactionCount(rowIndex, index)
                 }
-                Row {
-                    id: reactionRow
-                    spacing: Theme.paddingSmall
-                    leftPadding: Theme.paddingSmall
-                    rightPadding: Theme.paddingSmall
 
-                    Image {
-                        width: Theme.fontSizeSmall
-                        height: Theme.fontSizeSmall
-                        source: messagesModel.getReactionPath(rowIndex, index)
-                        anchors.verticalCenter: parent.verticalCenter
-                    }
-
-                    Text {
-                        text: messagesModel.getReactionCount(rowIndex, index)
-                        font.pixelSize: Theme.fontSizeSmall
-                        width: contentWidth
-                        color: messageLabel.textColor
-                        anchors.verticalCenter: parent.verticalCenter
-                    }
-                }
+                context: messageLabel.context
+                reactionPath : messagesModel.getReactionPath(rowIndex, index)
+                reactionCount: messagesModel.getReactionCount(rowIndex, index)
+                textColor: messageLabel.textColor
             }
         }
     }

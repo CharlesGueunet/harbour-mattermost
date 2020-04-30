@@ -401,6 +401,10 @@
         <source>Send Icon</source>
         <translation>Значек &quot;Бумажный самолет&quot;</translation>
     </message>
+    <message>
+        <source>Reaction size</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>QObject</name>

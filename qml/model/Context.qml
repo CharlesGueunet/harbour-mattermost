@@ -10,6 +10,7 @@ Item {
 
     property real avatarSize: Theme.iconSizeMedium //TODO move it to Settings
     property bool bolbs: Settings.showBlobs
+    property real reactionSize : Theme.fontSizeMedium
 
     property MattermostQt mattermost: MattermostQt {
 //        settings =

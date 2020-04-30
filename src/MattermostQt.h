@@ -64,6 +64,8 @@ public:
 		et_status_change,
 		et_typing,
 		et_channel_viewed,
+		et_reaction_added,
+		et_reaction_removed,
 		//=======================
 		EventTypeCount
 	};
@@ -223,6 +225,8 @@ public:
 		MessageContainer(QJsonObject object);
 
 		bool updateRootMessage(MattermostQt *mattermost);
+		bool addReaction(const QString &reaction);
+		bool removeReaction(const QString &reaction);
 
 		QString          m_message;
 		QString          m_formated_message;
@@ -487,8 +491,8 @@ public:
 	void (MattermostQt::*m_event_func[EventTypeCount])(ServerPtr sc, QJsonObject data);
 	typedef void (MattermostQt::*reply_func)(QNetworkReply* reply);
 	void (MattermostQt::*m_reply_func[ReplyTypeCount])(QNetworkReply* reply);
-	void init_reply_functions();
-	void init_event_functions();
+	void bind_reply_functions();
+	void bind_event_functions();
 
 	Q_PROPERTY(int messageUnread READ messageUnread NOTIFY messageUnreadChanged)
 	Q_PROPERTY(ApplicationStatus applicationStatus READ getApplicationStatus WRITE setApplicationStatus NOTIFY onApplciationStatusChanged)
@@ -777,11 +781,14 @@ protected:
 	void event_status_change(ServerPtr sc, QJsonObject object);
 	void event_typing(ServerPtr sc, QJsonObject object);
 	void event_channel_viewed(ServerPtr sc, QJsonObject object);
+	void event_reaction_added(ServerPtr sc, QJsonObject object);
+	void event_reaction_removed(ServerPtr sc, QJsonObject object);
 
 	// helper functions
 	inline UserStatus str2status(const QString &s) const;
 	inline UserPtr    id2user(ServerPtr sc, const QString &id) const;
 	inline ChannelPtr id2channel(ServerPtr sc, const QString &id) const;
+	inline MessagePtr id2message(ChannelPtr channel, const QString &id) const;
 //	void  message_format(MessagePtr message);
 	/**
 	 * @brief generateCachePath
