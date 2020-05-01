@@ -224,11 +224,21 @@ QVariant MessagesModel::data(const QModelIndex &index, int role) const
 	    }
 		break;
 	case MessagesModel::RoleReactionsCount:
-		return message->m_reactions_paths.size();
+		return message->m_reactions.size();
 	case MessagesModel::RoleReactionsPaths:
-		return QVariant::fromValue<QVector<QString>>(message->m_reactions_paths);
+		{
+			QVariantList paths;
+			for( int i = 0; i < message->m_reactions.size(); i ++ )
+				paths.push_back(message->m_reactions[i].m_path );
+			return QVariant::fromValue(paths);
+		}
 	case MessagesModel::RoleReactionsAddCount:
-		return QVariant::fromValue<QVector<int>>(message->m_reactions_count);
+		{
+			QVariantList counts;
+			for( int i = 0; i < message->m_reactions.size(); i ++ )
+				counts.push_back( message->m_reactions[i].m_user_id.size() );
+			return QVariant::fromValue(counts);
+		}
 	default:
 		break;
 	}
@@ -512,9 +522,9 @@ QString MessagesModel::getReactionPath(int row, int reaction_index) const
 		return QString();
 
 	MattermostQt::MessagePtr message = m_channel->m_message[row];
-	if( reaction_index >= message->m_reactions_paths.size() )
+	if( reaction_index >= message->m_reactions.size() )
 		return QString();
-	return message->m_reactions_paths[reaction_index];
+	return message->m_reactions[reaction_index].m_path;
 }
 
 int MessagesModel::getReactionCount(int row, int reaction_index) const
@@ -528,9 +538,9 @@ int MessagesModel::getReactionCount(int row, int reaction_index) const
 		return 0;
 
 	MattermostQt::MessagePtr message = m_channel->m_message[row];
-	if( reaction_index >= message->m_reactions_paths.size() )
+	if( reaction_index >= message->m_reactions.size() )
 		return 0;
-	return message->m_reactions_count[reaction_index];
+	return message->m_reactions[reaction_index].m_user_id.size();
 }
 
 bool MessagesModel::atEnd() const
@@ -738,8 +748,11 @@ void MessagesModel::slot_updateMessage(MattermostQt::MessagePtr message, int rol
 		return;
 	int row = m_channel->m_message.size() - 1 - message->m_self_index;
 
-	 QVectorInt roles;
+	QVectorInt roles;
 	roles << role;
+	if( role == RoleReactionsCount ) {
+		roles << RoleReactionsAddCount << RoleReactionsPaths;
+	}
 	if(m_mattermost->settings()->debug())
 	{
 		QHash<int, QByteArray> names = roleNames();

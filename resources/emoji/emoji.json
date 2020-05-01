@@ -17999,5 +17999,12 @@
         "short_names": [
             "bath_dark_skin_tone"
         ]
+    },
+    {
+        "category": "People",
+        "image": "svg/1f922.svg",
+        "short_names": [
+            "nauseated_face"
+        ]
     }
 ]

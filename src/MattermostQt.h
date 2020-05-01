@@ -217,6 +217,14 @@ public:
 	typedef QSharedPointer<FileContainer> FilePtr;
 
 
+	struct ReactionContainer {
+		QString m_path;
+		QString m_emoji;
+		QVector<QString> m_user_id;
+		/// if we too add this reaction
+		bool    m_self_emoji = false;
+	};
+
 	struct MessageContainer {
 		typedef QSharedPointer<MessageContainer> Ptr;
 
@@ -225,8 +233,8 @@ public:
 		MessageContainer(QJsonObject object);
 
 		bool updateRootMessage(MattermostQt *mattermost);
-		bool addReaction(const QString &reaction);
-		bool removeReaction(const QString &reaction);
+		bool addReaction(ReactionContainer &reaction);
+		bool removeReaction(const ReactionContainer &reaction);
 
 		QString          m_message;
 		QString          m_formated_message;
@@ -245,8 +253,9 @@ public:
 		qlonglong        m_update_at;
 		qlonglong        m_delete_at;
 		// reactions
-		QVector<QString>  m_reactions_paths; // for simple view only
-		QVector<int>      m_reactions_count;
+//		QVector<QString>  m_reactions_paths; // for simple view only
+//		QVector<int>      m_reactions_count;
+		QVector<ReactionContainer> m_reactions;
 
 		// inside types
 		QVector<FilePtr>     m_file;

@@ -44,7 +44,7 @@ Item {
         Image {
             width: context.reactionSize
             height: context.reactionSize
-            source: reactionRow.noImage ? "image://icon-s-warning" : reactionItem.reactionPath
+            source: reactionRow.noImage ? "image://theme/icon-s-warning" : reactionItem.reactionPath
             anchors.verticalCenter: parent.verticalCenter
             visible: !reactionRow.noImage
         }

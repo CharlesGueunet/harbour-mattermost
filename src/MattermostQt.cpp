@@ -4301,6 +4301,7 @@ void MattermostQt::event_reaction_added(MattermostQt::ServerPtr sc, QJsonObject 
 	QJsonObject reaction = QJsonDocument::fromJson(reaction_json.toUtf8()).object();
 	QString message_id = reaction["post_id"].toString();
 	QString emoji_name = reaction["emoji_name"].toString();
+	QString user_id = reaction["user_id"].toString();
 	MessagePtr message = id2message(channel, message_id);
 	if(!message)
 	{
@@ -4308,7 +4309,11 @@ void MattermostQt::event_reaction_added(MattermostQt::ServerPtr sc, QJsonObject 
 		return;
 	}
 	//TODO add reaction to message
-	message->addReaction(emoji_name);
+	ReactionContainer new_reaction;
+	new_reaction.m_emoji = emoji_name;
+	new_reaction.m_user_id.append(user_id);
+	new_reaction.m_self_emoji = user_id == sc->m_user_id;
+	message->addReaction(new_reaction);
 	updateMessage(message, MessagesModel::RoleReactionsCount);
 }
 
@@ -4348,6 +4353,7 @@ void MattermostQt::event_reaction_removed(MattermostQt::ServerPtr sc, QJsonObjec
 	QJsonObject reaction = QJsonDocument::fromJson(reaction_json.toUtf8()).object();
 	QString message_id = reaction["post_id"].toString();
 	QString emoji_name = reaction["emoji_name"].toString();
+	QString user_id = reaction["user_id"].toString();
 	MessagePtr message = id2message(channel, message_id);
 	if(!message)
 	{
@@ -4355,7 +4361,11 @@ void MattermostQt::event_reaction_removed(MattermostQt::ServerPtr sc, QJsonObjec
 		return;
 	}
 	//TODO add reaction to message
-	message->removeReaction(emoji_name);
+	ReactionContainer new_reaction;
+	new_reaction.m_emoji = emoji_name;
+	new_reaction.m_user_id.append(user_id);
+	new_reaction.m_self_emoji = user_id == sc->m_user_id;
+	message->removeReaction(new_reaction);
 	updateMessage(message, MessagesModel::RoleReactionsCount);
 }
 
@@ -5555,23 +5565,32 @@ MattermostQt::MessageContainer::MessageContainer(QJsonObject object)
 					{
 						QJsonObject reaction = reactions[i].toObject();
 						QString emoji_name = reaction["emoji_name"].toString();
+						QString user_id = reaction["user_id"].toString();
+//						bool self_emoji = user_id ==
+						QString emoji_path;
 						QByteArray name = emoji_name.toUtf8();
-						const char* emoji_path = CppHash::instance()->find_emoji_path(name.data(),name.size());
-						if( emoji_path != nullptr ) {
-							emoji_name = QString("file://") +QString::fromUtf8(CppHash::instance()->find_emoji_path(name.data(),name.size()));
+						const char* _emoji_path = CppHash::instance()->find_emoji_path(name.data(),name.size());
+						if( _emoji_path != nullptr ) {
+							emoji_path = QString("file://") + QString::fromUtf8(_emoji_path);
 						}
-						for( int index = 0; index < m_reactions_paths.size(); index++ )
+						for( int index = 0; index < m_reactions.size(); index++ )
 						{
-							if( m_reactions_paths[index] ==  emoji_name ) {
-								m_reactions_count[index] += 1;
+							if( m_reactions[index].m_emoji ==  emoji_name ) {
+//								m_reactions_count[index] += 1;
+								m_reactions[index].m_user_id.push_back( user_id );
 								emoji_name.clear();
 								break;
 							}
 						}
 						if(emoji_name.isEmpty())
 							continue;
-						m_reactions_paths.append( emoji_name);
-						m_reactions_count.append(1);
+						ReactionContainer new_reaction;
+						new_reaction.m_user_id.push_back(user_id);
+						new_reaction.m_emoji = emoji_name;
+						new_reaction.m_path = emoji_path;
+						m_reactions.append( new_reaction );
+//						m_reactions_paths.append( emoji_name);
+//						m_reactions_count.append(1);
 					}
 				}
 			}
@@ -5582,61 +5601,78 @@ MattermostQt::MessageContainer::MessageContainer(QJsonObject object)
 	}
 }
 
-bool MattermostQt::MessageContainer::addReaction(const QString &reaction)
+bool MattermostQt::MessageContainer::addReaction(ReactionContainer &reaction)
 {
 	bool result = true;
-	// first search path to emoji image
-	QString emoji_name;
-	QByteArray name = reaction.toUtf8();
-	const char* emoji_path = CppHash::instance()->find_emoji_path(name.data(),name.size());
-	if( emoji_path != nullptr ) {
-		emoji_name = QString("file://") +QString::fromUtf8(CppHash::instance()->find_emoji_path(name.data(),name.size()));
-	}
-	else {
-		emoji_name = reaction;
-		result = false;
-	}
-	// then check if already has same reaction
-	for( int index = 0; index < m_reactions_paths.size(); index++ )
+	// check if already has same reaction
+	for( int index = 0; index < m_reactions.size(); index++ )
 	{
-		if( m_reactions_paths[index] ==  emoji_name ) {
-			m_reactions_count[index] += 1;
+		if( m_reactions[index].m_emoji == reaction.m_emoji ) {
+			m_reactions[index].m_user_id.append( reaction.m_user_id[0] );
 			return result;
 		}
 	}
 
-	m_reactions_paths.append( emoji_name);
-	m_reactions_count.append(1);
+
+	QByteArray name = reaction.m_emoji.toUtf8();
+	const char* emoji_path = CppHash::instance()->find_emoji_path(name.data(),name.size());
+	if( emoji_path != nullptr ) {
+		reaction.m_path = QString("file://") +QString::fromUtf8(emoji_path);
+	}
+	else {
+		result = false;
+	}
+
+	m_reactions.append(reaction);
 	return result;
 }
 
-bool MattermostQt::MessageContainer::removeReaction(const QString &reaction)
+bool MattermostQt::MessageContainer::removeReaction(const ReactionContainer &reaction)
 {
 	bool result = true;
-	// first search path to emoji image
-	QString emoji_name;
-	QByteArray name = reaction.toUtf8();
-	const char* emoji_path = CppHash::instance()->find_emoji_path(name.data(),name.size());
-	if( emoji_path != nullptr ) {
-		emoji_name = QString("file://") +QString::fromUtf8(CppHash::instance()->find_emoji_path(name.data(),name.size()));
-	}
-	else {
-		emoji_name = reaction;
-		result = false;
-	}
-	// then check if already has same reaction
-	for( int index = 0; index < m_reactions_paths.size(); index++ )
+
+	// check if already has same reaction
+	for( int index = 0; index < m_reactions.size(); index++ )
 	{
-		if( m_reactions_paths[index] ==  emoji_name ) {
-			m_reactions_count[index] -= 1;
-			if( m_reactions_count[index] == 0 ) {
-				m_reactions_paths.remove(index);
-				m_reactions_count.remove(index);
+		if( m_reactions[index].m_emoji == reaction.m_emoji )
+		{
+			for( int ui = 0; ui < m_reactions[index].m_user_id.size(); ui ++ )
+			{
+				if( m_reactions[index].m_user_id[ui] == reaction.m_user_id[0] )
+				{
+					m_reactions[index].m_user_id.remove(ui);
+					if( m_reactions[index].m_user_id.empty() )
+						m_reactions.remove(index);
+					return result;
+				}
 			}
-			return result;
 		}
 	}
-	qWarning() << QStringLiteral("Cant find reaction %0 in message id(%1)").arg(reaction).arg(m_id);
+
+	// first search path to emoji image
+//	QString emoji_name;
+//	QByteArray name = reaction.toUtf8();
+//	const char* emoji_path = CppHash::instance()->find_emoji_path(name.data(),name.size());
+//	if( emoji_path != nullptr ) {
+//		emoji_name = QString("file://") +QString::fromUtf8(emoji_path);
+//	}
+//	else {
+//		emoji_name = reaction;
+//		result = false;
+//	}
+//	// then check if already has same reaction
+//	for( int index = 0; index < m_reactions_paths.size(); index++ )
+//	{
+//		if( m_reactions_paths[index] ==  emoji_name ) {
+//			m_reactions_count[index] -= 1;
+//			if( m_reactions_count[index] == 0 ) {
+//				m_reactions_paths.remove(index);
+//				m_reactions_count.remove(index);
+//			}
+//			return result;
+//		}
+//	}
+	qWarning() << QStringLiteral("Cant find reaction %0 in message id(%1)").arg(reaction.m_emoji).arg(m_id);
 //	m_reactions_paths.append( emoji_name);
 //	m_reactions_count.append(1);
 	return result;

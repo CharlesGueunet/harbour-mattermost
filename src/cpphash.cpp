@@ -36,7 +36,7 @@ CppHashPrivate::CppHashPrivate() {
 #ifdef DESKTOP_APP
 	h0 = 14;
 #else
-	h0 = Silica::Theme::instance()->fontSizeSmall();
+	h0 = Silica::Theme::instance()->fontSizeSmall() + 2;
 #endif
 	h5 = h0 + INCRASE_FONT;
 	h4 = h5 + INCRASE_FONT;
@@ -126,8 +126,8 @@ bool CppHashPrivate::parse_emoji_json_new(QString path)
 		for( int j = 0; j < short_names.size(); j++)
 		{
 			QString short_name = short_names[j].toString();
-			if( re.indexIn(short_name) != -1 )
-				short_name.replace("-","_");
+//			if( re.indexIn(short_name) != -1 )
+//				short_name.replace("-","_");
 			emoji.insert( short_name, image_name );
 		}
 	}
