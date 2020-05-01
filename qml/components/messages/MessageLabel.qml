@@ -118,19 +118,26 @@ ListItem {
         visible: role_reactions_count > 0
         spacing: Theme.paddingMedium
 
+//        Component.onCompleted: {
+//            if( role_reactions_count > 0 ) {
+//                console.log( "Variant list size paths: "  + role_reactions_paths[0] )
+//                console.log( "Variant list size count: "  + role_reactions_add_count[0] )
+//            }
+//        }
+
         Repeater {
-            model: role_reactions_count
+            model: role_reactions_count //role_reactions_paths.size()
             delegate: ReactionItem {
                 property int rcount: role_reactions_count
 
-                onRcountChanged: {
-                    reactionPath  = messagesModel.getReactionPath(rowIndex, index)
-                    reactionCount = messagesModel.getReactionCount(rowIndex, index)
-                }
+//                onRcountChanged: {
+//                    reactionPath  = messagesModel.getReactionPath(rowIndex, index)
+//                    reactionCount = messagesModel.getReactionCount(rowIndex, index)
+//                }
 
                 context: messageLabel.context
-                reactionPath : messagesModel.getReactionPath(rowIndex, index)
-                reactionCount: messagesModel.getReactionCount(rowIndex, index)
+                reactionPath : role_reactions_paths[index]//messagesModel.getReactionPath(rowIndex, index)
+                reactionCount: role_reactions_add_count[index]//messagesModel.getReactionCount(rowIndex, index)
                 textColor: messageLabel.textColor
             }
         }

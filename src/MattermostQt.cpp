@@ -5649,29 +5649,6 @@ bool MattermostQt::MessageContainer::removeReaction(const ReactionContainer &rea
 		}
 	}
 
-	// first search path to emoji image
-//	QString emoji_name;
-//	QByteArray name = reaction.toUtf8();
-//	const char* emoji_path = CppHash::instance()->find_emoji_path(name.data(),name.size());
-//	if( emoji_path != nullptr ) {
-//		emoji_name = QString("file://") +QString::fromUtf8(emoji_path);
-//	}
-//	else {
-//		emoji_name = reaction;
-//		result = false;
-//	}
-//	// then check if already has same reaction
-//	for( int index = 0; index < m_reactions_paths.size(); index++ )
-//	{
-//		if( m_reactions_paths[index] ==  emoji_name ) {
-//			m_reactions_count[index] -= 1;
-//			if( m_reactions_count[index] == 0 ) {
-//				m_reactions_paths.remove(index);
-//				m_reactions_count.remove(index);
-//			}
-//			return result;
-//		}
-//	}
 	qWarning() << QStringLiteral("Cant find reaction %0 in message id(%1)").arg(reaction.m_emoji).arg(m_id);
 //	m_reactions_paths.append( emoji_name);
 //	m_reactions_count.append(1);
