@@ -64,8 +64,7 @@ Item {
         anchors.fill: reactionRect
 
         onClicked: {
-            console.log("Add reaction[" + String(index) + "] to post id(" + role_post_id + ")" )
-            reactionItem.reactionClicked(index)
+            reactionItem.reactionClicked()
         }
     }
 }

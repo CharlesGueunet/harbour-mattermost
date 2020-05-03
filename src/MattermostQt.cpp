@@ -87,8 +87,8 @@ Q_DECLARE_METATYPE(MattermostQt::MessagePtr)
 
 #define ASSERT_REPLY(function_name) \
 	if(!reply) { \
-	qCritical() << QStringLiteral("Function %0 call with NULL QNetworkReply pointer.").arg( #function_name ); \
-	return; \
+	    qCritical() << QStringLiteral("Function %0 call with NULL QNetworkReply pointer.").arg( #function_name ); \
+	    return; \
 	}
 
 #define BIND_REPLY_FUNCTION(name) m_reply_func[ReplyType:: CONCAT2(rt_,name) ] = &MattermostQt:: CONCAT2(reply_, name)
@@ -122,6 +122,7 @@ void MattermostQt::bind_reply_functions()
 	BIND_REPLY_FUNCTION(post_message_edit);
 	BIND_REPLY_FUNCTION(get_channel_unread);
 	BIND_REPLY_FUNCTION(post_create_reaction);
+	BIND_REPLY_FUNCTION(delete_reaction);
 }
 
 void MattermostQt::bind_event_functions()
@@ -1631,6 +1632,9 @@ void MattermostQt::post_create_reaction(int server_index, const QString &post_id
 {
 	if( server_index < 0 || server_index >= m_server.size() )
 		return;
+
+	qDebug() << QStringLiteral("Add reaction (%0) to post id().").arg(emoji_name).arg(post_id);
+
 	ServerPtr sc = m_server[server_index];
 
 	QString urlString = QLatin1String("/api/v")
@@ -1662,7 +1666,36 @@ void MattermostQt::post_create_reaction(int server_index, const QString &post_id
 
 void MattermostQt::delete_reaction(int server_index, const QString &post_id, const QString &emoji_name) const
 {
+	if( server_index < 0 || server_index >= m_server.size() )
+	{
+		qCritical() << QStringLiteral("Wrong server index");
+		return;
+	}
 
+	qDebug() << QStringLiteral("Remove reaction (%0) from post id().").arg(emoji_name).arg(post_id);
+
+	ServerPtr sc = m_server[server_index];
+
+	QString urlString = QLatin1String("/api/v")
+	        + QString::number(sc->m_api)
+	        + QStringLiteral("/users/%0/posts/%1/reactions/%2")
+	        .arg(sc->m_user_id)
+	        .arg(post_id)
+	        .arg(emoji_name);
+
+	QUrl url(sc->m_url);
+	url.setPath(url.path() + urlString);
+	QNetworkRequest request;
+
+	request.setUrl(url);
+	request_set_headers(request,sc);
+	request_urlencoded(request);
+
+	//	QNetworkReply *reply = m_networkManager->post(request, json.toJson());
+	QNetworkReply *reply = m_networkManager->deleteResource(request);
+	reply->setProperty(P_TRUST_CERTIFICATE, QVariant(sc->m_trust_cert) );
+	reply->setProperty(P_REPLY_TYPE, QVariant(ReplyType::rt_delete_reaction) );
+	reply->setProperty(P_SERVER_INDEX, QVariant(server_index) );
 }
 
 QString MattermostQt::user_id(int server_index) const
@@ -3887,12 +3920,16 @@ void MattermostQt::reply_post_message_edit(QNetworkReply *reply)
 void MattermostQt::reply_post_create_reaction(QNetworkReply *reply)
 {
 	qDebug() << reply->readAll();
-	int server_index = reply->property(P_SERVER_INDEX).toInt();
-	//	int user_index = reply->property(P_USER_INDEX).toInt();
 
+	int server_index = reply->property(P_SERVER_INDEX).toInt();
 	if( server_index < 0 || server_index >= m_server.size() )
 		return;
 	ServerPtr sc = m_server[server_index];
+}
+
+void MattermostQt::reply_delete_reaction(QNetworkReply *reply)
+{
+	qDebug() << reply->readAll();
 }
 
 void MattermostQt::event_posted(ServerPtr sc, QJsonObject object)
@@ -5661,7 +5698,17 @@ bool MattermostQt::MessageContainer::addReaction(ReactionContainer &reaction)
 	for( int index = 0; index < m_reactions.size(); index++ )
 	{
 		if( m_reactions[index].m_emoji == reaction.m_emoji ) {
-			m_reactions[index].m_user_id.append( reaction.m_user_id[0] );
+			// try check if reaction is already there
+			if( std::find( m_reactions[index].m_user_id.begin(),
+			               m_reactions[index].m_user_id.end(),
+			               reaction.m_user_id[0]) == m_reactions[index].m_user_id.end() )
+				m_reactions[index].m_user_id.append( reaction.m_user_id[0] );
+			else
+				qWarning() << QStringLiteral("Reaction %0 already in message id(%1) user id(%2)%3")
+				        .arg(reaction.m_emoji)
+				        .arg(m_id)
+				        .arg( reaction.m_mine_emoji ? QStringLiteral(" (this you)") : QStringLiteral("") );
+
 			if( reaction.m_mine_emoji )
 				m_reactions[index].m_mine_emoji = true;
 			return result;

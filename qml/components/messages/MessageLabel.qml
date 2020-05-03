@@ -118,21 +118,23 @@ ListItem {
         visible: role_reactions_count > 0
         spacing: Theme.paddingMedium
 
-//        Component.onCompleted: {
-//            if( role_reactions_count > 0 ) {
-//                console.log( "Variant list size paths: "  + role_reactions_paths[0] )
-//                console.log( "Variant list size count: "  + role_reactions_add_count[0] )
-//            }
-//        }
-
         Repeater {
             model: role_reactions_count
             delegate: ReactionItem {
+                id: reactionItem
                 context: messageLabel.context
                 reactionPath : role_reactions_paths[index]
                 reactionCount: role_reactions_add_count[index]
                 reactionIsMine: role_reactions_is_mine[index]
                 reactionEmoji: role_reactions_emoji[index]
+
+                onReactionClicked: {
+                    if( !reactionItem.reactionIsMine ) {
+                        context.mattermost.post_create_reaction( server_index, role_post_id, reactionItem.reactionEmoji)
+                     } else {
+                        context.mattermost.delete_reaction( server_index, role_post_id, reactionItem.reactionEmoji)
+                    }
+                }
             }
         }
     }

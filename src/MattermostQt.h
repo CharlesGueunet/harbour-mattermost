@@ -787,6 +787,7 @@ protected:
 	void reply_delete_message(QNetworkReply *reply);
 	void reply_post_message_edit(QNetworkReply *reply);
 	void reply_post_create_reaction(QNetworkReply *reply);
+	void reply_delete_reaction(QNetworkReply *reply);
 	// failed replies
 	void failed_get_file_info(QNetworkReply *reply);
 	// events
