@@ -2584,10 +2584,10 @@ void MattermostQt::reply_get_post(QNetworkReply *reply)
 
 	QJsonDocument json = QJsonDocument::fromJson(reply->readAll());
 
-	MessagePtr mc(new MessageContainer(json.object()));
+	ServerPtr sc = m_server[server_index];
+	MessagePtr mc(new MessageContainer(json.object(), sc->m_user_id));
 	//for first, find user name
 	//	mc->m_user_id
-	ServerPtr sc = m_server[server_index];
 	for(int k = 0; k < sc->m_user.size(); k++)
 	{
 		if( mc->m_user_id.compare(sc->m_user[k]->m_id) == 0)
@@ -2647,7 +2647,7 @@ void MattermostQt::reply_get_posts(QNetworkReply *reply)
 	QList<MessagePtr> answers;
 	for(; it != end; it++ )
 	{
-		MessagePtr message(new MessageContainer(it.value().toObject()));
+		MessagePtr message(new MessageContainer(it.value().toObject(), sc->m_user_id));
 		message->m_server_index = server_index;
 		if(channel_type != ChannelDirect)
 			message->m_team_index = team_index;
@@ -2778,7 +2778,7 @@ void MattermostQt::reply_get_posts_before(QNetworkReply *reply)
 	QList<MessagePtr> answers;
 	for(; it != end; it++ )
 	{
-		MessagePtr message(new MessageContainer(it.value().toObject()));
+		MessagePtr message(new MessageContainer(it.value().toObject(), sc->m_user_id));
 		message->m_server_index = server_index;
 		if(channel_type != ChannelDirect)
 			message->m_team_index = team_index;
@@ -3868,7 +3868,7 @@ void MattermostQt::event_posted(ServerPtr sc, QJsonObject object)
 		else
 			return;
 	}
-	MessagePtr message( new MessageContainer(post) );
+	MessagePtr message( new MessageContainer(post, sc->m_user_id) );
 
 	message->m_server_index = sc->m_self_index;
 	if(message->m_type == MessageOwner::MessageTypeCount)
@@ -4099,7 +4099,7 @@ void MattermostQt::event_post_edited(MattermostQt::ServerPtr sc, QJsonObject obj
 		else
 			return;
 	}
-	MessagePtr message( new MessageContainer(post) );
+	MessagePtr message( new MessageContainer(post, sc->m_user_id) );
 
 	// search for channel
 	// TODO make na optimized search! maybe use QMap?
@@ -4312,7 +4312,7 @@ void MattermostQt::event_reaction_added(MattermostQt::ServerPtr sc, QJsonObject 
 	ReactionContainer new_reaction;
 	new_reaction.m_emoji = emoji_name;
 	new_reaction.m_user_id.append(user_id);
-	new_reaction.m_self_emoji = user_id == sc->m_user_id;
+	new_reaction.m_mine_emoji = user_id == sc->m_user_id;
 	message->addReaction(new_reaction);
 	updateMessage(message, MessagesModel::RoleReactionsCount);
 }
@@ -4364,7 +4364,7 @@ void MattermostQt::event_reaction_removed(MattermostQt::ServerPtr sc, QJsonObjec
 	ReactionContainer new_reaction;
 	new_reaction.m_emoji = emoji_name;
 	new_reaction.m_user_id.append(user_id);
-	new_reaction.m_self_emoji = user_id == sc->m_user_id;
+	new_reaction.m_mine_emoji = user_id == sc->m_user_id;
 	message->removeReaction(new_reaction);
 	updateMessage(message, MessagesModel::RoleReactionsCount);
 }
@@ -4478,7 +4478,7 @@ void MattermostQt::event_post_deleted(MattermostQt::ServerPtr sc, QJsonObject ob
 		else
 			return;
 	}
-	MessagePtr message( new MessageContainer(post) );
+	MessagePtr message( new MessageContainer(post, sc->m_user_id) );
 
 	// search for channel
 	channel = id2channel(sc, message->m_channel_id);
@@ -5514,7 +5514,7 @@ MattermostQt::MessageContainer::MessageContainer() noexcept
 	m_item_height = 16;
 }
 
-MattermostQt::MessageContainer::MessageContainer(QJsonObject object)
+MattermostQt::MessageContainer::MessageContainer(QJsonObject object, const QString &user_id)
 {
 	m_user_index = -1;
 	m_server_index = -1;
@@ -5540,8 +5540,10 @@ MattermostQt::MessageContainer::MessageContainer(QJsonObject object)
 	m_delete_at = (qlonglong)object["delete_at"].toDouble(0);
 	if( m_type_string.indexOf("system_") >= 0 )
 		m_type = MessageOwner::MessageSystem;
+	else if ( m_user_id == user_id )
+		m_type = MessageOwner::MessageMine;
 	else
-		m_type = MessageOwner::MessageTypeCount;
+		m_type = MessageOwner::MessageOther;
 	QJsonArray filenames = object["filenames"].toArray();
 	QJsonArray file_ids = object["file_ids"].toArray();
 	for(int i = 0; i < filenames.size(); i++ )
@@ -5565,8 +5567,7 @@ MattermostQt::MessageContainer::MessageContainer(QJsonObject object)
 					{
 						QJsonObject reaction = reactions[i].toObject();
 						QString emoji_name = reaction["emoji_name"].toString();
-						QString user_id = reaction["user_id"].toString();
-//						bool self_emoji = user_id ==
+						QString reaction_user_id = reaction["user_id"].toString();
 						QString emoji_path;
 						QByteArray name = emoji_name.toUtf8();
 						const char* _emoji_path = CppHash::instance()->find_emoji_path(name.data(),name.size());
@@ -5576,8 +5577,11 @@ MattermostQt::MessageContainer::MessageContainer(QJsonObject object)
 						for( int index = 0; index < m_reactions.size(); index++ )
 						{
 							if( m_reactions[index].m_emoji ==  emoji_name ) {
-//								m_reactions_count[index] += 1;
-								m_reactions[index].m_user_id.push_back( user_id );
+								m_reactions[index].m_user_id.push_back( reaction_user_id );
+								if( !m_reactions[index].m_mine_emoji )
+								{
+									m_reactions[index].m_mine_emoji = reaction_user_id == user_id;
+								}
 								emoji_name.clear();
 								break;
 							}
@@ -5585,12 +5589,11 @@ MattermostQt::MessageContainer::MessageContainer(QJsonObject object)
 						if(emoji_name.isEmpty())
 							continue;
 						ReactionContainer new_reaction;
-						new_reaction.m_user_id.push_back(user_id);
+						new_reaction.m_user_id.push_back(reaction_user_id);
 						new_reaction.m_emoji = emoji_name;
 						new_reaction.m_path = emoji_path;
+						new_reaction.m_mine_emoji = user_id == reaction_user_id;
 						m_reactions.append( new_reaction );
-//						m_reactions_paths.append( emoji_name);
-//						m_reactions_count.append(1);
 					}
 				}
 			}
@@ -5609,6 +5612,8 @@ bool MattermostQt::MessageContainer::addReaction(ReactionContainer &reaction)
 	{
 		if( m_reactions[index].m_emoji == reaction.m_emoji ) {
 			m_reactions[index].m_user_id.append( reaction.m_user_id[0] );
+			if( reaction.m_mine_emoji )
+				m_reactions[index].m_mine_emoji = true;
 			return result;
 		}
 	}
@@ -5643,6 +5648,9 @@ bool MattermostQt::MessageContainer::removeReaction(const ReactionContainer &rea
 					m_reactions[index].m_user_id.remove(ui);
 					if( m_reactions[index].m_user_id.empty() )
 						m_reactions.remove(index);
+					else if(m_reactions[index].m_mine_emoji && reaction.m_mine_emoji) {
+						m_reactions[index].m_mine_emoji = false;
+					}
 					return result;
 				}
 			}

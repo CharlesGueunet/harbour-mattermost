@@ -210,7 +210,7 @@ Page {
 
             SectionHeader {
                 TouchBlocker {
-                         anchors.fill: parent
+                    anchors.fill: parent
                 }
                 text: qsTr("Certificate options")
             }

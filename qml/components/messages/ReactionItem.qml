@@ -12,7 +12,9 @@ Item {
     property Context context
     property string  reactionPath : ""
     property int     reactionCount: 0
-    property color   textColor: Theme.primaryColor
+    property bool    reactionIsMine: false
+    property string  reactionEmoji: ""
+//    property color   textColor: reactionIsMine ? Theme.secondaryColor : Theme.primaryColor
 
     signal reactionClicked
 
@@ -26,7 +28,7 @@ Item {
     Rectangle {
         id: reactionRect
         anchors.fill: reactionRow
-        color: Theme.rgba(Theme.primaryColor,0.1)
+        color: Theme.rgba(reactionItem.reactionIsMine ? Theme.primaryColor : Theme.secondaryColor , reactionItem.reactionIsMine ? 0.25 : 0.1)
         radius: Theme.paddingSmall
         border.width: 1
         border.color: Theme.primaryColor
@@ -37,9 +39,7 @@ Item {
         spacing: Theme.paddingSmall
         leftPadding: Theme.paddingSmall
         rightPadding: Theme.paddingSmall
-        property bool noImage : false
-
-
+        property bool noImage : reactionItem.reactionPath.length == 0
 
         Image {
             width: context.reactionSize
@@ -50,11 +50,12 @@ Item {
         }
 
         Text {
-            text: (reactionRow.noImage?(reactionItem.reactionPath + " "):"") + String(reactionItem.reactionCount)
+            text: (reactionRow.noImage?(reactionItem.reactionEmoji + " "):"") + String(reactionItem.reactionCount)
             font.pixelSize: context.reactionSize
             width: contentWidth
-            color: reactionItem.textColor
+            color: reactionItem.reactionIsMine ? Theme.highlightColor : Theme.primaryColor
             anchors.verticalCenter: parent.verticalCenter
+            font.bold: reactionItem.reactionIsMine
         }
     }
 

@@ -239,6 +239,20 @@ QVariant MessagesModel::data(const QModelIndex &index, int role) const
 				counts.push_back( message->m_reactions[i].m_user_id.size() );
 			return QVariant::fromValue(counts);
 		}
+	case MessagesModel::RoleReactionsIsMine:
+		{
+			QVariantList mine_reaction;
+			for( int i = 0; i < message->m_reactions.size(); i ++ )
+				mine_reaction.push_back( message->m_reactions[i].m_mine_emoji );
+			return QVariant::fromValue(mine_reaction);
+		}
+	case MessagesModel::RoleReactionsEmoji:
+		{
+			QVariantList emoji;
+			for( int i = 0; i < message->m_reactions.size(); i ++ )
+				emoji.push_back( message->m_reactions[i].m_emoji );
+			return QVariant::fromValue(emoji);
+		}
 	default:
 		break;
 	}
@@ -303,7 +317,9 @@ QHash<int, QByteArray> MessagesModel::roleNames() const
 	{MessagesModel::RoleMessageUnread,     "role_message_unread"},
 	{MessagesModel::RoleReactionsCount,    "role_reactions_count"},
 	{MessagesModel::RoleReactionsPaths,    "role_reactions_paths"},
-	{MessagesModel::RoleReactionsAddCount, "role_reactions_add_count"},};
+	{MessagesModel::RoleReactionsAddCount, "role_reactions_add_count"},
+	{MessagesModel::RoleReactionsIsMine,   "role_reactions_is_mine"},
+	{MessagesModel::RoleReactionsEmoji,    "role_reactions_emoji"}};
 	return names;
 }
 
@@ -751,7 +767,7 @@ void MessagesModel::slot_updateMessage(MattermostQt::MessagePtr message, int rol
 	QVectorInt roles;
 	roles << role;
 	if( role == RoleReactionsCount ) {
-		roles << RoleReactionsAddCount << RoleReactionsPaths;
+		roles << RoleReactionsAddCount << RoleReactionsPaths << RoleReactionsIsMine;
 	}
 	if(m_mattermost->settings()->debug())
 	{

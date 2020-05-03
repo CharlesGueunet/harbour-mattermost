@@ -403,7 +403,7 @@
     </message>
     <message>
         <source>Reaction size</source>
-        <translation type="unfinished"></translation>
+        <translation>Размер реакции</translation>
     </message>
 </context>
 <context>

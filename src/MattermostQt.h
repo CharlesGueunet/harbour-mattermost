@@ -222,7 +222,7 @@ public:
 		QString m_emoji;
 		QVector<QString> m_user_id;
 		/// if we too add this reaction
-		bool    m_self_emoji = false;
+		bool    m_mine_emoji = false;
 	};
 
 	struct MessageContainer {
@@ -230,7 +230,7 @@ public:
 
 		MessageContainer() noexcept;
 
-		MessageContainer(QJsonObject object);
+		MessageContainer(QJsonObject object, const QString &user_id);
 
 		bool updateRootMessage(MattermostQt *mattermost);
 		bool addReaction(ReactionContainer &reaction);

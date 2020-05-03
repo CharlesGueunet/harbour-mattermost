@@ -109,7 +109,7 @@ ListItem {
     }
 
     Flow {
-        id: flow
+        id: reactionsFlow
         anchors.top: backroundBlob.bottom
         anchors.left: backroundBlob.left
         anchors.leftMargin: Theme.paddingLarge
@@ -126,19 +126,13 @@ ListItem {
 //        }
 
         Repeater {
-            model: role_reactions_count //role_reactions_paths.size()
+            model: role_reactions_count
             delegate: ReactionItem {
-                property int rcount: role_reactions_count
-
-//                onRcountChanged: {
-//                    reactionPath  = messagesModel.getReactionPath(rowIndex, index)
-//                    reactionCount = messagesModel.getReactionCount(rowIndex, index)
-//                }
-
                 context: messageLabel.context
-                reactionPath : role_reactions_paths[index]//messagesModel.getReactionPath(rowIndex, index)
-                reactionCount: role_reactions_add_count[index]//messagesModel.getReactionCount(rowIndex, index)
-                textColor: messageLabel.textColor
+                reactionPath : role_reactions_paths[index]
+                reactionCount: role_reactions_add_count[index]
+                reactionIsMine: role_reactions_is_mine[index]
+                reactionEmoji: role_reactions_emoji[index]
             }
         }
     }
@@ -152,7 +146,7 @@ ListItem {
     //     height: messageContent.height
     //     color: Qt.rgba(1.0,0.5,0.5,0.5)
     // }
-    contentHeight: role_item_height + (flow.visible ? flow.height + Theme.paddingSmall : 0)
+    contentHeight: role_item_height + (reactionsFlow.visible ? reactionsFlow.height + Theme.paddingSmall : 0)
 
     Row {
         id: messageRow

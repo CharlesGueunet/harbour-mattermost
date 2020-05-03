@@ -50,6 +50,8 @@ public:
 		RoleReactionsCount, // summary diferent reactions count
 		RoleReactionsPaths,
 		RoleReactionsAddCount, // how many users add this reaction
+		RoleReactionsIsMine, // if current user too set this reaction
+		RoleReactionsEmoji,
 		UserStatus = MattermostQt::UserStatusRole,
 	};
 	Q_ENUM(DataRoles)

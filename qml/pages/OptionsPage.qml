@@ -16,47 +16,35 @@ import "../model"
 
 Page {
     id: optionsPage
-    layer.enabled: true
+//    layer.enabled: true
     property Context context
     property string cacheSize: context.mattermost.cacheSize()
 
     allowedOrientations: Orientation.All
 
-    PageHeader {
-        id: header
-        title: qsTr("Options")
-        anchors {
-            left: parent.left
-            right: parent.right
-            top: parent.top
-        }
-    }
-
-
     SilicaFlickable {
         id: listView
 
-        anchors {
-            top: header.bottom
-            left: parent.left
-            right: parent.right
-            bottom: parent.bottom
-        }
+        anchors.fill: parent
 
         VerticalScrollDecorator {}
 
-        contentHeight: settingsModel.height
+        contentHeight: settingsModel.height + Theme.paddingLarge
+        contentWidth: parent.width
 
         //        model: settingsModel
         Column {
             id: settingsModel
             spacing: Theme.paddingMedium
-
             anchors.left: parent.left
             anchors.right: parent.right
 
-            anchors.leftMargin: Theme.paddingLarge
-            anchors.rightMargin: Theme.paddingLarge
+            width: parent.width
+
+            PageHeader {
+                id: header
+                title: qsTr("Options")
+            }
 
             TextSwitch {
                 id: useBlobs
@@ -251,22 +239,20 @@ Page {
             Label {
                 id: cacheLabel
                 text: qsTr("Cache size: ") + " " + String(cacheSize);
-                anchors.horizontalCenter: listView.horisontalCenter
+                anchors.horizontalCenter: parent.horizontalCenter
+                elide: Text.Center
             }
 
             Button {
                 id: clearCache
                 text: qsTr("Clear cache")
-                anchors.horizontalCenter: listView.horisontalCenter
+                anchors.horizontalCenter: parent.horizontalCenter
                 onClicked: {
                     context.mattermost.clearCache()
                     cacheSize = context.mattermost.cacheSize()
                 }
             }
-        }
-    }
 
-    VerticalScrollDecorator {
-        flickable: listView
+        }//column
     }
 }
