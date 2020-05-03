@@ -121,6 +121,7 @@ void MattermostQt::bind_reply_functions()
 	BIND_REPLY_FUNCTION(delete_message);
 	BIND_REPLY_FUNCTION(post_message_edit);
 	BIND_REPLY_FUNCTION(get_channel_unread);
+	BIND_REPLY_FUNCTION(post_create_reaction);
 }
 
 void MattermostQt::bind_event_functions()
@@ -1624,6 +1625,44 @@ void MattermostQt::post_users_status(int server_index)
 	QNetworkReply *reply = m_networkManager->post(request,json.toJson());
 	reply->setProperty(P_REPLY_TYPE, QVariant(ReplyType::rt_post_users_status) );
 	reply->setProperty(P_SERVER_INDEX, QVariant(server_index) );
+}
+
+void MattermostQt::post_create_reaction(int server_index, const QString &post_id, const QString &emoji_name) const
+{
+	if( server_index < 0 || server_index >= m_server.size() )
+		return;
+	ServerPtr sc = m_server[server_index];
+
+	QString urlString = QLatin1String("/api/v")
+	        + QString::number(sc->m_api)
+	        + QLatin1String("/reactions");
+
+	QUrl url(sc->m_url);
+	url.setPath(url.path() + urlString);
+	QNetworkRequest request;
+
+	QJsonDocument json;
+	QJsonObject json_object;
+	json_object["user_id"]    = sc->m_user_id;
+	json_object["post_id"]    = post_id;
+	json_object["emoji_name"] = emoji_name;
+	json_object["create_at"]  = 0; //QDateTime::currentDate().toMilliSeconds();
+	json.setObject(json_object);
+	request.setUrl(url);
+	request_set_headers(request,sc);
+	request_json(request);
+
+	if(sc->m_trust_cert)
+		request.setSslConfiguration(sc->m_cert);
+
+	QNetworkReply *reply = m_networkManager->post(request,json.toJson());
+	reply->setProperty(P_REPLY_TYPE, QVariant(ReplyType::rt_post_create_reaction) );
+	reply->setProperty(P_SERVER_INDEX, QVariant(server_index) );
+}
+
+void MattermostQt::delete_reaction(int server_index, const QString &post_id, const QString &emoji_name) const
+{
+
 }
 
 QString MattermostQt::user_id(int server_index) const
@@ -3843,6 +3882,17 @@ void MattermostQt::reply_delete_message(QNetworkReply *reply)
 void MattermostQt::reply_post_message_edit(QNetworkReply *reply)
 {
 	qDebug() << reply->readAll();
+}
+
+void MattermostQt::reply_post_create_reaction(QNetworkReply *reply)
+{
+	qDebug() << reply->readAll();
+	int server_index = reply->property(P_SERVER_INDEX).toInt();
+	//	int user_index = reply->property(P_USER_INDEX).toInt();
+
+	if( server_index < 0 || server_index >= m_server.size() )
+		return;
+	ServerPtr sc = m_server[server_index];
 }
 
 void MattermostQt::event_posted(ServerPtr sc, QJsonObject object)

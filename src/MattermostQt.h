@@ -51,6 +51,8 @@ public:
 		rt_post_message_edit,
 		rt_get_channel_unread,
 		rt_get_team_icon,
+		rt_post_create_reaction,
+		rt_delete_reaction,
 		//======================
 		ReplyTypeCount
 	};
@@ -578,6 +580,9 @@ public:
 	Q_INVOKABLE void get_posts(int server_index, int team_index, int channel_type, int channel_index);
 	Q_INVOKABLE void get_posts_before(int server_index, int team_index, int channel_index, int channel_type);
 	Q_INVOKABLE void post_users_status(int server_index);
+
+	Q_INVOKABLE void post_create_reaction(int server_index, const QString &post_id, const QString &emoji_name) const;
+	Q_INVOKABLE void delete_reaction(int server_index, const QString &post_id, const QString &emoji_name) const;
 	/** get current user id */
 	Q_INVOKABLE QString user_id(int server_index) const;
 
@@ -781,6 +786,7 @@ protected:
 	void reply_post_send_message(QNetworkReply *reply);
 	void reply_delete_message(QNetworkReply *reply);
 	void reply_post_message_edit(QNetworkReply *reply);
+	void reply_post_create_reaction(QNetworkReply *reply);
 	// failed replies
 	void failed_get_file_info(QNetworkReply *reply);
 	// events
