@@ -28,10 +28,11 @@ Item {
     Rectangle {
         id: reactionRect
         anchors.fill: reactionRow
-        color: Theme.rgba(reactionItem.reactionIsMine ? Theme.primaryColor : Theme.secondaryColor , reactionItem.reactionIsMine ? 0.25 : 0.1)
+        property color rectColor : reactionItem.reactionIsMine ? Theme.highlightColor : Theme.secondaryColor
+        color: Theme.rgba(rectColor , reactionItem.reactionIsMine ? 0.25 : 0.1)
         radius: Theme.paddingSmall
         border.width: 1
-        border.color: Theme.primaryColor
+        border.color: rectColor
     }
 
     Row {

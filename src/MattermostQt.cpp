@@ -1633,7 +1633,7 @@ void MattermostQt::post_create_reaction(int server_index, const QString &post_id
 	if( server_index < 0 || server_index >= m_server.size() )
 		return;
 
-	qDebug() << QStringLiteral("Add reaction (%0) to post id().").arg(emoji_name).arg(post_id);
+	qDebug() << QStringLiteral("Add reaction (%0) to post id(%1).").arg(emoji_name).arg(post_id);
 
 	ServerPtr sc = m_server[server_index];
 
@@ -1672,7 +1672,7 @@ void MattermostQt::delete_reaction(int server_index, const QString &post_id, con
 		return;
 	}
 
-	qDebug() << QStringLiteral("Remove reaction (%0) from post id().").arg(emoji_name).arg(post_id);
+	qDebug() << QStringLiteral("Remove reaction (%0) from post id(%1).").arg(emoji_name).arg(post_id);
 
 	ServerPtr sc = m_server[server_index];
 

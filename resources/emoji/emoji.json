@@ -18006,5 +18006,19 @@
         "short_names": [
             "nauseated_face"
         ]
+    },
+    {
+        "category": "Foods",
+        "image": "svg/1f943.svg",
+        "short_names": [
+            "tumbler_glass"
+        ]
+    },
+    {
+        "category": "Symbols",
+        "image": "svg/1f5a4.svg",
+        "short_names": [
+            "black_heart"
+        ]
     }
 ]
