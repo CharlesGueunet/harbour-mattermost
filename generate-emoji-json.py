@@ -33,11 +33,23 @@ mattermost_emoji = json.loads(response.read())
 
 
 for emoji in mattermost_emoji:
-    image = emoji['filename'].replace('-fe0f', '')
+    image = emoji['filename']
+
+    # remove -fe0f from end of short emoji
+    if len(image) <= 10:
+        image = emoji['filename'].replace('-fe0f', '')
+    # remove -fe0f- from long emoji 
+    else:
+        image = emoji['filename'].replace('-fe0f-', '-')
+    # remove leading zeroes
+    if image.startswith( '00' ):
+        image = image[2:]
+    # custom emojis png only    
     if emoji['category'] == 'custom':
         filepath = 'png/' + image + '.png'
     else:
         filepath = 'svg/' + image + '.svg'
+
     emoji_item = { 'category': categories[ emoji['category'] ], 'image': filepath , 'short_names': emoji['aliases'] }
     final_json.append(emoji_item)
     # # print every generated JSON item
