@@ -34,7 +34,10 @@ mattermost_emoji = json.loads(response.read())
 
 for emoji in mattermost_emoji:
     image = emoji['filename'].replace('-fe0f', '')
-    filepath = 'svg/' + image + '.svg'
+    if emoji['category'] == 'custom':
+        filepath = 'png/' + image + '.png'
+    else:
+        filepath = 'svg/' + image + '.svg'
     emoji_item = { 'category': categories[ emoji['category'] ], 'image': filepath , 'short_names': emoji['aliases'] }
     final_json.append(emoji_item)
     # # print every generated JSON item

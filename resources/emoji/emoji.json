@@ -10084,91 +10084,91 @@
     },
     {
         "category": "Other",
-        "image": "svg/bowtie.svg",
+        "image": "png/bowtie.png",
         "short_names": [
             "bowtie"
         ]
     },
     {
         "category": "Other",
-        "image": "svg/feelsgood.svg",
+        "image": "png/feelsgood.png",
         "short_names": [
             "feelsgood"
         ]
     },
     {
         "category": "Other",
-        "image": "svg/finnadie.svg",
+        "image": "png/finnadie.png",
         "short_names": [
             "finnadie"
         ]
     },
     {
         "category": "Other",
-        "image": "svg/goberserk.svg",
+        "image": "png/goberserk.png",
         "short_names": [
             "goberserk"
         ]
     },
     {
         "category": "Other",
-        "image": "svg/godmode.svg",
+        "image": "png/godmode.png",
         "short_names": [
             "godmode"
         ]
     },
     {
         "category": "Other",
-        "image": "svg/hurtrealbad.svg",
+        "image": "png/hurtrealbad.png",
         "short_names": [
             "hurtrealbad"
         ]
     },
     {
         "category": "Other",
-        "image": "svg/neckbeard.svg",
+        "image": "png/neckbeard.png",
         "short_names": [
             "neckbeard"
         ]
     },
     {
         "category": "Other",
-        "image": "svg/octocat.svg",
+        "image": "png/octocat.png",
         "short_names": [
             "octocat"
         ]
     },
     {
         "category": "Other",
-        "image": "svg/rage1.svg",
+        "image": "png/rage1.png",
         "short_names": [
             "rage1"
         ]
     },
     {
         "category": "Other",
-        "image": "svg/rage2.svg",
+        "image": "png/rage2.png",
         "short_names": [
             "rage2"
         ]
     },
     {
         "category": "Other",
-        "image": "svg/rage3.svg",
+        "image": "png/rage3.png",
         "short_names": [
             "rage3"
         ]
     },
     {
         "category": "Other",
-        "image": "svg/rage4.svg",
+        "image": "png/rage4.png",
         "short_names": [
             "rage4"
         ]
     },
     {
         "category": "Other",
-        "image": "svg/shipit.svg",
+        "image": "png/shipit.png",
         "short_names": [
             "shipit",
             "squirrel"
@@ -10176,21 +10176,21 @@
     },
     {
         "category": "Other",
-        "image": "svg/suspect.svg",
+        "image": "png/suspect.png",
         "short_names": [
             "suspect"
         ]
     },
     {
         "category": "Other",
-        "image": "svg/trollface.svg",
+        "image": "png/trollface.png",
         "short_names": [
             "trollface"
         ]
     },
     {
         "category": "Other",
-        "image": "svg/mattermost.svg",
+        "image": "png/mattermost.png",
         "short_names": [
             "mattermost"
         ]
