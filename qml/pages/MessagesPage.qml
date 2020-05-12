@@ -4,6 +4,7 @@ import Sailfish.Pickers 1.0
 import "../model"
 import "../components"
 import "../components/messages"
+import "./"
 import ru.sashikknox 1.0
 import QtGraphicalEffects 1.0
 
@@ -165,6 +166,17 @@ Page {
                 MenuItem {
                     text: qsTr("Copy")
                     onClicked: Clipboard.text = plainText
+                }
+
+                MenuItem {
+                    text: qsTr("Add reaction")
+                    visible: isMessageMineOrOther
+                    onClicked: {
+                        console.log("Try open reactuons page")
+                        //TODO push emojis page
+                        pageStack.push( Qt.resolvedUrl("ReactionsPage.qml"),
+                                       { })
+                    }
                 }
 
                 MenuItem {

@@ -38,6 +38,7 @@
 #include "MessagesModel.h"
 #include "AccountsModel.h"
 #include "AttachedFilesModel.h"
+#include "EmojiModel.h"
 #include "SettingsContainer.h"
 #include "SailNotify.h"
 
@@ -91,6 +92,7 @@ int main(int argc, char *argv[])
 	qmlRegisterType<MessagesModel>     ("ru.sashikknox", 1, 0, "MessagesModel");
 	qmlRegisterType<AccountsModel>     ("ru.sashikknox", 1, 0, "AccountsModel");
 	qmlRegisterType<AttachedFilesModel>("ru.sashikknox", 1, 0, "AttachedFilesModel");
+	qmlRegisterType<EmojiModel>        ("ru.sashikknox", 1, 0, "EmojiModel");
 	qmlRegisterSingletonType<SettingsContainer>("ru.sashikknox", 1, 0, "Settings", SettingsContainer_singletontype_provider );
 
 	// Start the application.

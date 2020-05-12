@@ -64,6 +64,7 @@ debug: DEFINES += _DEBUG
 !debug: DEFINES -= _DEBUG
 
 SOURCES += src/harbour-mattermost.cpp \
+    src/EmojiModel.cpp \
     src/TeamsModel.cpp \
     src/MattermostQt.cpp \
     src/ChannelsModel.cpp \
@@ -108,6 +109,7 @@ TRANSLATIONS += \
     translations/harbour-mattermost-de.ts
 
 HEADERS += \
+    src/EmojiModel.h \
     src/MattermostQt_gobal.h \
     src/TeamsModel.h \
     src/MattermostQt.h \
