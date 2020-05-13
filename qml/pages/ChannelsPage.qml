@@ -68,6 +68,8 @@ Page {
         header: PageHeader {
             id: pageheader
             title: team_label
+            leftMargin: Theme.paddingLarge
+            rightMargin: Theme.paddingLarge
             extraContent.children : [
                 Image {
                     id: teamIcon

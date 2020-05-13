@@ -6,7 +6,7 @@ import QtQuick 2.6
 import Sailfish.Silica 1.0
 import ru.sashikknox 1.0
 
-Page {
+FullscreenContentPage {
     id:imageview
     property string imagePath
     property string previewPath
@@ -15,6 +15,17 @@ Page {
     property bool   showOverlay: true
     property bool   isInGallery: false
     property int    selfScIndex
+
+    Behavior on opacity {
+        NumberAnimation { duration: 400 }
+    }
+
+    opacity: 0
+
+    onStatusChanged: {
+        if( status == PageStatus.Activating || status == PageStatus.Active )
+            opacity = 1
+    }
 
     onSelfScIndexChanged: {
         isInGallery = context.mattermost.isImageFileInGallery(server_index, selfScIndex)

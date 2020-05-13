@@ -63,7 +63,7 @@ MouseArea {
                            animatedImage: fileType === MattermostQt.FileAnimatedImage,
                            imageSize: imageSize,
                            selfScIndex: selfScIndex
-                       })
+                       }, PageStackAction.Immediate)
     }
 
     onClicked: {

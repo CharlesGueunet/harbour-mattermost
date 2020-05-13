@@ -137,6 +137,9 @@ Item {
                       break;
                  }
             onHeightChanged: itemHeight = height
+            leftPadding: Theme.paddingLarge
+            rightPadding: Theme.paddingLarge
+            anchors.right: parent.right
         }
     }
 
