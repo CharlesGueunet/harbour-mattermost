@@ -61,13 +61,17 @@ public:
 private:
 	void loadEmoji();
 
+private Q_SLOTS:
+	void onUsedReactionsChanged();
+
 Q_SIGNALS:
 	void categoriesChanged();
 
 private:
 //	MattermostQt *m_mattermost = nullptr;
-	QVector<ItemPtr>  m_items;
-	QMap<QString, Category> m_categories;
+	static QVector<ItemPtr>  m_items;
+	/*static*/ QVector<ItemPtr>  m_usedItems;
+	static QVector< QPair<QString, Category> > m_categories;
 };
 
 class EmojiProxyCategory : public QAbstractProxyModel

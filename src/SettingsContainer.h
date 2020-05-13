@@ -42,6 +42,8 @@ private:
 	MT_PROPERTY(bool,    debug);
 	MT_PROPERTY(bool,    sendIcon); // ability change send message icon to icon-m-send from icon-m-mail
 	MT_PROPERTY(ReactionSize, reactionSize); //set size of reactions
+	MT_PROPERTY(QStringList,  usedReactions);
+	MT_PROPERTY_DEF(int, usedReactionsCount, 20);
 public:
 	explicit SettingsContainer(QObject *parent = nullptr);
 
@@ -74,6 +76,13 @@ public:
 	 * @param object
 	 */
 	void fromJsonObject(const QJsonObject &settings);
+
+	/**
+	 * @brief addUsedReaction
+	 * add reaction to list of used reactions
+	 * @param reaction
+	 */
+	Q_INVOKABLE void addUsedReaction(const QString reaction);
 Q_SIGNALS:
 	void settingsChanged();
 };

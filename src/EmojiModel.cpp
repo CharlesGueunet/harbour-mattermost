@@ -8,23 +8,52 @@
 #include <QJsonObject>
 #include <QRegExp>
 #include <QDebug>
+#include <SettingsContainer.h>
+
+#define lastUsed QStringLiteral("Last Used")
+
+QVector<EmojiModel::ItemPtr>  EmojiModel::m_items;
+//QVector<EmojiModel::ItemPtr>  EmojiModel::m_usedItems;
+QVector< QPair<QString, EmojiModel::Category> > EmojiModel::m_categories;
 
 EmojiModel::EmojiModel(QObject *parent)
     : QAbstractListModel(parent)
 {
+	connect(SettingsContainer::getInstance(), &SettingsContainer::usedReactionsChanged,
+	        this, &EmojiModel::onUsedReactionsChanged );
 	loadEmoji();
+	onUsedReactionsChanged();
 }
 
 int EmojiModel::rowCount(const QModelIndex &parent) const
 {
-	return m_items.size();
+	return m_items.size() + m_usedItems.size();
 }
 
 QVariant EmojiModel::data(const QModelIndex &index, int role) const
 {
 	int num = index.row();
 	if( num < 0 || num >= m_items.size() )
+	{
+		num -= m_items.size();
+		if( num < 0 || num >= m_usedItems.size() )
+			return QModelIndex();
+		switch (role) {
+		case RoleName:
+			return m_usedItems[num]->name;
+			break;
+		case RoleImage:
+			return m_usedItems[num]->image;
+			break;
+		case RoleCategory:
+			return lastUsed;
+		case RoleType:
+			return QVariant::fromValue<ItemType>(m_usedItems[num]->type);
+		default:
+			break;
+		}
 		return QVariant();
+	}
 
 	switch (role) {
 	case RoleName:
@@ -57,15 +86,26 @@ QHash<int, QByteArray> EmojiModel::roleNames() const
 
 QStringList EmojiModel::categories() const
 {
-	return m_categories.keys();
+	QStringList result;
+	for(auto v : m_categories)
+		result << v.first;
+	return result;
 }
 
 QString EmojiModel::categoryIcon(QString category) const
 {
-	auto search = m_categories.find(category);
+	auto search = std::find_if(m_categories.begin(), m_categories.end(), [category](QPair<QString,Category> current){
+	    if( current.first == category )
+	        return true;
+	    return false;
+    });
 	if( search == m_categories.end() )
 		return QString();
-	Category c = search.value();
+	Category c = search->second;
+	if( c.begin == m_items.size() )
+	{
+		return m_usedItems[c.begin - m_items.size()]->image;
+	}
 	return m_items[c.begin]->image;
 }
 
@@ -93,6 +133,8 @@ QString EmojiModel::categoryIcon(QString category) const
 
 void EmojiModel::loadEmoji()
 {
+	if(!m_items.empty())
+		return;
 	beginResetModel();
 	m_items.clear();
 	m_categories.clear();
@@ -112,6 +154,7 @@ void EmojiModel::loadEmoji()
 		return /*false*/;
 
 	QMap<QString, QVector<ItemPtr>* > categories;
+	QVector<QString> categoriesOrder;
 
 	QJsonArray ar = doc.array();
 	for (int i = 0; i < ar.size(); i ++ )
@@ -129,6 +172,7 @@ void EmojiModel::loadEmoji()
 		{
 			emoji = new QVector<ItemPtr>();
 			categories.insert( emoji_category, emoji );
+			categoriesOrder.push_back(emoji_category);
 		}
 
 		QString image_name = emji_path + current["image"].toString();
@@ -159,26 +203,85 @@ void EmojiModel::loadEmoji()
 	}
 	qDebug() << "All done!";
 
-	for( auto it = categories.begin(); it != categories.end(); it++ )
+	for( auto category : categoriesOrder )
 	{
 		ItemPtr item(new Item);
 		item->type = ItemTypeCategory;
-		item->name = it.key();
-		item->category = it.key();
+		item->name = category;
+		item->category = category;
 		m_items.push_back(item);
 		Category c;
 		c.begin = m_items.size();
-		QVector<ItemPtr>* emoji = it.value();
+		QVector<ItemPtr>* emoji = categories[category];
 		for(int i = 0 ; i < emoji->size(); i++ )
 		{
 			m_items.push_back( emoji->at(i) );
 		}
 		c.end = m_items.size();
-		m_categories.insert(it.key(), c );
+		m_categories.push_back( QPair<QString,Category>(category, c) );
 		delete emoji;
 	}
 	endResetModel();
 	emit categoriesChanged();
+}
+
+void EmojiModel::onUsedReactionsChanged()
+{
+	QStringList short_names = SettingsContainer::getInstance()->usedReactions();
+	int maxAliases = SettingsContainer::getInstance()->usedReactionsCount();
+//	if( m_usedItems.empty() || (m_usedItems.size() + 1 < short_names.size()) )
+	if(true)
+	{
+		// TODO do not reset model
+		beginResetModel();
+		m_usedItems.clear();
+		for(auto name : short_names)
+		{
+			auto search = std::find_if(m_items.begin(), m_items.end(), [name](ItemPtr current) {
+			    if( current->name == name )
+			        return true;
+			    return false;
+		    });
+			if( search != m_items.end() )
+				m_usedItems.append(*search);
+		}
+		endResetModel();
+	}
+	else {
+		// TODO do not reset model
+		beginResetModel();
+		if( m_usedItems.size() == maxAliases )
+			m_usedItems.pop_front();
+		QString name = short_names.back();
+		auto search = std::find_if(m_items.begin(), m_items.end(), [name](ItemPtr current) {
+		    if( current->name == name )
+		        return true;
+		    return false;
+	    });
+		if( search != m_items.end() )
+			m_usedItems.append(*search);
+		endResetModel();
+	}
+	if(m_usedItems.isEmpty())
+		return;
+//	QString lastUsed = QStringLiteral("Last Used");
+	auto search = std::find_if(m_categories.begin(), m_categories.end(), [=](QPair<QString,Category> current){
+		if( current.first == lastUsed ) {
+			return true;
+		}
+		return false;
+	});
+	if( search == m_categories.end() )
+	{
+		Category c;
+		c.begin = m_items.size();
+		c.end = c.begin + m_usedItems.size();
+		m_categories.push_front( QPair<QString,Category>(lastUsed,c) );
+	}
+	else
+	{
+		m_categories[0].second.end = m_categories[0].second.begin + m_usedItems.size();
+	}
 }
 
 EmojiProxyCategory::EmojiProxyCategory(QObject *parent)
@@ -271,6 +374,13 @@ void EmojiProxyCategory::setCategory(const QString &in_category)
 void EmojiProxyCategory::updateCategoryIndex()
 {
 	if(m_emojiModel && !m_category.isEmpty()) {
-		m_categoryIndex = m_emojiModel->m_categories.value(m_category);
+		auto search = std::find_if(m_emojiModel->m_categories.begin(),
+		                           m_emojiModel->m_categories.end(),
+		                           [=](QPair<QString,EmojiModel::Category> current){
+			if( current.first == m_category )
+				return true;
+			return false;
+		});
+		m_categoryIndex = search->second;
 	}
 }

@@ -171,11 +171,21 @@ Page {
                 MenuItem {
                     text: qsTr("Add reaction")
                     visible: isMessageMineOrOther
+                    Component {
+                        id: reactinsPage
+                        ReactionsPage {
+                            id: reactionsPicker
+                            onReactionChanged: {
+                                context.mattermost.post_create_reaction( server_index, role_post_id, reactionsPicker.reaction )
+                            }
+                        }
+                    }
+
                     onClicked: {
                         console.log("Try open reactuons page")
                         //TODO push emojis page
-                        pageStack.push( Qt.resolvedUrl("ReactionsPage.qml"),
-                                       { })
+                        pageStack.push( reactinsPage,
+                                       {}/*, PageStackAction.Immediate*/)
                     }
                 }
 

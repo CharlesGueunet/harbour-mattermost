@@ -6,12 +6,34 @@ Page {
     id: reactionsPage
     clip: true
 
+    property string reaction: ""
+
     VerticalScrollDecorator {
         flickable: gridView
     }
 
+//    IconButton {
+//        id: closeButton
+//        anchors.right: parent.right
+//        anchors.top: parent.top
+//        anchors.margins: Theme.paddingMedium
+//        icon.source: "image://theme/icon-m-dismiss?" + Theme.highlightColor
+//        onClicked: {
+//            pageStack.pop()
+//        }
+//        z: 2
+//        Rectangle {
+//            anchors.fill: parent
+//            radius: Theme.paddingMedium
+//            color: Theme.rgba("black", 0.4)
+//            z: 1
+//        }
+//    }
+
     anchors.leftMargin: Theme.paddingLarge
     anchors.rightMargin: Theme.paddingLarge
+
+    allowedOrientations: Orientation.All//defaultOrientationTransition
 
     property EmojiModel emojiModel: EmojiModel {}
 
@@ -74,7 +96,7 @@ Page {
                 anchors.right: parent.right
                 anchors.leftMargin: Theme.paddingMedium
                 anchors.rightMargin: Theme.paddingMedium
-                property real emojiItemSize: Theme.fontSizeHuge
+                property real emojiItemSize: Theme.fontSizeHuge + Theme.paddingMedium
                 columnSpacing: 0
                 rowSpacing: 0
 
@@ -96,7 +118,7 @@ Page {
                         Image {
                             source: role_image
                             anchors.fill: parent
-                            anchors.margins: Theme.paddingSmall
+                            anchors.margins: Theme.paddingMedium
                             fillMode: Image.PreserveAspectFit
                             cache: false
                             asynchronous: true
@@ -109,6 +131,8 @@ Page {
 
                         onClicked: {
                             console.log("Emoji choosed: " + role_name + " from category " + role_category)
+                            reaction = role_name
+                            pageStack.pop()
                         }
                     }
                 }

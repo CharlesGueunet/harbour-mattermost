@@ -1662,6 +1662,8 @@ void MattermostQt::post_create_reaction(int server_index, const QString &post_id
 	QNetworkReply *reply = m_networkManager->post(request,json.toJson());
 	reply->setProperty(P_REPLY_TYPE, QVariant(ReplyType::rt_post_create_reaction) );
 	reply->setProperty(P_SERVER_INDEX, QVariant(server_index) );
+
+	SettingsContainer::getInstance()->addUsedReaction(emoji_name);
 }
 
 void MattermostQt::delete_reaction(int server_index, const QString &post_id, const QString &emoji_name) const
@@ -1970,10 +1972,11 @@ bool MattermostQt::save_settings()
 		if(!dir.exists())
 			dir.mkpath(m_data_path);
 		QFile jsonFile( m_data_path + QDir::separator() + QLatin1String(F_CONFIG_FILE) );
-		if( !jsonFile.open(QFile::WriteOnly) )
-			return false;
-		jsonFile.write(json.toJson());
-		jsonFile.close();
+		if( jsonFile.open(QFile::WriteOnly) )
+		{
+			jsonFile.write(json.toJson());
+			jsonFile.close();
+		}
 	}
 
 	json = QJsonDocument();
@@ -5331,7 +5334,6 @@ void MattermostQt::slot_ping_timeout()
 
 void MattermostQt::slot_settingsChanged()
 {
-	// TODO save to settings file
 	save_settings();
 }
 
