@@ -143,7 +143,18 @@ void EmojiModel::loadEmoji()
 			item->image = image_name;
 			item->name  = short_name;
 			item->category = emoji_category;
-			emoji->push_back( item );
+			auto search = std::find_if(emoji->begin(), emoji->end(), [image_name](ItemPtr current) -> bool {
+			    if( current->image == image_name )
+			    {
+//			        qDebug() << QStringLiteral("Catch emoji double! %0 with image %1").arg(current->name).arg(image_name);
+			        return true;
+		        }
+			    return false;
+		    } );
+			if( search == emoji->end() )
+				emoji->push_back( item );
+//			else
+//				qDebug() << QStringLiteral("Catch emoji double! %0 with image %1").arg(item->name).arg(image_name);
 		}
 	}
 	qDebug() << "All done!";
