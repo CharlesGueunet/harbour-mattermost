@@ -466,6 +466,13 @@
     </message>
 </context>
 <context>
+    <name>ReactionsPage</name>
+    <message>
+        <source>Reactions</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>ReplyMessageItem</name>
     <message>
         <source>Reply to</source>

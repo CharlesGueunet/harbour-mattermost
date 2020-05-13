@@ -93,6 +93,7 @@ int main(int argc, char *argv[])
 	qmlRegisterType<AccountsModel>     ("ru.sashikknox", 1, 0, "AccountsModel");
 	qmlRegisterType<AttachedFilesModel>("ru.sashikknox", 1, 0, "AttachedFilesModel");
 	qmlRegisterType<EmojiModel>        ("ru.sashikknox", 1, 0, "EmojiModel");
+	qmlRegisterType<EmojiProxyCategory>("ru.sashikknox", 1, 0, "EmojiCategoryProxy");
 	qmlRegisterSingletonType<SettingsContainer>("ru.sashikknox", 1, 0, "Settings", SettingsContainer_singletontype_provider );
 
 	// Start the application.

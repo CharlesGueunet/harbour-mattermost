@@ -301,7 +301,7 @@
     </message>
     <message>
         <source>Add reaction</source>
-        <translation type="unfinished"></translation>
+		<translation>Добавить реакцию</translation>
     </message>
 </context>
 <context>
@@ -463,6 +463,13 @@
     <message>
         <source>PB</source>
         <translation>ПБ</translation>
+    </message>
+</context>
+<context>
+    <name>ReactionsPage</name>
+    <message>
+        <source>Reactions</source>
+		<translation>Реакции</translation>
     </message>
 </context>
 <context>
