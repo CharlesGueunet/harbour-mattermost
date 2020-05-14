@@ -43,7 +43,7 @@ private:
 	MT_PROPERTY(bool,    sendIcon); // ability change send message icon to icon-m-send from icon-m-mail
 	MT_PROPERTY(ReactionSize, reactionSize); //set size of reactions
 	MT_PROPERTY(QStringList,  usedReactions);
-	MT_PROPERTY_DEF(int, usedReactionsCount, 20);
+	MT_PROPERTY_DEF(int, usedReactionsCount, 21);
 public:
 	explicit SettingsContainer(QObject *parent = nullptr);
 

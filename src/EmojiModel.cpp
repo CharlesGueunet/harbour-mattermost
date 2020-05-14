@@ -104,7 +104,8 @@ QString EmojiModel::categoryIcon(QString category) const
 	Category c = search->second;
 	if( c.begin == m_items.size() )
 	{
-		return m_usedItems[c.begin - m_items.size()]->image;
+		return QStringLiteral("%0/svg/1f553.svg").arg(EMOJI_PATH);
+		//m_usedItems[c.begin - m_items.size()]->image;
 	}
 	return m_items[c.begin]->image;
 }
@@ -230,10 +231,11 @@ void EmojiModel::onUsedReactionsChanged()
 	QStringList short_names = SettingsContainer::getInstance()->usedReactions();
 	int maxAliases = SettingsContainer::getInstance()->usedReactionsCount();
 //	if( m_usedItems.empty() || (m_usedItems.size() + 1 < short_names.size()) )
-	if(true)
+	if(!short_names.isEmpty())
 	{
 		// TODO do not reset model
-		beginResetModel();
+//		beginResetModel();
+		beginInsertRows( QModelIndex(), m_items.size(), m_items.size() + short_names.size() - 1 );
 		m_usedItems.clear();
 		for(auto name : short_names)
 		{
@@ -245,23 +247,28 @@ void EmojiModel::onUsedReactionsChanged()
 			if( search != m_items.end() )
 				m_usedItems.append(*search);
 		}
-		endResetModel();
+		endInsertRows();
+//		endResetModel();
 	}
-	else {
-		// TODO do not reset model
-		beginResetModel();
-		if( m_usedItems.size() == maxAliases )
-			m_usedItems.pop_front();
-		QString name = short_names.back();
-		auto search = std::find_if(m_items.begin(), m_items.end(), [name](ItemPtr current) {
-		    if( current->name == name )
-		        return true;
-		    return false;
-	    });
-		if( search != m_items.end() )
-			m_usedItems.append(*search);
-		endResetModel();
-	}
+//	else {
+//		// TODO do not reset model
+//		//beginResetModel();
+//		if( m_usedItems.size() == maxAliases )
+//			m_usedItems.pop_front();
+//		QString name = short_names.back();
+//		auto search = std::find_if(m_items.begin(), m_items.end(), [name](ItemPtr current) {
+//		    if( current->name == name )
+//		        return true;
+//		    return false;
+//	    });
+//		if( search != m_items.end() )
+//			m_usedItems.append(*search);
+//		emit dataChanged(
+//					index( m_items.size(), 0 ),
+//					index( m_items.size() + m_usedItems.size() -1 ),
+//					QVectorInt() << RoleImage << RoleImage << RoleName )
+//		//endResetModel();
+//	}
 	if(m_usedItems.isEmpty())
 		return;
 //	QString lastUsed = QStringLiteral("Last Used");

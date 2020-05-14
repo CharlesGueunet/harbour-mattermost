@@ -46,7 +46,7 @@ void SettingsContainer::resetToDefault()
 	m_pageMarginEnum        = SettingsContainer::MarginMedium;
 	m_debug                 = false;
 	m_sendIcon              = true;
-	m_usedReactionsCount    = 20;
+	m_usedReactionsCount    = 21;
 }
 
 #define ADD_VALUE(x) settings[#x] = x
@@ -97,7 +97,7 @@ void SettingsContainer::fromJsonObject(const QJsonObject &settings)
 	FROM_VALUE(m_usedReactionsCount, toInt());
 
 	if( m_usedReactionsCount == 0 )
-		m_usedReactionsCount = 20;
+		m_usedReactionsCount = 21;
 
 	switch(m_pageMarginEnum) {
 	case Margin::MarginNone:
@@ -117,11 +117,17 @@ void SettingsContainer::fromJsonObject(const QJsonObject &settings)
 
 void SettingsContainer::addUsedReaction(const QString reaction)
 {
-	if( m_usedReactions.size() > m_usedReactionsCount )
-		m_usedReactions.pop_front();
-	if( std::find(m_usedReactions.begin(),m_usedReactions.end(), reaction) != m_usedReactions.end() )
-		return;
-	m_usedReactions.push_back(reaction);
+	int index = m_usedReactions.indexOf(reaction);
+	if( index != -1 )
+	{ // than move this reaction to the front
+		m_usedReactions.move( index, 0 );
+	}
+	else
+	{
+		if( m_usedReactions.size() >= m_usedReactionsCount)
+			m_usedReactions.pop_back();
+		m_usedReactions.push_front(reaction);
+	}
 	emit usedReactionsChanged();
 	emit settingsChanged();
 }

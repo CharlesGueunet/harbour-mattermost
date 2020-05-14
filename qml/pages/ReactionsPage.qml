@@ -140,6 +140,11 @@ Page {
         }
     }
 
+    PanelBackground {
+        id: bg
+        anchors.fill: panel
+    }
+
     SilicaFlickable {
         id: panel
 
@@ -151,11 +156,11 @@ Page {
         boundsBehavior: Flickable.DragAndOvershootBounds
         flickableDirection: Flickable.HorizontalFlick
 
-        anchors.leftMargin: Theme.paddingLarge
-        anchors.rightMargin: Theme.paddingLarge
         anchors.bottom: parent.bottom
         anchors.left: parent.left
         anchors.right: parent.right
+        leftMargin: Theme.paddingLarge
+        rightMargin: Theme.paddingLarge
 
         property real buttonSize : Theme.iconSizeMedium
 
@@ -167,39 +172,47 @@ Page {
             Repeater {
                 model: emojiModel.categories
 
-                IconButton {
-                    id: iconButton
-                    icon.source: emojiModel.categoryIcon(modelData);
+                MouseArea {
+                    id: mouseArea
+                    anchors.margins: -Theme.paddingSmall
                     width: panel.buttonSize
                     height: panel.buttonSize
-                    icon.width: panel.buttonSize - Theme.paddingSmall * 2
-                    icon.height: panel.buttonSize - Theme.paddingSmall * 2
-                    icon.color: "white"
-                    icon.layer.enabled: false
-                    icon.layer.effect: ShaderEffect {
-//                        width: iconButton.icon.width
-//                        height: iconButton.icon.height
-                        property variant src: parent.icon
-                        vertexShader: "
-                                    uniform highp mat4 qt_Matrix;
-                                    attribute highp vec4 qt_Vertex;
-                                    attribute highp vec2 qt_MultiTexCoord0;
-                                    varying highp vec2 coord;
-                                    void main() {
-                                        coord = qt_MultiTexCoord0;
-                                        gl_Position = qt_Matrix * qt_Vertex;
-                                    }"
-                        fragmentShader: "
-                                    varying highp vec2 coord;
-                                    uniform sampler2D src;
-                                    uniform lowp float qt_Opacity;
-                                    void main() {
-                                        lowp vec4 tex = texture2D(src, coord);
-                                        gl_FragColor = vec4(vec3(dot(tex.rgb,
-                                                            vec3(0.344, 0.5, 0.156))),
-                                                                 tex.a) * qt_Opacity;
-                                    }"
+
+                    Image {
+                        id: iconButton
+                        source: emojiModel.categoryIcon(modelData);
+                        anchors.centerIn: parent
+                        width: panel.buttonSize - Theme.paddingSmall * 2
+                        height: panel.buttonSize - Theme.paddingSmall * 2
+
+                        layer.enabled: true
+                        layer.effect: ShaderEffect {
+                            // grayscale effect
+                            property variant src: iconButton
+                            property color highlight: mouseArea.pressed ? Theme.highlightColor : "white"
+                            vertexShader: "
+                                        uniform highp mat4 qt_Matrix;
+                                        attribute highp vec4 qt_Vertex;
+                                        attribute highp vec2 qt_MultiTexCoord0;
+                                        varying highp vec2 coord;
+                                        void main() {
+                                            coord = qt_MultiTexCoord0;
+                                            gl_Position = qt_Matrix * qt_Vertex;
+                                        }"
+                            fragmentShader: "
+                                        varying highp vec2 coord;
+                                        uniform sampler2D src;
+                                        uniform lowp vec4 highlight;
+                                        uniform lowp float qt_Opacity;
+                                        void main() {
+                                            lowp vec4 tex = texture2D(src, coord);
+                                            gl_FragColor = vec4(vec3(dot(tex.rgb,
+                                                                vec3(0.344, 0.5, 0.156))),
+                                                                     tex.a) * qt_Opacity * highlight;
+                                        }"
+                        }
                     }
+
                     onClicked: {
                         gridView.positionViewAtIndex( index, ListView.Beginning  )
                     }
