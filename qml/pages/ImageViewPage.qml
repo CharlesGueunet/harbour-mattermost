@@ -16,6 +16,29 @@ FullscreenContentPage {
     property bool   isInGallery: false
     property int    selfScIndex
 
+    property real opacity_coef: 0.5
+
+    IconButton {
+        id: closeButton
+        anchors.right: parent.right
+        anchors.top: parent.top
+        anchors.margins: Theme.paddingMedium
+        icon.source: "image://theme/icon-m-dismiss"
+        opacity: buttonsRow.opacity
+        visible: opacity > 0
+        onClicked: {
+            pageStack.pop()
+        }
+        z: 2
+        Rectangle {
+            anchors.fill: parent
+            radius: Theme.paddingMedium
+            color: Theme.darkPrimaryColor
+            opacity:  opacity_coef
+            z: 1
+        }
+    }
+
     Behavior on opacity {
         NumberAnimation { duration: 400 }
     }
@@ -280,7 +303,7 @@ FullscreenContentPage {
     Rectangle {
         color: Theme.darkPrimaryColor
         anchors.fill: buttonsRow
-        opacity: buttonsRow.opacity * 0.4
+        opacity: buttonsRow.opacity * opacity_coef
         radius: Theme.paddingMedium
     }
 

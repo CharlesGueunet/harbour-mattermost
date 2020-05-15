@@ -305,41 +305,6 @@
     </message>
 </context>
 <context>
-    <name>MessagesPage_old</name>
-    <message>
-        <source>get older</source>
-        <translation>获取更早的消息</translation>
-    </message>
-    <message>
-        <source>Edit</source>
-        <translation>编辑</translation>
-    </message>
-    <message>
-        <source>Delete</source>
-        <translation>删除</translation>
-    </message>
-    <message>
-        <source>Reply</source>
-        <translation>回复</translation>
-    </message>
-    <message>
-        <source>Copy</source>
-        <translation>复制</translation>
-    </message>
-    <message>
-        <source>Choose image</source>
-        <translation>选择图像</translation>
-    </message>
-    <message>
-        <source>Choose document</source>
-        <translation>选择文档</translation>
-    </message>
-    <message>
-        <source>Choose file</source>
-        <translation>选择文件</translation>
-    </message>
-</context>
-<context>
     <name>OptionsPage</name>
     <message>
         <source>Options</source>

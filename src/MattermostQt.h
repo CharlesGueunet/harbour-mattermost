@@ -516,6 +516,7 @@ public:
 	void setApplicationStatus(ApplicationStatus status);
 
 	Q_INVOKABLE QString getVersion() const;
+	Q_INVOKABLE QString emojiPath() const;
 	// Server helper functions
 	Q_INVOKABLE int     get_server_state(int server_index);
 	Q_INVOKABLE void    force_server_recconect();

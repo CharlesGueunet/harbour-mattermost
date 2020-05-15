@@ -305,41 +305,6 @@
     </message>
 </context>
 <context>
-    <name>MessagesPage_old</name>
-    <message>
-        <source>get older</source>
-        <translation>предыдущие сообщения</translation>
-    </message>
-    <message>
-        <source>Edit</source>
-        <translation>Редатировать</translation>
-    </message>
-    <message>
-        <source>Delete</source>
-        <translation>Удалить</translation>
-    </message>
-    <message>
-        <source>Reply</source>
-        <translation>Ответить</translation>
-    </message>
-    <message>
-        <source>Copy</source>
-        <translation>Копировать</translation>
-    </message>
-    <message>
-        <source>Choose image</source>
-        <translation>Выберите изображене</translation>
-    </message>
-    <message>
-        <source>Choose document</source>
-        <translation>Выберите документ</translation>
-    </message>
-    <message>
-        <source>Choose file</source>
-        <translation>Выберите файл</translation>
-    </message>
-</context>
-<context>
     <name>OptionsPage</name>
     <message>
         <source>Options</source>

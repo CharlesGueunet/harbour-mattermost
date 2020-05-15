@@ -2,6 +2,7 @@ import QtQuick 2.6
 import Sailfish.Silica 1.0
 import ru.sashikknox 1.0
 import "../../model"
+import "../../pages"
 import ".."
 
 ListItem {
@@ -135,6 +136,27 @@ ListItem {
                         context.mattermost.delete_reaction( server_index, role_post_id, reactionItem.reactionEmoji)
                     }
                 }
+            }
+        }
+
+        ReactionItem {
+            reactionPath: context.mattermost.emojiPath() + "/svg/1f642.svg"
+//            reactionCount: 1
+            isAddButton: true
+            context: messageLabel.context
+            Component {
+                id: reactinsPage
+                ReactionsPage {
+                    id: reactionsPicker
+                    onReactionChanged: {
+                        context.mattermost.post_create_reaction( server_index, role_post_id, reactionsPicker.reaction )
+                    }
+                }
+            }
+
+            onReactionClicked: {
+                //TODO push emojis page
+                pageStack.push( reactinsPage,{} )
             }
         }
     }

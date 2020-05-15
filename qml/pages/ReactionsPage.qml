@@ -12,24 +12,6 @@ Page {
         flickable: gridView
     }
 
-//    IconButton {
-//        id: closeButton
-//        anchors.right: parent.right
-//        anchors.top: parent.top
-//        anchors.margins: Theme.paddingMedium
-//        icon.source: "image://theme/icon-m-dismiss?" + Theme.highlightColor
-//        onClicked: {
-//            pageStack.pop()
-//        }
-//        z: 2
-//        Rectangle {
-//            anchors.fill: parent
-//            radius: Theme.paddingMedium
-//            color: Theme.rgba("black", 0.4)
-//            z: 1
-//        }
-//    }
-
     anchors.leftMargin: Theme.paddingLarge
     anchors.rightMargin: Theme.paddingLarge
 

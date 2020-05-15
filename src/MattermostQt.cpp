@@ -287,6 +287,11 @@ QString MattermostQt::getVersion() const
 	return MATTERMOSTQT_VERSION;
 }
 
+QString MattermostQt::emojiPath() const
+{
+	return QStringLiteral(EMOJI_PATH);
+}
+
 int MattermostQt::get_server_state(int server_index)
 {
 	if(server_index < 0 || server_index >= m_server.size() )

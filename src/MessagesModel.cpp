@@ -817,6 +817,8 @@ void MessagesModel::slot_messageAddedBefore(MattermostQt::ChannelPtr channel, in
 
 void MessagesModel::slot_usersUpdated(QVector<MattermostQt::UserPtr> users,  QVectorInt roles)
 {
+	if(!m_channel)
+		return;
 	QModelIndex end = index(m_channel->m_message.size() - 1);
 	QModelIndex begin = index(0);
 	dataChanged(begin,end, roles);

@@ -305,41 +305,6 @@
     </message>
 </context>
 <context>
-    <name>MessagesPage_old</name>
-    <message>
-        <source>get older</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Edit</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Delete</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Reply</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Copy</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Choose image</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Choose document</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Choose file</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
     <name>OptionsPage</name>
     <message>
         <source>Options</source>
