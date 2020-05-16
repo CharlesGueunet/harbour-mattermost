@@ -4,11 +4,14 @@
 #include <QAbstractListModel>
 #include <QVector>
 #include <QPointer>
+#include <QSortFilterProxyModel>
 #include "MattermostQt.h"
 
 class ChannelsModel : public QAbstractListModel
 {
 	Q_OBJECT
+
+	friend class ChannelsFilterProxy;
 
 	Q_PROPERTY(MattermostQt *mattermost READ mattermost WRITE setMattermost)
 	Q_PROPERTY(QString teamIcon READ teamIcon NOTIFY teamIconChanged)
@@ -79,7 +82,6 @@ Q_SIGNALS:
 protected:
 	void clear();
 
-
 protected Q_SLOTS:
 	void slot_channelAdded(MattermostQt::ChannelPtr channel);
 	void slot_channelsList(QList<MattermostQt::ChannelPtr> list);
@@ -98,6 +100,21 @@ private:
 	 MattermostQt::TeamPtr m_team;
 	int m_header_index[HeadersCount];
 	QPointer<MattermostQt> m_mattermost;
+};
+
+class ChannelsFilterProxy : public QSortFilterProxyModel
+{
+	Q_OBJECT
+public:
+	ChannelsFilterProxy(QObject *parent = Q_NULLPTR);
+protected:
+	virtual bool filterAcceptsRow(int source_row, const QModelIndex &source_parent) const;
+//	virtual bool filterAcceptsColumn(int source_column, const QModelIndex &source_parent) const;
+//	virtual bool lessThan(const QModelIndex &source_left, const QModelIndex &source_right) const;
+private:
+	void slot_sourceModelChanged();
+private:
+	ChannelsModel *m_model = nullptr;
 };
 
 #endif // CHANNELSMODEL_H

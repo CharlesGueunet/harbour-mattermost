@@ -30,26 +30,47 @@ Page {
         mattermost: context.mattermost
     }
 
+    property ChannelsFilterProxy channelsFilter: ChannelsFilterProxy {
+        sourceModel: channelsmodel
+    }
+
     onStatusChanged: {
         if( status == PageStatus.Active && isuptodate == false )
         {
             isuptodate = true;
             context.mattermost.get_public_channels(server_index,teamid)
-//            context.mattermost.replyFinished.connect( function func(request_type) {
-//                if( request_type == MattermostQt.rt_get_public_channels ) {
-//                    first_run = false
-//                }
-//            })
+        }
+        else if( status == PageStatus.Inactive )
+        {
+            searchField.text = ""
+            searchField.focus = false
         }
     }
 
+    SearchField {
+        id: searchField
+        anchors {
+            left: parent.left
+            right: parent.right
+            top: parent.top
+        }
 
+        onTextChanged: {
+              channelsFilter.setFilterRegExp( text )
+        }
+    }
 
     SilicaListView {
         id: channelslist
         width: parent.width
-        anchors.fill: parent
-        model: channelsmodel
+        anchors {
+            left: parent.left
+            right: parent.right
+            top: searchField.bottom
+            bottom: parent.bottom
+        }
+        clip: true
+        model: channelsFilter
         spacing: Theme.paddingSmall
 
         PullDownMenu {

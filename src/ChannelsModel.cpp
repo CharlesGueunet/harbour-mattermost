@@ -392,3 +392,27 @@ void ChannelsModel::slot_teamChanged(MattermostQt::TeamPtr team, QVectorInt role
 //{
 //	m_mattermost = mattermost;
 //}
+
+ChannelsFilterProxy::ChannelsFilterProxy(QObject *parent)
+    : QSortFilterProxyModel(parent)
+{
+
+}
+
+bool ChannelsFilterProxy::filterAcceptsRow(int source_row, const QModelIndex &source_parent) const
+{
+	QModelIndex index0 = sourceModel()->index(source_row, 0, source_parent);
+	QRegExp regEx = filterRegExp();
+	if( regEx.pattern().isEmpty() )
+		return true;
+	regEx.setPattern( QStringLiteral(".*%0.*").arg(regEx.pattern().toLower()) );
+	return index0.data(ChannelsModel::DataRoles::Type).toInt() == ChannelsModel::ItemType::Channel &&
+	    (
+	        index0.data(ChannelsModel::DataRoles::DisplayName).toString().toLower().contains( regEx )
+	    );
+}
+
+void ChannelsFilterProxy::slot_sourceModelChanged()
+{
+	m_model = qobject_cast<ChannelsModel*>(sourceModel());
+}
