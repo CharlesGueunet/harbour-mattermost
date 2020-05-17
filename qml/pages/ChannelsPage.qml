@@ -32,6 +32,7 @@ Page {
 
     property ChannelsFilterProxy channelsFilter: ChannelsFilterProxy {
         sourceModel: channelsmodel
+        filterCaseSensitivity: Qt.CaseInsensitive
     }
 
     onStatusChanged: {
@@ -47,31 +48,13 @@ Page {
         }
     }
 
-    SearchField {
-        id: searchField
-        anchors {
-            left: parent.left
-            right: parent.right
-            top: parent.top
-        }
-
-        onTextChanged: {
-              channelsFilter.setFilterRegExp( text )
-        }
-    }
-
-    SilicaListView {
+    SilicaFlickable {
         id: channelslist
+        anchors.fill: parent
         width: parent.width
-        anchors {
-            left: parent.left
-            right: parent.right
-            top: searchField.bottom
-            bottom: parent.bottom
-        }
         clip: true
-        model: channelsFilter
-        spacing: Theme.paddingSmall
+
+        contentHeight: contentColumn.height
 
         PullDownMenu {
             MenuItem {
@@ -86,112 +69,140 @@ Page {
 
         VerticalScrollDecorator {}
 
-        header: PageHeader {
-            id: pageheader
-            title: team_label
-            leftMargin: Theme.paddingLarge
-            rightMargin: Theme.paddingLarge
-            extraContent.children : [
-                Image {
-                    id: teamIcon
-                    source: channelsPage.teamIcon
-                    anchors.left: parent.left
-                    anchors.leftMargin: Theme.paddingLarge
-                    anchors.verticalCenter: parent.verticalCenter
-                    width: Theme.itemSizeSmall
-                    height: width
+        Column {
+            id: contentColumn
+            spacing: Theme.paddingSmall
 
-                    layer.enabled: true
-                    layer.effect: OpacityMask {
-                        maskSource: maskRect
+            PageHeader {
+                id: pageheader
+                title: team_label
+                leftMargin: Theme.paddingLarge
+                rightMargin: Theme.paddingLarge
+                width : channelsPage.width
+                height: Theme.itemSizeMedium
+                extraContent.children : [
+                    Image {
+                        id: teamIcon
+                        source: channelsPage.teamIcon
+                        anchors.left: parent.left
+                        anchors.leftMargin: Theme.paddingLarge
+                        anchors.verticalCenter: parent.verticalCenter
+                        width: Theme.itemSizeSmall
+                        height: width
+
+                        layer.enabled: true
+                        layer.effect: OpacityMask {
+                            maskSource: maskRect
+                        }
+
+                        Rectangle {
+                            id: maskRect
+                            anchors.fill: teamIcon
+                            radius: Theme.paddingMedium
+                            visible: false
+                        }
                     }
-
-                    Rectangle {
-                        id: maskRect
-                        anchors.fill: teamIcon
-                        radius: Theme.paddingMedium
-                        visible: false
-                    }
-                }
-            ]
-        }
-
-        delegate: ListItem {
-            id: bgitem
-
-            TouchBlocker {
-                anchors.fill: parent
-                enabled: m_type != ChannelsModel.Channel
+                ]
             }
 
-            ParallelAnimation {
-                id: panim
-                running: first_run
-                property int dur: 200
-//                NumberAnimation  {
-//                    target: bgitem
-//                    property: "height"
-//                    easing.type: Easing.OutQuad
-//                    from: 0
-//                    to: channellabel.height;
-//                    duration: panim.dur
-//                }
-                NumberAnimation {
-                    target: bgitem
-                    property: "opacity"
-                    easing.type: Easing.InExpo
-                    from: 0
-                    to: 1.0;
-                    duration: panim.dur
-                }
-            }
-            width: parent.width
-
-            ChannelLabel {
-                id: channellabel
-                _display_name: m_display_name
-                _purpose: m_purpose
-                _header: m_header
-                _index: m_index
-                _type: m_type
-                _channel_unread: role_mention_count + role_msg_unread
-                _users_typing: role_users_typing
-                channelType: channel_type
-                directChannelImage: avatar_path
-                directChannelUserStatus: user_status
-                context: channelsPage.context
-
-                x: Theme.horizontalPageMargin
+            SearchField {
+                id: searchField
                 anchors {
-                    fill: parent
-                    verticalCenter: parent.verticalCenter
-                    //left: parent.left
-                    //right: parent.right
-                    //top: parent.top
+                    left: parent.left
+                    right: parent.right
                 }
-                //                    anchors.topMargin: Theme.paddingSmall
-                anchors.leftMargin: Theme.paddingLarge
-                anchors.rightMargin: Theme.paddingLarge
+                height: Theme.itemSizeMedium
+                width: channelsPage.width
+                onTextChanged: {
+                      channelsFilter.setFilterRegExp( text )
+                }
             }
-            onClicked: {
-                var messages = pageStack.pushAttached(
-                            Qt.resolvedUrl("MessagesPage.qml"),
-                            {
-                                team_index: channelsPage.team_index,
-                                server_index: channelsPage.server_index,
-                                channel_index: channellabel._index,
-                                channel_type: channellabel.channelType,
-                                channel_id: context.mattermost.getChannelId(
-                                                channelsPage.server_index,
-                                                channelsPage.team_index,
-                                                channellabel.channelType,
-                                                channellabel._index
-                                                ),
-                                channel_name: channellabel._display_name,
-                                context: channelsPage.context
-                            } );
-                pageStack.navigateForward(PageStackAction.Animated);
-            }
-        }
-    }
+
+
+            Repeater {
+                id: channelsRepeater
+                model: channelsFilter
+
+                delegate: ListItem {
+                    id: bgitem
+                    width: channelsPage.width
+                    height: Theme.itemSizeSmall
+
+                    TouchBlocker {
+                        anchors.fill: parent
+                        enabled: m_type != ChannelsModel.Channel
+                    }
+
+                    ParallelAnimation {
+                        id: panim
+                        running: first_run
+                        property int dur: 200
+            //                NumberAnimation  {
+            //                    target: bgitem
+            //                    property: "height"
+            //                    easing.type: Easing.OutQuad
+            //                    from: 0
+            //                    to: channellabel.height;
+            //                    duration: panim.dur
+            //                }
+                        NumberAnimation {
+                            target: bgitem
+                            property: "opacity"
+                            easing.type: Easing.InExpo
+                            from: 0
+                            to: 1.0;
+                            duration: panim.dur
+                        }
+                    }
+
+                    ChannelLabel {
+                        id: channellabel
+                        _display_name: m_display_name
+                        _purpose: m_purpose
+                        _header: m_header
+                        _index: m_index
+                        _type: m_type
+                        _channel_unread: role_mention_count + role_msg_unread
+                        _users_typing: role_users_typing
+                        channelType: channel_type
+                        directChannelImage: avatar_path
+                        directChannelUserStatus: user_status
+                        context: channelsPage.context
+
+                        x: Theme.horizontalPageMargin
+                        anchors {
+                            fill: parent
+                            verticalCenter: parent.verticalCenter
+                            //left: parent.left
+                            //right: parent.right
+                            //top: parent.top
+                        }
+                        //                    anchors.topMargin: Theme.paddingSmall
+                        anchors.leftMargin: Theme.paddingLarge
+                        anchors.rightMargin: Theme.paddingLarge
+                    }
+                    onClicked: {
+                        var messages = pageStack.pushAttached(
+                                    Qt.resolvedUrl("MessagesPage.qml"),
+                                    {
+                                        team_index: channelsPage.team_index,
+                                        server_index: channelsPage.server_index,
+                                        channel_index: channellabel._index,
+                                        channel_type: channellabel.channelType,
+                                        channel_id: context.mattermost.getChannelId(
+                                                        channelsPage.server_index,
+                                                        channelsPage.team_index,
+                                                        channellabel.channelType,
+                                                        channellabel._index
+                                                        ),
+                                        channel_name: channellabel._display_name,
+                                        context: channelsPage.context
+                                    } );
+                        pageStack.navigateForward(PageStackAction.Animated);
+                    }
+                }
+            }// Repeater
+        }// Column
+    }// SilicaFlickable
+
 }
