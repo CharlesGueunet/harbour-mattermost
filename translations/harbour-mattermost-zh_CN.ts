@@ -374,6 +374,22 @@
         <source>Reaction size</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Channels view</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Search field</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Show search field in channels view</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Messages view</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>QObject</name>

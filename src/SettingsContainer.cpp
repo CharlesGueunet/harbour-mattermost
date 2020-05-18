@@ -15,6 +15,7 @@ SET_SETTINGS_PROPERTY(bool,  sendIcon)
 SET_SETTINGS_PROPERTY(ReactionSize, reactionSize)
 SET_SETTINGS_PROPERTY(QStringList, usedReactions)
 SET_SETTINGS_PROPERTY(int,         usedReactionsCount)
+SET_SETTINGS_PROPERTY(bool,  searchInChannels)
 
 SettingsContainer::SettingsContainer(QObject *parent) : QObject(parent)
 {
@@ -47,6 +48,7 @@ void SettingsContainer::resetToDefault()
 	m_debug                 = false;
 	m_sendIcon              = true;
 	m_usedReactionsCount    = 21;
+	m_searchInChannels      = true;
 }
 
 #define ADD_VALUE(x) settings[#x] = x
@@ -81,6 +83,7 @@ QJsonObject SettingsContainer::asJsonObject() const
 	ADD_ENUM(m_reactionSize, ReactionSize);
 	ADD_LIST(m_usedReactions);
 	ADD_VALUE(m_usedReactionsCount);
+	ADD_VALUE(m_searchInChannels);
 	return settings;
 }
 
@@ -95,6 +98,7 @@ void SettingsContainer::fromJsonObject(const QJsonObject &settings)
 	FROM_ENUM (m_reactionSize, ReactionSize);
 	FROM_LIST (m_usedReactions);
 	FROM_VALUE(m_usedReactionsCount, toInt());
+	FROM_VALUE(m_searchInChannels, toBool());
 
 	if( m_usedReactionsCount == 0 )
 		m_usedReactionsCount = 21;

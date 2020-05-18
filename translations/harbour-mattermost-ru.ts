@@ -374,6 +374,22 @@
         <source>Reaction size</source>
         <translation>Размер реакции</translation>
     </message>
+    <message>
+        <source>Channels view</source>
+        <translation>Список каналов</translation>
+    </message>
+    <message>
+        <source>Search field</source>
+        <translation>Поле поиска</translation>
+    </message>
+    <message>
+        <source>Show search field in channels view</source>
+        <translation>Показывать поле поиска в списке каналов</translation>
+    </message>
+    <message>
+        <source>Messages view</source>
+        <translation>Окно чата</translation>
+    </message>
 </context>
 <context>
     <name>QObject</name>

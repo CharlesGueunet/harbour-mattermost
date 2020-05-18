@@ -100,8 +100,8 @@ Page {
                width: channelsPage.width
                onTextChanged: {
                    channelsFilter.setFilterRegExp( text )
-                   focus = true
                }
+               active: Settings.searchInChannels
            }// SearchField
         }
 

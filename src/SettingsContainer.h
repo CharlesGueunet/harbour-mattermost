@@ -44,6 +44,7 @@ private:
 	MT_PROPERTY(ReactionSize, reactionSize); //set size of reactions
 	MT_PROPERTY(QStringList,  usedReactions);
 	MT_PROPERTY_DEF(int, usedReactionsCount, 21);
+	MT_PROPERTY(bool,    searchInChannels); // show or not search field in channels view
 public:
 	explicit SettingsContainer(QObject *parent = nullptr);
 

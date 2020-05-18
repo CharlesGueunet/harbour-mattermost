@@ -46,6 +46,28 @@ Page {
                 title: qsTr("Options")
             }
 
+            SectionHeader {
+                text: qsTr("Channels view")
+                height: contentHeight
+            }
+
+            TextSwitch {
+                id: showSearchField
+                text: qsTr("Search field")
+                description: qsTr("Show search field in channels view")
+                onCheckedChanged: {
+                    Settings.searchInChannels = checked
+                }
+
+                Component.onCompleted: checked = Settings.searchInChannels
+            }
+
+
+            SectionHeader {
+                text: qsTr("Messages view")
+                height: contentHeight
+            }
+
             TextSwitch {
                 id: useBlobs
                 text: qsTr("Show blobs")
