@@ -139,7 +139,7 @@ Item {
             onHeightChanged: itemHeight = height
             leftPadding: Theme.paddingLarge
             rightPadding: Theme.paddingLarge
-            anchors.right: parent.right
+            width: channellabel.width //anchors.right: parent.right
         }
     }
 
