@@ -42,6 +42,9 @@ Page {
         clip: true
         anchors.bottomMargin: panel.margin
 
+//        contentHeight: (emojiList.rowCount() - emojiModel.categories.length )* reactionsPage.emojiItemSize +
+//                       emojiModel.categories.length * Theme.itemSizeSmall + spacing * emojiList.rowCount()
+
         header: PageHeader {
             title: qsTr("Reactions")
             leftMargin: Theme.paddingLarge
@@ -80,9 +83,11 @@ Page {
                 Row {
                     leftPadding: reactionsPage.anchors.leftMargin
                     rightPadding: reactionsPage.anchors.leftMargin
+                    height: reactionsPage.emojiItemSize
 
                     Repeater {
                         model: emojiList.lineSize(modelRow)
+                        height: reactionsPage.emojiItemSize
 
                         delegate: BackgroundItem {
                             width: reactionsPage.emojiItemWidth
@@ -93,7 +98,7 @@ Page {
                                 anchors.fill: parent
                                 anchors.margins: Theme.paddingMedium
                                 fillMode: Image.PreserveAspectFit
-                                cache: false
+                                cache: true
                                 asynchronous: true
                                 Behavior on opacity {
                                     NumberAnimation { duration: 200 }

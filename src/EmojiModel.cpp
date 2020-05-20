@@ -393,9 +393,9 @@ QModelIndex EmojiProxyList::mapToSource(const QModelIndex &proxyIndex) const
 	int proxy_column = proxyIndex.column();
 	EmojiModel::IndexRange sourceEmojiRange = m_sourceLines[proxy_row];
 	int source_row = sourceEmojiRange.begin + proxy_column;
-	qDebug() << QStringLiteral("proxy_row = %0").arg(proxy_row);
-	qDebug() << QStringLiteral("proxy_column = %0").arg(proxy_column);
-	qDebug() << QStringLiteral("source_row = %0").arg(source_row);
+//	qDebug() << QStringLiteral("proxy_row = %0").arg(proxy_row);
+//	qDebug() << QStringLiteral("proxy_column = %0").arg(proxy_column);
+//	qDebug() << QStringLiteral("source_row = %0").arg(source_row);
 
 	return m_emojiModel->createIndex(source_row,0);
 }
@@ -466,7 +466,7 @@ QVariant EmojiProxyList::data(const QModelIndex &index, int role) const
 	if(sourceIndex.isValid())
 		return sourceIndex.data(role);
 	else {
-		qWarning() << QStringLiteral("sourceIndex is Invalid (%0, %1)").arg(index.row()).arg(index.column());
+		qWarning() << QStringLiteral("SourceIndex is Invalid (%0, %1)").arg(index.row()).arg(index.column());
 	}
 	return QVariant();
 }
@@ -533,10 +533,10 @@ void EmojiProxyList::recalcCategories()
 		int additioanl_row_emoji_count = category_emoji_count % m_columnCount;
 		int additioanl_row = (additioanl_row_emoji_count == 0 ? 0 : 1);
 		// add range of Proxy model to proxyCategories
-		qDebug() << QStringLiteral("full_row_count = %0 ").arg(full_row_count);
-		qDebug() << QStringLiteral("category_emoji_count = %0 ").arg(category_emoji_count);
-		qDebug() << QStringLiteral("additioanl_row_emoji_count = %0 ").arg(additioanl_row_emoji_count);
-		qDebug() << QStringLiteral("category_emoji_count % m_columnCount = %0 ").arg(category_emoji_count % m_columnCount);
+//		qDebug() << QStringLiteral("full_row_count = %0 ").arg(full_row_count);
+//		qDebug() << QStringLiteral("category_emoji_count = %0 ").arg(category_emoji_count);
+//		qDebug() << QStringLiteral("additioanl_row_emoji_count = %0 ").arg(additioanl_row_emoji_count);
+//		qDebug() << QStringLiteral("category_emoji_count % m_columnCount = %0 ").arg(category_emoji_count % m_columnCount);
 		EmojiModel::IndexRange emojiProxyCategoryRowsRange;
 		emojiProxyCategoryRowsRange.begin = m_sourceLines.size();
 		emojiProxyCategoryRowsRange.end = m_sourceLines.size() + full_row_count + additioanl_row;
