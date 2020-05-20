@@ -14,7 +14,7 @@
 
 QVector<EmojiModel::ItemPtr>  EmojiModel::m_items;
 //QVector<EmojiModel::ItemPtr>  EmojiModel::m_usedItems;
-QVector< QPair<QString, EmojiModel::Category> > EmojiModel::m_categories;
+QVector< QPair<QString, EmojiModel::IndexRange> > EmojiModel::m_categories;
 
 EmojiModel::EmojiModel(QObject *parent)
     : QAbstractListModel(parent)
@@ -33,11 +33,13 @@ int EmojiModel::rowCount(const QModelIndex &parent) const
 QVariant EmojiModel::data(const QModelIndex &index, int role) const
 {
 	int num = index.row();
-	if( num < 0 || num >= m_items.size() )
+	if( num >= m_items.size() )
 	{
 		num -= m_items.size();
+
 		if( num < 0 || num >= m_usedItems.size() )
 			return QModelIndex();
+
 		switch (role) {
 		case RoleName:
 			return m_usedItems[num]->name;
@@ -94,15 +96,15 @@ QStringList EmojiModel::categories() const
 
 QString EmojiModel::categoryIcon(QString category) const
 {
-	auto search = std::find_if(m_categories.begin(), m_categories.end(), [category](QPair<QString,Category> current){
+	auto search = std::find_if(m_categories.begin(), m_categories.end(), [category](QPair<QString,IndexRange> current){
 	    if( current.first == category )
 	        return true;
 	    return false;
     });
 	if( search == m_categories.end() )
 		return QString();
-	Category c = search->second;
-	if( c.begin == m_items.size() )
+	IndexRange c = search->second;
+	if( c.begin >= m_items.size() )
 	{
 		return QStringLiteral("%0/svg/1f553.svg").arg(EMOJI_PATH);
 		//m_usedItems[c.begin - m_items.size()]->image;
@@ -110,27 +112,19 @@ QString EmojiModel::categoryIcon(QString category) const
 	return m_items[c.begin]->image;
 }
 
-//void EmojiModel::setMattermost(MattermostQt *mattermost)
-//{
-//	m_mattermost = mattermost;
-//}
-
-//MattermostQt *EmojiModel::getMattermost() const
-//{
-//	return m_mattermost;
-//}
-
-//void EmojiModel::setCategory(const QString &name)
-//{
-//	m_category = name;
-//	emit categoryChanged();
-//	loadEmoji();
-//}
-
-//QString EmojiModel::category() const
-//{
-//	return m_category;
-//}
+EmojiModel::ItemPtr EmojiModel::getItem(int row) const
+{
+	if( row >= 0 && row < m_items.size() )
+		return m_items[row];
+	else {
+		row -= m_items.size();
+		if( row >= 0 && row < m_usedItems.size() )
+		{
+			return m_usedItems[row];
+		}
+	}
+	return ItemPtr();
+}
 
 void EmojiModel::loadEmoji()
 {
@@ -210,16 +204,20 @@ void EmojiModel::loadEmoji()
 		item->type = ItemTypeCategory;
 		item->name = category;
 		item->category = category;
+		int category_index = m_items.size();
+		item->category_index = category_index;
 		m_items.push_back(item);
-		Category c;
+		IndexRange c;
 		c.begin = m_items.size();
 		QVector<ItemPtr>* emoji = categories[category];
 		for(int i = 0 ; i < emoji->size(); i++ )
 		{
-			m_items.push_back( emoji->at(i) );
+			ItemPtr current_emoji_item = emoji->at(i);
+			current_emoji_item->category_index = category_index;
+			m_items.push_back( current_emoji_item );
 		}
 		c.end = m_items.size();
-		m_categories.push_back( QPair<QString,Category>(category, c) );
+		m_categories.push_back( QPair<QString,IndexRange>(category, c) );
 		delete emoji;
 	}
 	endResetModel();
@@ -230,13 +228,19 @@ void EmojiModel::onUsedReactionsChanged()
 {
 	QStringList short_names = SettingsContainer::getInstance()->usedReactions();
 	int maxAliases = SettingsContainer::getInstance()->usedReactionsCount();
-//	if( m_usedItems.empty() || (m_usedItems.size() + 1 < short_names.size()) )
+
 	if(!short_names.isEmpty())
 	{
 		// TODO do not reset model
-//		beginResetModel();
-		beginInsertRows( QModelIndex(), m_items.size(), m_items.size() + short_names.size() - 1 );
+		beginInsertRows( QModelIndex(), m_items.size(), m_items.size() + short_names.size() );
 		m_usedItems.clear();
+		ItemPtr categoryItem(new Item);
+		categoryItem->category = lastUsed;
+		categoryItem->category_index = 0;
+		categoryItem->image =  QStringLiteral("%0/svg/1f553.svg").arg(EMOJI_PATH);
+		categoryItem->name = lastUsed;
+		categoryItem->type = ItemTypeCategory;
+		m_usedItems.push_back( categoryItem );
 		for(auto name : short_names)
 		{
 			auto search = std::find_if(m_items.begin(), m_items.end(), [name](ItemPtr current) {
@@ -248,31 +252,11 @@ void EmojiModel::onUsedReactionsChanged()
 				m_usedItems.append(*search);
 		}
 		endInsertRows();
-//		endResetModel();
 	}
-//	else {
-//		// TODO do not reset model
-//		//beginResetModel();
-//		if( m_usedItems.size() == maxAliases )
-//			m_usedItems.pop_front();
-//		QString name = short_names.back();
-//		auto search = std::find_if(m_items.begin(), m_items.end(), [name](ItemPtr current) {
-//		    if( current->name == name )
-//		        return true;
-//		    return false;
-//	    });
-//		if( search != m_items.end() )
-//			m_usedItems.append(*search);
-//		emit dataChanged(
-//					index( m_items.size(), 0 ),
-//					index( m_items.size() + m_usedItems.size() -1 ),
-//					QVectorInt() << RoleImage << RoleImage << RoleName )
-//		//endResetModel();
-//	}
 	if(m_usedItems.isEmpty())
 		return;
-//	QString lastUsed = QStringLiteral("Last Used");
-	auto search = std::find_if(m_categories.begin(), m_categories.end(), [=](QPair<QString,Category> current){
+
+	auto search = std::find_if(m_categories.begin(), m_categories.end(), [=](QPair<QString,IndexRange> current){
 		if( current.first == lastUsed ) {
 			return true;
 		}
@@ -280,14 +264,14 @@ void EmojiModel::onUsedReactionsChanged()
 	});
 	if( search == m_categories.end() )
 	{
-		Category c;
-		c.begin = m_items.size();
-		c.end = c.begin + m_usedItems.size();
-		m_categories.push_front( QPair<QString,Category>(lastUsed,c) );
+		IndexRange c;
+		c.begin = m_items.size() + 1;
+		c.end = c.begin + m_usedItems.size() - 1;
+		m_categories.push_front( QPair<QString,IndexRange>(lastUsed,c) );
 	}
 	else
 	{
-		m_categories[0].second.end = m_categories[0].second.begin + m_usedItems.size();
+		m_categories[0].second.end = m_categories[0].second.begin + (m_usedItems.size() - 1);
 	}
 }
 
@@ -383,11 +367,203 @@ void EmojiProxyCategory::updateCategoryIndex()
 	if(m_emojiModel && !m_category.isEmpty()) {
 		auto search = std::find_if(m_emojiModel->m_categories.begin(),
 		                           m_emojiModel->m_categories.end(),
-		                           [=](QPair<QString,EmojiModel::Category> current){
+		                           [=](QPair<QString,EmojiModel::IndexRange> current){
 			if( current.first == m_category )
 				return true;
 			return false;
 		});
 		m_categoryIndex = search->second;
+	}
+}
+
+EmojiProxyList::EmojiProxyList(QObject *parent)
+    : QAbstractProxyModel(parent)
+{
+
+}
+
+QModelIndex EmojiProxyList::mapToSource(const QModelIndex &proxyIndex) const
+{
+	if (!proxyIndex.isValid())
+		return QModelIndex();
+	if(!m_emojiModel )
+		return QModelIndex();
+
+	int proxy_row = proxyIndex.row();
+	int proxy_column = proxyIndex.column();
+	EmojiModel::IndexRange sourceEmojiRange = m_sourceLines[proxy_row];
+	int source_row = sourceEmojiRange.begin + proxy_column;
+	qDebug() << QStringLiteral("proxy_row = %0").arg(proxy_row);
+	qDebug() << QStringLiteral("proxy_column = %0").arg(proxy_column);
+	qDebug() << QStringLiteral("source_row = %0").arg(source_row);
+
+	return m_emojiModel->createIndex(source_row,0);
+}
+
+QModelIndex EmojiProxyList::mapFromSource(const QModelIndex &sourceIndex) const
+{
+	if (!sourceIndex.isValid())
+		return QModelIndex();
+	if(!m_emojiModel || m_columnCount <= 1)
+		return QModelIndex();
+
+	int source_row = sourceIndex.row();
+	EmojiModel::ItemPtr item = m_emojiModel->getItem(source_row);
+	if( !item )
+		return QModelIndex();
+	int proxy_row = 0;
+	int proxy_column = 0;
+	EmojiModel::IndexRange proxyCategoryRange = m_proxyCategories[item->category_index];
+	// check if it header
+	if ( source_row == m_sourceLines[proxyCategoryRange.begin - 1].begin )
+		return createIndex(proxyCategoryRange.begin - 1, 0);
+	// that calculate row and col of emoji in proxy model
+	for(int proxy_line = proxyCategoryRange.begin; proxy_line < proxyCategoryRange.end; proxy_line++ )
+	{
+		if( source_row >= m_sourceLines[proxy_line].begin && source_row < m_sourceLines[proxy_line].end )
+		{
+			proxy_row = proxy_line;
+			proxy_column = source_row - m_sourceLines[proxy_line].begin;
+		}
+	}
+	return createIndex(proxy_row, proxy_column);
+}
+
+void EmojiProxyList::setSourceModel(QAbstractItemModel *sourceModel)
+{
+	m_emojiModel = qobject_cast<EmojiModel*>(sourceModel);
+	recalcCategories();
+	QAbstractProxyModel::setSourceModel(sourceModel);
+}
+
+QModelIndex EmojiProxyList::index(int row, int col, const QModelIndex &parent) const
+{
+	Q_UNUSED(parent)
+	return createIndex(row,col, nullptr);
+}
+
+QModelIndex EmojiProxyList::parent(const QModelIndex &child) const
+{
+	Q_UNUSED(child)
+	return QModelIndex();
+}
+
+int EmojiProxyList::rowCount(const QModelIndex &parent) const
+{
+	if(!m_emojiModel || m_columnCount <= 1)
+		return 0;
+	return m_sourceLines.size();
+}
+
+int EmojiProxyList::columnCount(const QModelIndex &parent) const
+{
+	return emojiColumnCount();
+}
+
+QVariant EmojiProxyList::data(const QModelIndex &index, int role) const
+{
+	QModelIndex sourceIndex = mapToSource(index);
+	if(sourceIndex.isValid())
+		return sourceIndex.data(role);
+	else {
+		qWarning() << QStringLiteral("sourceIndex is Invalid (%0, %1)").arg(index.row()).arg(index.column());
+	}
+	return QVariant();
+}
+
+QVariant EmojiProxyList::getData(int row, int column, int role) const
+{
+	return data( createIndex(row,column), role);
+}
+
+int EmojiProxyList::lineSize(int row) const
+{
+	if( row < 0 || row >= m_sourceLines.size() )
+		return 1;
+	int column_count = m_sourceLines[row].end - m_sourceLines[row].begin;
+//	qDebug() << QStringLiteral("getLineSize( %0 ) = %1").arg(row).arg(column_count);
+	return column_count;
+}
+
+int EmojiProxyList::indexOfCategoryHeader(int categoryIndex) const
+{
+	if( categoryIndex < 0 || categoryIndex >= m_proxyCategories.size() )
+	{
+		qWarning() << QStringLiteral("Wrong category index %0").arg(categoryIndex);
+		return 0;
+	}
+	return m_proxyCategories[categoryIndex].begin - 1;
+}
+
+void EmojiProxyList::setEmojiColumnCount(int count)
+{
+	if( count < 1 )
+		count = 1;
+	beginResetModel();
+	m_columnCount = count;
+	recalcCategories();
+	endResetModel();
+	emit emojiColumnCountChanged();
+}
+
+int EmojiProxyList::emojiColumnCount() const
+{
+	return m_columnCount;
+}
+
+void EmojiProxyList::recalcCategories()
+{
+	if(!m_emojiModel || m_columnCount <= 1)
+		return;
+	m_proxyCategories.clear();
+	m_sourceLines.clear();
+//	int row_count = 0;
+	for( QPair<QString, EmojiModel::IndexRange> pc : m_emojiModel->m_categories )
+	{
+		// add category header index range to model
+		{
+			EmojiModel::IndexRange headerLine;
+			headerLine.begin = pc.second.begin - 1;
+			headerLine.end = pc.second.begin;
+			m_sourceLines.append( headerLine );
+		}
+		// calculate row count for category
+		int category_emoji_count = pc.second.end - pc.second.begin;
+		int full_row_count = int( category_emoji_count / m_columnCount );
+		int additioanl_row_emoji_count = category_emoji_count % m_columnCount;
+		int additioanl_row = (additioanl_row_emoji_count == 0 ? 0 : 1);
+		// add range of Proxy model to proxyCategories
+		qDebug() << QStringLiteral("full_row_count = %0 ").arg(full_row_count);
+		qDebug() << QStringLiteral("category_emoji_count = %0 ").arg(category_emoji_count);
+		qDebug() << QStringLiteral("additioanl_row_emoji_count = %0 ").arg(additioanl_row_emoji_count);
+		qDebug() << QStringLiteral("category_emoji_count % m_columnCount = %0 ").arg(category_emoji_count % m_columnCount);
+		EmojiModel::IndexRange emojiProxyCategoryRowsRange;
+		emojiProxyCategoryRowsRange.begin = m_sourceLines.size();
+		emojiProxyCategoryRowsRange.end = m_sourceLines.size() + full_row_count + additioanl_row;
+		m_proxyCategories.append(emojiProxyCategoryRowsRange);
+
+		for(int new_line = 0, end = full_row_count + additioanl_row; new_line < end; new_line ++)
+		{
+			EmojiModel::IndexRange lineEmojiRange;
+			lineEmojiRange.begin = pc.second.begin + new_line * m_columnCount;
+			if( additioanl_row == 1 && new_line == end - 1) // last row
+				lineEmojiRange.end = lineEmojiRange.begin + additioanl_row_emoji_count;
+			else
+				lineEmojiRange.end = lineEmojiRange.begin + m_columnCount;
+			m_sourceLines.append(lineEmojiRange);
+		}
+	}
+//	// Just Debug Data
+	qDebug() << QStringLiteral("Print proxy categories:");
+	for(int i = 0; i < m_proxyCategories.size(); i++ )
+	{
+		int category_header_index = m_emojiModel->m_categories[i].second.begin - 1;
+		EmojiModel::ItemPtr item = m_emojiModel->getItem(category_header_index);
+		QString name = item->name;
+		qDebug() << QStringLiteral("  [%0] Category \"%1\" (%2 : %3);")
+		            .arg(i)
+		            .arg(name)
+		            .arg(m_proxyCategories[i].begin)
+		            .arg(m_proxyCategories[i].end);
 	}
 }

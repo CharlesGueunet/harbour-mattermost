@@ -1,4 +1,4 @@
-import QtQuick 2.0
+import QtQuick 2.6
 import Sailfish.Silica 1.0
 import ru.sashikknox 1.0
 
@@ -12,12 +12,21 @@ Page {
         flickable: gridView
     }
 
-    anchors.leftMargin: Theme.paddingLarge
-    anchors.rightMargin: Theme.paddingLarge
+    anchors.leftMargin: Theme.paddingMedium
+    anchors.rightMargin: Theme.paddingMedium
 
     allowedOrientations: Orientation.All//defaultOrientationTransition
 
+    property real emojiItemSize: Theme.fontSizeHuge + Theme.paddingMedium
+    property int columnCount: (reactionsPage.width - anchors.leftMargin * 2) / reactionsPage.emojiItemSize
+
+    property real emojiItemWidth: reactionsPage.emojiItemSize + ((reactionsPage.width - anchors.leftMargin * 2) - columnCount * reactionsPage.emojiItemSize)/columnCount
+
     property EmojiModel emojiModel: EmojiModel {}
+    property EmojiProxyList emojiList: EmojiProxyList {
+        sourceModel: reactionsPage.emojiModel
+        emojiColumnCount: reactionsPage.columnCount
+    }
 
     SilicaListView {
         id: gridView
@@ -37,9 +46,10 @@ Page {
             title: qsTr("Reactions")
             leftMargin: Theme.paddingLarge
             rightMargin: Theme.paddingLarge
+            // TODO add search filter
         }
         spacing: Theme.paddingMedium
-        model:emojiModel.categories
+        model: emojiList
 
         footer: Component {
             BackgroundItem {
@@ -52,74 +62,63 @@ Page {
             }
         }
 
-        delegate: Column {
-
-            id: categoryColumn
-            width: parent.width
-            height: sectionHeader.height + emojiGrid.height + spacing
-            spacing: Theme.paddingMedium
-//            anchors.leftMargin: Theme.paddingMedium
-//            anchors.rightMargin: Theme.paddingMedium
-
-            property string categoryName: modelData
-            SectionHeader {
+        delegate: Loader {
+            id: lineLoader
+            property int modelRow : index
+            Component {
                 id: sectionHeader
-                text: categoryColumn.categoryName
-                height: Theme.itemSizeSmall
-                anchors.left: parent.left
-                anchors.right: parent.right
-                leftPadding: Theme.paddingLarge
-                rightPadding: Theme.paddingLarge
-            }
-
-            Grid {
-                id: emojiGrid
-                anchors.left: parent.left
-                anchors.right: parent.right
-                anchors.leftMargin: Theme.paddingMedium
-                anchors.rightMargin: Theme.paddingMedium
-                property real emojiItemSize: Theme.fontSizeHuge + Theme.paddingMedium
-                columnSpacing: 0
-                rowSpacing: 0
-
-                columns: (parent.width - anchors.leftMargin * 2) / emojiGrid.emojiItemSize
-
-
-                property real emojiItemWidth: emojiGrid.emojiItemSize + ((parent.width - anchors.leftMargin * 2) - columns * emojiGrid.emojiItemSize)/columns
-
-                Repeater {
-                    model: EmojiCategoryProxy {
-                        sourceModel: emojiModel
-                        category: categoryColumn.categoryName;
-                    }
-
-                    delegate: BackgroundItem {
-                        width: emojiGrid.emojiItemWidth
-                        height: emojiGrid.emojiItemSize
-
-                        Image {
-                            source: role_image
-                            anchors.fill: parent
-                            anchors.margins: Theme.paddingMedium
-                            fillMode: Image.PreserveAspectFit
-                            cache: false
-                            asynchronous: true
-                            Behavior on opacity {
-                                NumberAnimation { duration: 200 }
-                            }
-                            visible: status == Image.Ready
-                            opacity: visible ? 1 : 0
-                        }
-
-                        onClicked: {
-                            console.log("Emoji choosed: " + role_name + " from category " + role_category)
-                            reaction = role_name
-                            pageStack.pop()
-                        }
-                    }
+                SectionHeader {
+                    text: role_category
+                    height: Theme.itemSizeSmall
+                    leftPadding: Theme.paddingLarge
+                    rightPadding: leftPadding
+                    width: reactionsPage.width - leftPadding*2
                 }
             }
-        }
+            Component {
+                id: emojiRow
+                Row {
+                    leftPadding: reactionsPage.anchors.leftMargin
+                    rightPadding: reactionsPage.anchors.leftMargin
+
+                    Repeater {
+                        model: emojiList.lineSize(modelRow)
+
+                        delegate: BackgroundItem {
+                            width: reactionsPage.emojiItemWidth
+                            height: reactionsPage.emojiItemSize
+
+                            Image {
+                                source: emojiList.getData(lineLoader.modelRow, index , EmojiModel.RoleImage)
+                                anchors.fill: parent
+                                anchors.margins: Theme.paddingMedium
+                                fillMode: Image.PreserveAspectFit
+                                cache: false
+                                asynchronous: true
+                                Behavior on opacity {
+                                    NumberAnimation { duration: 200 }
+                                }
+                                visible: status == Image.Ready
+                                opacity: visible ? 1 : 0
+                            }
+
+                            onClicked: {
+                                var name = emojiList.getData(lineLoader.modelRow, index, EmojiModel.RoleName)
+//                                console.log( "row " + lineLoader.modelRow + " column " + index)
+                                console.log("Emoji choosed: " + name + " from category " + role_category)
+                                reaction = name
+                                pageStack.pop()
+                            }
+                        }
+                    } // Repeater
+                }// Row
+            }
+//            Component.onCompleted: {
+//                if(role_type == EmojiModel.ItemTypeCategory)
+//                    console.log("Catergory is " + role_category)
+//            }
+            sourceComponent: role_type == EmojiModel.ItemTypeCategory ? sectionHeader : emojiRow
+        } // delegate: Loader (section header, or emojis line)
     }
 
     PanelBackground {
@@ -196,7 +195,7 @@ Page {
                     }
 
                     onClicked: {
-                        gridView.positionViewAtIndex( index, ListView.Beginning  )
+                        gridView.positionViewAtIndex( emojiList.indexOfCategoryHeader(index), ListView.Beginning  )
                     }
                 }
             }

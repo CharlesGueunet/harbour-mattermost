@@ -94,6 +94,7 @@ int main(int argc, char *argv[])
 	qmlRegisterType<AttachedFilesModel>("ru.sashikknox", 1, 0, "AttachedFilesModel");
 	qmlRegisterType<EmojiModel>        ("ru.sashikknox", 1, 0, "EmojiModel");
 	qmlRegisterType<EmojiProxyCategory>("ru.sashikknox", 1, 0, "EmojiCategoryProxy");
+	qmlRegisterType<EmojiProxyList    >("ru.sashikknox", 1, 0, "EmojiProxyList");
 	qmlRegisterType<ChannelsFilterProxy>("ru.sashikknox", 1, 0, "ChannelsFilterProxy");
 	qmlRegisterSingletonType<SettingsContainer>("ru.sashikknox", 1, 0, "Settings", SettingsContainer_singletontype_provider );
 

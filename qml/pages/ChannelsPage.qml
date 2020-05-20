@@ -41,11 +41,6 @@ Page {
             isuptodate = true;
             context.mattermost.get_public_channels(server_index,teamid)
         }
-        else if( status == PageStatus.Inactive )
-        {
-            searchField.text = ""
-            searchField.focus = false
-        }
     }
 
     SilicaListView {
@@ -102,6 +97,19 @@ Page {
                    channelsFilter.setFilterRegExp( text )
                }
                active: Settings.searchInChannels
+
+               Connections {
+                   target: channelsPage
+                   onStatusChanged: {
+                       if( status == PageStatus.Inactive )
+                       {
+                           console.log("Clear search feild, because of page is Inactive")
+                           searchField.text = ""
+                           searchField.focus = false
+                       }
+                   }
+
+               }
            }// SearchField
         }
 
@@ -199,5 +207,4 @@ Page {
             }
         }// delegate
     }// SilicaListView
-
 }

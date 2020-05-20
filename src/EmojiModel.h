@@ -3,10 +3,11 @@
 
 #include <QAbstractListModel>
 #include <QAbstractProxyModel>
+#include <QSortFilterProxyModel>
 #include <QSharedPointer>
 
-//class MattermostQt;
 
+// main EmojiModel
 class EmojiModel : public QAbstractListModel
 {
 	Q_OBJECT
@@ -14,6 +15,7 @@ class EmojiModel : public QAbstractListModel
 //	Q_PROPERTY(MattermostQt *mattermost READ getMattermost WRITE setMattermost)
 	Q_PROPERTY(QStringList categories READ categories NOTIFY categoriesChanged)
 	friend class EmojiProxyCategory;
+	friend class EmojiProxyList;
 public:
 	enum DataRoles {
 		RoleName = Qt::UserRole,
@@ -34,13 +36,20 @@ private:
 		QString  name; // name
 		QString  image; // icon
 		QString  category; // category
+		int      category_index; // index in m_categories
 		ItemType type = ItemTypeEmoji;
 	};
 	typedef QSharedPointer<Item> ItemPtr;
 
-	struct Category {
+	struct IndexRange {
 		int begin = -1;
 		int end   = -1;
+
+		IndexRange& operator =(const IndexRange &other)
+		{
+			begin = other.begin;
+			end = other.end;
+		}
 	};
 
 public:
@@ -58,6 +67,8 @@ public:
 	QStringList categories() const;
 
 	Q_INVOKABLE QString categoryIcon(QString category) const;
+
+	ItemPtr  getItem(int row) const;
 private:
 	void loadEmoji();
 
@@ -71,7 +82,7 @@ private:
 //	MattermostQt *m_mattermost = nullptr;
 	static QVector<ItemPtr>  m_items;
 	/*static*/ QVector<ItemPtr>  m_usedItems;
-	static QVector< QPair<QString, Category> > m_categories;
+	static QVector< QPair<QString, IndexRange> > m_categories;
 };
 
 class EmojiProxyCategory : public QAbstractProxyModel
@@ -106,7 +117,51 @@ Q_SIGNALS:
 private:
 	EmojiModel           *m_emojiModel = nullptr;
 	QString               m_category;
-	EmojiModel::Category  m_categoryIndex;
+	EmojiModel::IndexRange  m_categoryIndex;
+};
+
+/**
+ * @brief The EmojiProxyList class
+ * this proxy show emojies as list, but need set count of images in one line
+ * it hat two types of lines, first its Category name. second is line of emojies
+ */
+class EmojiProxyList : public QAbstractProxyModel
+{
+	Q_OBJECT
+
+	Q_PROPERTY(int emojiColumnCount READ emojiColumnCount WRITE setEmojiColumnCount NOTIFY emojiColumnCountChanged)
+public:
+	EmojiProxyList(QObject *parent = nullptr);
+
+	Q_INVOKABLE virtual QModelIndex mapToSource(const QModelIndex &proxyIndex) const override;
+	Q_INVOKABLE virtual QModelIndex mapFromSource(const QModelIndex &sourceIndex) const override;
+
+	virtual void setSourceModel(QAbstractItemModel *sourceModel) override;
+
+	Q_INVOKABLE virtual QModelIndex index(int row, int col, const QModelIndex &parent) const override;
+	Q_INVOKABLE virtual QModelIndex parent(const QModelIndex &child) const override;
+
+	Q_INVOKABLE virtual int rowCount(const QModelIndex &parent = QModelIndex()) const override;
+	Q_INVOKABLE virtual int columnCount(const QModelIndex &parent = QModelIndex()) const override;
+
+	Q_INVOKABLE virtual QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
+	Q_INVOKABLE QVariant getData(int row, int column, int role = Qt::DisplayRole) const;
+
+	Q_INVOKABLE int lineSize( int row ) const;
+	Q_INVOKABLE int indexOfCategoryHeader(int categoryIndex) const;
+
+	void setEmojiColumnCount(int count);
+	int emojiColumnCount() const;
+private:
+	void recalcCategories();
+Q_SIGNALS:
+	void emojiColumnCountChanged();
+
+private:
+	EmojiModel                      *m_emojiModel = nullptr;
+	int                              m_columnCount = 1;
+	QVector<EmojiModel::IndexRange>  m_proxyCategories;
+	QVector<EmojiModel::IndexRange>  m_sourceLines; // bing every line to indexes in parent model
 };
 
 #endif // EMOJIMODEL_H
