@@ -29,6 +29,7 @@ BackgroundItem {
     height: textedit.height + replyPostArea.height
     property int    attachCount: 0
 
+    property real iconSize: Theme.iconSizeMedium - Theme.paddingSmall
     // animations
     property real opacity_one: 0.0
     property real opacity_two: 1.0
@@ -37,6 +38,11 @@ BackgroundItem {
     signal atatchDocument
     signal attachFile
     signal takePhoto
+    signal showEmoji
+    signal hideEmoji
+
+    property alias emojiPanelChecked: emojiButton.checked
+    property alias softwareInputPanelEnabled: textedit.softwareInputPanelEnabled
 
     Component {
         id: imagepicker
@@ -50,7 +56,7 @@ BackgroundItem {
                             channel_type,
                             channel_index,
                             selectedContentProperties.filePath
-                )
+                    )
             }
         }
     }
@@ -67,7 +73,7 @@ BackgroundItem {
                             channel_type,
                             channel_index,
                             selectedContentProperties.filePath
-                )
+                    )
             }
         }
     }
@@ -84,7 +90,7 @@ BackgroundItem {
                             channel_type,
                             channel_index,
                             selectedContentProperties.filePath
-                )
+                    )
             }
         }
     }
@@ -158,6 +164,23 @@ BackgroundItem {
         }
     }
 
+    function insert_text(idx, rem, parent_str, str) {
+        return parent_str.slice(0, idx) + str + parent_str.slice(idx + Math.abs(rem));
+    }
+
+    function insertEmoji(emoji)
+    {
+        var c_text = textedit.text.slice(0,textedit.cursorPosition)
+        if( c_text.length > 0 && c_text.charAt(c_text.length - 1) != " " ) {
+            c_text = " :"
+        }
+        else
+            c_text= ":"
+        c_text += emoji + ":"
+        textedit.text = insert_text(textedit.cursorPosition, 0, textedit.text, c_text )
+        textedit.cursorPosition += c_text.length
+    }
+
     TouchBlocker {
         id: textarea
         anchors {
@@ -168,14 +191,97 @@ BackgroundItem {
         width: messageeditor.width - menu.width
         layer.enabled: true
 
+        MouseArea {
+            id: emojiButton
+            anchors.left: parent.left
+            anchors.leftMargin: Settings.pageMargin
+            anchors.verticalCenter: parent.verticalCenter
+            width: messageeditor.iconSize
+            height: messageeditor.iconSize
+            property bool checked: false
+
+            onCheckedChanged: {
+                if ( emojiButton.checked ) {
+                    showEmoji()
+                } else {
+                    hideEmoji()
+                }
+            }
+
+            Image {
+                id: emojiIcon
+                source: context.mattermost.emojiPath() + "/svg/1f642.svg"
+                anchors.fill: parent
+                visible: opacity > 0
+                opacity: emojiButton.checked ? 0 : 1
+
+                Behavior on opacity {
+                    NumberAnimation { duration: 200 }
+                }
+                // Grayscale effect
+                layer.enabled: true
+                layer.effect: ShaderEffect {
+                    // grayscale effect
+                    property variant src: emojiIcon
+                    //                property color highlight: emojiButton.checked ? Theme.highlightColor : Theme.primaryColor
+                    vertexShader: "
+                            uniform highp mat4 qt_Matrix;
+                            attribute highp vec4 qt_Vertex;
+                            attribute highp vec2 qt_MultiTexCoord0;
+                            varying highp vec2 coord;
+                            void main() {
+                                coord = qt_MultiTexCoord0;
+                                gl_Position = qt_Matrix * qt_Vertex;
+                            }"
+                    fragmentShader: "
+                            varying highp vec2 coord;
+                            uniform sampler2D src;
+                            uniform lowp float qt_Opacity;
+                            void main() {
+                                lowp vec4 tex = texture2D(src, coord);
+                                gl_FragColor = vec4(vec3(dot(tex.rgb,
+                                                    vec3(0.344, 0.5, 0.156))),
+                                                         tex.a) * qt_Opacity;
+                            }"
+                }
+
+            }
+
+            Image {
+                id: iconKeyboard
+                source: "image://theme/icon-m-text-input"
+                anchors.fill: parent
+                visible: opacity > 0
+                opacity: emojiButton.checked ? 1 : 0
+
+                Behavior on opacity {
+                    NumberAnimation { duration: 200 }
+                }
+            }
+
+            onClicked: {
+                emojiButton.checked = !emojiButton.checked
+                if ( emojiButton.checked ) {
+//                    textedit.focus = false
+                    textedit.softwareInputPanelEnabled = false
+                } else {
+//                    textedit.focus = true
+                    textedit.softwareInputPanelEnabled = true
+                }
+            } // onClicked
+        } // MouseArea emojiButton
+
         TextArea  {
             id: textedit
+
+            property int lastCursorPosition : 0
             anchors {
-                left: parent.left
+                left: emojiButton.right
                 bottom: parent.bottom
                 right: button.left
-                leftMargin: Settings.pageMargin
+                leftMargin: Theme.paddingMedium
             }
+
             //label: qsTr("Message...") // need timestamp here, its better
 
             font.pixelSize: Theme.fontSizeSmall
@@ -185,8 +291,14 @@ BackgroundItem {
             Behavior on height { NumberAnimation { duration : 200 } }
 
             onFocusChanged: {
-                if(focus)
+                if(focus) {
                     showToolBar = false
+                    emojiButton.checked = false
+                    cursorPosition = lastCursorPosition
+                }
+                else {
+                    lastCursorPosition = cursorPosition
+                }
             }
 
             onTextChanged: {
@@ -197,10 +309,12 @@ BackgroundItem {
         IconButton {
             id: button
             anchors {
-//                right: parent.right
+                right: menu.left
                 verticalCenter: textedit.verticalCenter
             }
-            x: messageeditor.width - menu.width - Theme.paddingMedium - width
+            width: messageeditor.iconSize
+            height: messageeditor.iconSize
+            x: messageeditor.width - menu.width - Settings.pageMargin - width
             icon.source: "image://theme/" + (Settings.sendIcon === true ? "icon-m-send" : "icon-m-mail")
             onClicked: {
                 if( textedit.text.length === 0 && attachCount === 0 )
@@ -243,8 +357,8 @@ BackgroundItem {
                 anchors.leftMargin: Theme.paddingSmall
                 anchors.bottomMargin: Theme.paddingSmall
                 width: Theme.iconSizeSmall
-                height: Theme.iconSizeSmall
-                radius: Theme.iconSizeSmall
+                height: width
+                radius: width
                 color: Theme.rgba(Theme.primaryColor,0.8)
                 Label {
                     text: attachCount
@@ -258,51 +372,52 @@ BackgroundItem {
                 }
             }
         }// send message button
-    }// textarea
 
-    Row {
-        spacing: Theme.paddingMedium
-        anchors {
-            leftMargin: textedit.anchors.leftMargin
-            bottomMargin: Theme.paddingMedium
-            left: parent.left
-            bottom: parent.bottom
-            //right: button.left
-        }
-
-        Label {
-            id: timestamp
-            color: textedit.color
-            font.pixelSize:  Theme.fontSizeTiny
-            font.bold: true
-
-            function updateTimestamp() {
-                var date = new Date();
-                text = Format.formatDate(date, Formatter.TimeValue);
-                updater.interval = (60 - date.getSeconds() + 1) * 1000;
+        Row { // Text under TextArea row
+            spacing: Theme.paddingMedium
+            anchors {
+                leftMargin: textedit.anchors.leftMargin
+                bottomMargin: Theme.paddingMedium
+                left: emojiButton.right
+                bottom: parent.bottom
+                //right: button.left
             }
 
-            Timer {
-                id: updater
-                repeat: true
-                triggeredOnStart: true
-                running: Qt.application.active && timestamp.visible
-                onTriggered: timestamp.updateTimestamp()
+            Label {
+                id: timestamp
+                color: textedit.color
+                font.pixelSize:  Theme.fontSizeTiny
+                font.bold: true
+
+                function updateTimestamp() {
+                    var date = new Date();
+                    text = Format.formatDate(date, Formatter.TimeValue);
+                    updater.interval = (60 - date.getSeconds() + 1) * 1000;
+                }
+
+                Timer {
+                    id: updater
+                    repeat: true
+                    triggeredOnStart: true
+                    running: Qt.application.active && timestamp.visible
+                    onTriggered: timestamp.updateTimestamp()
+                }
+            }
+
+            Label {
+                id: uploadprogress
+                property bool uploaded : true
+                property int progress: 0
+
+                color: textedit.color
+                font.pixelSize:  Theme.fontSizeTiny
+                font.bold: true
+                visible: !uploaded
+                text: qsTr("Uploading ") + progress + "%"
             }
         }
+    }// TouchBlocker textarea
 
-        Label {
-            id: uploadprogress
-            property bool uploaded : true
-            property int progress: 0
-
-            color: textedit.color
-            font.pixelSize:  Theme.fontSizeTiny
-            font.bold: true
-            visible: !uploaded
-            text: qsTr("Uploading ") + progress + "%"
-        }
-    }
 
 
     property real buttons_row_w1: 0
@@ -322,7 +437,7 @@ BackgroundItem {
         id: buttons_row
         anchors.right: menu.left
         anchors.verticalCenter: textarea.verticalCenter
-        height: Theme.iconSizeMedium
+        height: messageeditor.iconSize
         width: 0
         layer.enabled: true
 
@@ -340,8 +455,8 @@ BackgroundItem {
             IconButton {
                 id: button_photo
                 icon.source: "image://theme/icon-m-imaging"
-                width: Theme.iconSizeMedium
-                height: Theme.iconSizeMedium
+                width: messageeditor.iconSize
+                height: messageeditor.iconSize
                 enabled: false
                 onClicked: {
                     showToolBar = false
@@ -351,8 +466,8 @@ BackgroundItem {
             IconButton {
                 id: button_image
                 icon.source: "image://theme/icon-m-file-image"
-                width: Theme.iconSizeMedium
-                height: Theme.iconSizeMedium
+                width: messageeditor.iconSize
+                height: messageeditor.iconSize
                 onClicked: {
                     showToolBar = false
                     attachImage()
@@ -361,8 +476,8 @@ BackgroundItem {
             IconButton {
                 id: button_document
                 icon.source: "image://theme/icon-m-file-document"
-                width: Theme.iconSizeMedium
-                height: Theme.iconSizeMedium
+                width: messageeditor.iconSize
+                height: messageeditor.iconSize
                 onClicked: {
                     showToolBar = false
                     atatchDocument()
@@ -371,8 +486,8 @@ BackgroundItem {
             IconButton {
                 id: button_file
                 icon.source: "image://theme/icon-m-file-folder"
-                width: Theme.iconSizeMedium
-                height: Theme.iconSizeMedium
+                width: messageeditor.iconSize
+                height: messageeditor.iconSize
                 onClicked: {
                     showToolBar = false
                     attachFile()
@@ -386,8 +501,8 @@ BackgroundItem {
         id: menu
         visible: true
         enabled: true
-        width: Theme.iconSizeMedium
-        height: Theme.iconSizeMedium
+        width: messageeditor.iconSize
+        height: messageeditor.iconSize
         anchors {
             right: parent.right
             rightMargin: Settings.pageMargin

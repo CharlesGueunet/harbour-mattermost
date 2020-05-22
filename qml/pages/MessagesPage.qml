@@ -87,6 +87,13 @@ Page {
         model: messagesModel
         verticalLayoutDirection: ListView.BottomToTop
 
+//        onHeightChanged: {
+//            debugLabel.text = "height = " + String(height)
+////            console.log( "height = " + String(height) )
+////            if( x < Screen.height - emojiDock.height )
+////                x = Screen.height - emojiDock.height
+//        }
+
         VerticalScrollDecorator {}
 
         PullDownMenu {
@@ -212,6 +219,56 @@ Page {
         }//*/
     }
 
+    DockedPanel {
+        id: emojiDock
+        dock: Dock.Bottom
+        anchors.left: parent.left
+        anchors.right: parent.right
+        height: Theme.itemSizeHuge * 2 + Theme.itemSizeSmall
+        animationDuration: 300
+        open : false
+
+        EmojiPanel {
+            anchors.fill: parent
+
+            onEmojiChanged: {
+                messageEditor.insertEmoji( emoji )
+            }
+        }
+
+        onVisibleSizeChanged: {
+//            debugLabel.text = "height = " + String(visibleSize)
+//            console.log( "height = " + String(height) )
+//            if( x < Screen.height - emojiDock.height )
+//                x = Screen.height - emojiDock.height
+            if( visibleSize < 1 )
+            {
+                messageEditor.softwareInputPanelEnabled = true
+                messageEditor.emojiPanelChecked = false
+            }
+        }
+
+//        onAtXEndChanged: {
+//            debugLabel.text = "atX = " + String(atXEnd)
+//        }
+
+        property real top_x : -1
+
+        onOpenChanged: {
+            if( open ) {
+                if( top_x == -1 || messageEditor.x < top_x )
+                    top_x = messageEditor.x
+            }
+            else {
+                messageEditor.emojiPanelChecked = false
+            }
+        }
+
+        onMovementStarted: {
+            console.log("Start moving")
+        }
+    }
+
     MessageEditorBar {
         id: messageEditor
         context: messagesPage.context
@@ -222,8 +279,37 @@ Page {
         anchors {
             left: messagesPage.left
             right: messagesPage.right
-            bottom: messagesPage.bottom
+            bottom: emojiDock.top
         } //an
+
+        onHideEmoji: {
+            emojiDock.hide()
+            messageEditor.emojiPanelChecked = false
+        }
+
+        onShowEmoji: {
+            emojiDock.show()
+            messageEditor.emojiPanelChecked = true
+        }
+
+//        onXChanged: {
+//            debugLabel.text = "x = " + String(x)
+//            if( x < Screen.height - emojiDock.height )
+//                x = Screen.height - emojiDock.height
+//        }
+
+//        Label {
+//            id: debugLabel
+//            anchors {
+//                top: parent.top
+//                left: parent.left
+//                leftMargin: Theme.paddingSmall
+//                topMargin: Theme.paddingSmall
+//            }
+//            font.pixelSize: Theme.fontSizeTiny
+//            font.bold: true
+//            text: "Hello"
+//        }
     } // MessageEditorBar
 
 

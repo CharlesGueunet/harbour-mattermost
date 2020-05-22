@@ -5,6 +5,7 @@
 #include <QMainWindow>
 #include <QListWidgetItem>
 #include <QJsonDocument>
+#include <QNetworkAccessManager>
 
 namespace Ui
 {
@@ -35,6 +36,9 @@ protected:
 	void changeEvent(QEvent *e);
 
 	bool parse_emoji_json();
+
+	void get_gemoji_json();
+	void parse_gemoji_json();
 private slots:
 	void on_pushButton_clicked();
 
@@ -55,6 +59,8 @@ private:
 	QObject *quickText;
 	QHash<QString, QString> emoji;
 	QJsonDocument output;
+	QJsonDocument gemoji;
+	QNetworkAccessManager *mNetwork = nullptr;
 };
 
 #endif // MDMAIN_H

@@ -12,6 +12,9 @@
 #include <QJsonObject>
 #include <QBitArray>
 
+#include <QNetworkRequest>
+#include <QNetworkReply>
+
 extern "C" {
 #include <markdown.h>
 #undef if
@@ -334,6 +337,42 @@ bool mdMain::parse_emoji_json()
 	QByteArray data = output.toJson(QJsonDocument::Indented);
 	out_file.write( data );
 	out_file.close();
+}
+
+#define key_replyType "KEY_REPLY_TYPE"
+
+#define reply_get_gemoji_json 0
+
+void mdMain::get_gemoji_json()
+{
+	if( !mNetwork ) {
+		mNetwork = new QNetworkAccessManager(this);
+		connect(mNetwork, &QNetworkAccessManager::finished, this, [=](QNetworkReply *reply){
+			QVariant reply_type = reply->property(key_replyType);
+			if( reply_type.toInt() == reply_get_gemoji_json )
+			{
+				QJsonParseError error;
+				gemoji = QJsonDocument::fromJson(reply->readAll(), &error);
+
+				if( error.error != QJsonParseError::NoError ) {
+					qCritical() << QStringLiteral("%0: %1").arg(QVariant::fromValue<QJsonParseError>(error).toString()).arg(error.errorString());
+				}
+				
+				parse_emoji_json();
+			}
+		} );
+	}
+
+	QNetworkRequest request;
+	QUrl gemoji_json_raw_url("https://raw.githubusercontent.com/github/gemoji/master/db/emoji.json");
+	request.setUrl(gemoji_json_raw_url);
+	QNetworkReply *reply = mNetwork->get(request);
+	reply->setProperty( key_replyType, reply_get_gemoji_json );
+}
+
+void mdMain::parse_gemoji_json()
+{
+	
 }
 
 

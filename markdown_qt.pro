@@ -1,6 +1,6 @@
 TEMPLATE = app
 CONFIG += qt
-QT += core widgets gui quick qml quickwidgets
+QT += core widgets gui quick qml quickwidgets network
 
 INCLUDEPATH += $$PWD/tools/markdown_qt
 INCLUDEPATH += $$PWD/src
