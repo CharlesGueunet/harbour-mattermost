@@ -228,6 +228,9 @@ Page {
         animationDuration: 300
         open : false
 
+        property bool isCloseByButton: false
+        property bool isCloseBySwipe: false
+
         EmojiPanel {
             anchors.fill: parent
 
@@ -237,35 +240,48 @@ Page {
         }
 
         onVisibleSizeChanged: {
+            if( visibleSize < height && open ) {
+                isCloseBySwipe = true;
+            }
+
 //            debugLabel.text = "height = " + String(visibleSize)
 //            console.log( "height = " + String(height) )
 //            if( x < Screen.height - emojiDock.height )
 //                x = Screen.height - emojiDock.height
-            if( visibleSize < 1 )
-            {
-                messageEditor.softwareInputPanelEnabled = true
-                messageEditor.emojiPanelChecked = false
-            }
+//            if( visibleSize == 0 )
+//            {
+//                if( open == false ) {
+//                    if( isCloseByButton )
+//                        console.log("It close by button")
+//                    else
+//                        console.log("it close by swipe or lost focus")
+//                    isCloseByButton = false;
+//                    messageEditor.softwareInputPanelEnabled = true
+//                    messageEditor.emojiPanelChecked = false
+//                }
+//            }
         }
-
-//        onAtXEndChanged: {
-//            debugLabel.text = "atX = " + String(atXEnd)
-//        }
 
         property real top_x : -1
 
         onOpenChanged: {
-            if( open ) {
-                if( top_x == -1 || messageEditor.x < top_x )
-                    top_x = messageEditor.x
-            }
-            else {
+            if( !open ) {
+                messageEditor.softwareInputPanelEnabled = true
+                if( isCloseByButton ) {
+                    console.log("Is close by button")
+                    messageEditor.forceActiveFocus()
+                    messageEditor.textFocus = true
+                }
+                else if ( isCloseBySwipe ) {
+                    console.log("Is close by swipe")
+                }
+                else {
+                    console.log("Is close by focus out")
+                }
+                isCloseByButton = false
+                isCloseBySwipe = false
                 messageEditor.emojiPanelChecked = false
             }
-        }
-
-        onMovementStarted: {
-            console.log("Start moving")
         }
     }
 
@@ -283,33 +299,16 @@ Page {
         } //an
 
         onHideEmoji: {
-            emojiDock.hide()
             messageEditor.emojiPanelChecked = false
+            emojiDock.isCloseByButton = true;
+            emojiDock.hide()
         }
 
         onShowEmoji: {
-            emojiDock.show()
+            messageEditor.softwareInputPanelEnabled = false
             messageEditor.emojiPanelChecked = true
+            emojiDock.show()
         }
-
-//        onXChanged: {
-//            debugLabel.text = "x = " + String(x)
-//            if( x < Screen.height - emojiDock.height )
-//                x = Screen.height - emojiDock.height
-//        }
-
-//        Label {
-//            id: debugLabel
-//            anchors {
-//                top: parent.top
-//                left: parent.left
-//                leftMargin: Theme.paddingSmall
-//                topMargin: Theme.paddingSmall
-//            }
-//            font.pixelSize: Theme.fontSizeTiny
-//            font.bold: true
-//            text: "Hello"
-//        }
     } // MessageEditorBar
 
 

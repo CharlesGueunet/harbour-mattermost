@@ -23,7 +23,7 @@ Item {
     SilicaFlickable {
         id: panel
         width: parent.width
-        height: buttonSize + Theme.paddingSmall * 2 //Theme.itemSizeSmall
+        height: panel.buttonHeight + Theme.paddingSmall * 2 //Theme.itemSizeSmall
 
         contentWidth: buttonsRow.width
 
@@ -38,6 +38,7 @@ Item {
         rightMargin: leftMargin
 
         property real buttonSize : ( emojiPanel.width - leftMargin * 2 )/ emojiModel.categories.length
+        property real buttonHeight : Math.min(Theme.iconSizeMedium * 0.8, buttonSize)
 
         Row {
             id: buttonsRow
@@ -51,15 +52,15 @@ Item {
                     id: mouseArea
                     //                    anchors.margins: -Theme.paddingSmall
                     width: panel.buttonSize
-                    height: panel.buttonSize
+                    height: panel.buttonHeight
 
                     Image {
                         id: iconButton
                         source: emojiModel.categoryIcon(modelData);
                         anchors.centerIn: parent
                         width: panel.buttonSize - Theme.paddingSmall
-                        height: panel.buttonSize - Theme.paddingSmall
-
+                        height: panel.buttonHeight - Theme.paddingSmall
+                        fillMode: Image.PreserveAspectFit
                         layer.enabled: true
                         layer.effect: ShaderEffect {
                             // grayscale effect

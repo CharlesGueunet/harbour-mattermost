@@ -5,6 +5,17 @@
 # Add newest entries to the top of the list.
 # Separate entries from eachother with a blank line.
 #
+#* Sat May 23  2020 sashikknox <sashikknox@gmail.com> - 0.1.5-1
+#- contribute #25 add reactions page
+#- fix #35 show reactions under message
+#- fix #25 add reactions to message
+#- fix #33 add search field on chats view
+#- Contribute to #24 add optional Emoji keyboard layout
+
+* Sat May 23  2020 Alexey Kovalev <a.kovalev@live.ru> - 0.1.4-34
+- fix #36  generate cool emoji.json file
+- add python script for generating emoji.json
+
 * Sun Apr 26  2020 sashikknox <sashikknox@gmail.com> - 0.1.4-8
 - fix #28 - change cache and data paths (with moving old cache and data to new paths).
 - fix #29 - now teams/channels labels show unread/mentions count.

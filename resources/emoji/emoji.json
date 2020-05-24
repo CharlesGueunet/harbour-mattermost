@@ -1121,7 +1121,7 @@
     },
     {
         "category": "People",
-        "image": "svg/1f575-200d-2640-fe0f.svg",
+        "image": "svg/1f575-fe0f-200d-2640-fe0f.svg",
         "short_names": [
             "female_detective"
         ]
@@ -1671,20 +1671,8 @@
         "image": "svg/1f491.svg",
         "short_names": [
             "couple_with_heart_woman_man",
-            "couple_with_heart"
-        ]
-    },
-    {
-        "category": "People",
-        "image": "svg/1f469-200d-2764-200d-1f469.svg",
-        "short_names": [
-            "couple_with_heart_woman_woman"
-        ]
-    },
-    {
-        "category": "People",
-        "image": "svg/1f468-200d-2764-200d-1f468.svg",
-        "short_names": [
+            "couple_with_heart",
+            "couple_with_heart_woman_woman",
             "couple_with_heart_man_man"
         ]
     },
@@ -1692,20 +1680,8 @@
         "category": "People",
         "image": "svg/1f48f.svg",
         "short_names": [
-            "couplekiss_man_woman"
-        ]
-    },
-    {
-        "category": "People",
-        "image": "svg/1f469-200d-2764-200d-1f48b-200d-1f469.svg",
-        "short_names": [
-            "couplekiss_woman_woman"
-        ]
-    },
-    {
-        "category": "People",
-        "image": "svg/1f468-200d-2764-200d-1f48b-200d-1f468.svg",
-        "short_names": [
+            "couplekiss_man_woman",
+            "couplekiss_woman_woman",
             "couplekiss_man_man"
         ]
     },
@@ -1714,104 +1690,44 @@
         "image": "svg/1f46a.svg",
         "short_names": [
             "family_man_woman_boy",
-            "family"
+            "family",
+            "family_woman_woman_boy",
+            "family_man_man_boy"
         ]
     },
     {
         "category": "People",
         "image": "svg/1f468-200d-1f469-200d-1f467.svg",
         "short_names": [
-            "family_man_woman_girl"
+            "family_man_woman_girl",
+            "family_woman_woman_girl",
+            "family_man_man_girl"
         ]
     },
     {
         "category": "People",
         "image": "svg/1f468-200d-1f469-200d-1f467-200d-1f466.svg",
         "short_names": [
-            "family_man_woman_girl_boy"
+            "family_man_woman_girl_boy",
+            "family_woman_woman_girl_boy",
+            "family_man_man_girl_boy"
         ]
     },
     {
         "category": "People",
         "image": "svg/1f468-200d-1f469-200d-1f466-200d-1f466.svg",
         "short_names": [
-            "family_man_woman_boy_boy"
+            "family_man_woman_boy_boy",
+            "family_woman_woman_boy_boy",
+            "family_man_man_boy_boy"
         ]
     },
     {
         "category": "People",
         "image": "svg/1f468-200d-1f469-200d-1f467-200d-1f467.svg",
         "short_names": [
-            "family_man_woman_girl_girl"
-        ]
-    },
-    {
-        "category": "People",
-        "image": "svg/1f469-200d-1f469-200d-1f466.svg",
-        "short_names": [
-            "family_woman_woman_boy"
-        ]
-    },
-    {
-        "category": "People",
-        "image": "svg/1f469-200d-1f469-200d-1f467.svg",
-        "short_names": [
-            "family_woman_woman_girl"
-        ]
-    },
-    {
-        "category": "People",
-        "image": "svg/1f469-200d-1f469-200d-1f467-200d-1f466.svg",
-        "short_names": [
-            "family_woman_woman_girl_boy"
-        ]
-    },
-    {
-        "category": "People",
-        "image": "svg/1f469-200d-1f469-200d-1f466-200d-1f466.svg",
-        "short_names": [
-            "family_woman_woman_boy_boy"
-        ]
-    },
-    {
-        "category": "People",
-        "image": "svg/1f469-200d-1f469-200d-1f467-200d-1f467.svg",
-        "short_names": [
-            "family_woman_woman_girl_girl"
-        ]
-    },
-    {
-        "category": "People",
-        "image": "svg/1f468-200d-1f468-200d-1f466.svg",
-        "short_names": [
-            "family_man_man_boy"
-        ]
-    },
-    {
-        "category": "People",
-        "image": "svg/1f468-200d-1f468-200d-1f467.svg",
-        "short_names": [
-            "family_man_man_girl"
-        ]
-    },
-    {
-        "category": "People",
-        "image": "svg/1f468-200d-1f468-200d-1f467-200d-1f466.svg",
-        "short_names": [
-            "family_man_man_girl_boy"
-        ]
-    },
-    {
-        "category": "People",
-        "image": "svg/1f468-200d-1f468-200d-1f466-200d-1f466.svg",
-        "short_names": [
-            "family_man_man_boy_boy"
-        ]
-    },
-    {
-        "category": "People",
-        "image": "svg/1f468-200d-1f468-200d-1f467-200d-1f467.svg",
-        "short_names": [
+            "family_man_woman_girl_girl",
+            "family_woman_woman_girl_girl",
             "family_man_man_girl_girl"
         ]
     },
@@ -3954,7 +3870,7 @@
     },
     {
         "category": "Activity",
-        "image": "svg/1f3cb-200d-2640-fe0f.svg",
+        "image": "svg/1f3cb-fe0f-200d-2640-fe0f.svg",
         "short_names": [
             "weight_lifting_woman"
         ]
@@ -4003,7 +3919,7 @@
     },
     {
         "category": "Activity",
-        "image": "svg/26f9-200d-2640-fe0f.svg",
+        "image": "svg/26f9-fe0f-200d-2640-fe0f.svg",
         "short_names": [
             "basketball_woman"
         ]
@@ -4031,7 +3947,7 @@
     },
     {
         "category": "Activity",
-        "image": "svg/1f3cc-200d-2640-fe0f.svg",
+        "image": "svg/1f3cc-fe0f-200d-2640-fe0f.svg",
         "short_names": [
             "golfing_woman"
         ]
@@ -8336,7 +8252,9 @@
     },
     {
         "category": "Flags",
-        "image": "svg/1f3f3-200d-1f308.svg",
+        "iamge" : "svg/1f3f3.svg",
+        "image_last": "svg/1f3f3-fe0f-200d-1f308.svg",
+        "visible" : false,
         "short_names": [
             "rainbow_flag"
         ]

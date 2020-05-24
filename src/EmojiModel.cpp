@@ -156,6 +156,12 @@ void EmojiModel::loadEmoji()
 	{
 		QJsonObject current = ar[i].toObject();
 		QString emoji_category = current["category"].toString();
+		if( current.contains("visible") && current["visible"].toBool() == false )
+			continue;
+		// remove all Skin Tones from emoji keyboard and reactions page
+		// as in official desktop applications
+		if( emoji_category == QLatin1String("Skin Tones") )
+			continue;
 
 		QVector<ItemPtr> *emoji = nullptr;
 		QMap<QString, QVector<ItemPtr>* >::iterator search = categories.find(emoji_category);
@@ -231,8 +237,35 @@ void EmojiModel::onUsedReactionsChanged()
 
 	if(!short_names.isEmpty())
 	{
-		// TODO do not reset model
-		beginInsertRows( QModelIndex(), m_items.size(), m_items.size() + short_names.size() );
+		bool isInsert = true;
+		int from = 0;
+		// first check if it reaction is used before
+		if( !m_usedItems.empty() ) {
+			// get last added reaction from front of list
+			QString last_used = short_names.front();
+			for( int index = 0 ; index < m_usedItems.size(); index ++ ) {
+				if( m_usedItems[index]->type != ItemTypeEmoji)
+					continue;
+				if( m_usedItems[index]->name == last_used ) {
+					from = index;
+					isInsert = false;
+					break;
+				}
+			}
+//			auto search = std::find_if(m_usedItems.begin(), m_usedItems.end(), [=](ItemPtr current) {
+//				if( categoryItem->type = ItemTypeEmoji && current->name == last_used ) {
+//					from = index;
+//					isInsert = false;
+//					return true;
+//				}
+//				index++;
+//				return false;
+//			});
+		}
+		if( isInsert )
+			beginInsertRows( QModelIndex(), m_items.size(), m_items.size() + short_names.size() );
+		else
+			beginMoveRows( QModelIndex(), m_items.size() + from, m_items.size() + from, QModelIndex(), 0 );
 		m_usedItems.clear();
 		ItemPtr categoryItem(new Item);
 		categoryItem->category = lastUsed;
@@ -251,7 +284,10 @@ void EmojiModel::onUsedReactionsChanged()
 			if( search != m_items.end() )
 				m_usedItems.append(*search);
 		}
-		endInsertRows();
+		if( isInsert )
+			endInsertRows();
+		else
+			endMoveRows();
 	}
 	if(m_usedItems.isEmpty())
 		return;
@@ -533,10 +569,6 @@ void EmojiProxyList::recalcCategories()
 		int additioanl_row_emoji_count = category_emoji_count % m_columnCount;
 		int additioanl_row = (additioanl_row_emoji_count == 0 ? 0 : 1);
 		// add range of Proxy model to proxyCategories
-//		qDebug() << QStringLiteral("full_row_count = %0 ").arg(full_row_count);
-//		qDebug() << QStringLiteral("category_emoji_count = %0 ").arg(category_emoji_count);
-//		qDebug() << QStringLiteral("additioanl_row_emoji_count = %0 ").arg(additioanl_row_emoji_count);
-//		qDebug() << QStringLiteral("category_emoji_count % m_columnCount = %0 ").arg(category_emoji_count % m_columnCount);
 		EmojiModel::IndexRange emojiProxyCategoryRowsRange;
 		emojiProxyCategoryRowsRange.begin = m_sourceLines.size();
 		emojiProxyCategoryRowsRange.end = m_sourceLines.size() + full_row_count + additioanl_row;

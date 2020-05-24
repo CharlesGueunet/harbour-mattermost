@@ -43,6 +43,7 @@ BackgroundItem {
 
     property alias emojiPanelChecked: emojiButton.checked
     property alias softwareInputPanelEnabled: textedit.softwareInputPanelEnabled
+    property alias textFocus: textedit.focus
 
     Component {
         id: imagepicker
@@ -171,7 +172,7 @@ BackgroundItem {
     function insertEmoji(emoji)
     {
         var c_text = textedit.text.slice(0,textedit.cursorPosition)
-        if( c_text.length > 0 && c_text.charAt(c_text.length - 1) != " " ) {
+        if( c_text.length > 0 && c_text.charAt(c_text.length - 1) != " " && c_text.charAt(c_text.length - 1) != "\n" ) {
             c_text = " :"
         }
         else
@@ -179,6 +180,8 @@ BackgroundItem {
         c_text += emoji + ":"
         textedit.text = insert_text(textedit.cursorPosition, 0, textedit.text, c_text )
         textedit.cursorPosition += c_text.length
+        // add emji to last used  list
+        Settings.addUsedReaction(emoji)
     }
 
     TouchBlocker {
