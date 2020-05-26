@@ -46,7 +46,7 @@ Item {
 
         Image {
             id: reactionImage
-            source: reactionRow.noImage ? "image://theme/icon-s-warning" : reactionItem.reactionPath
+            source: reactionRow.noImage ? "image://theme/icon-s-warning" : Qt.resolvedUrl(reactionItem.reactionPath)
             width: context.reactionSize
             height: textCount.contentHeight
             fillMode: Image.PreserveAspectFit

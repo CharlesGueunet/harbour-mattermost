@@ -9,6 +9,15 @@ import ".."
 BackgroundItem {
     id: messageeditor
 
+    Separator {
+        anchors {
+            top: parent.top
+            left:parent.left
+            right: parent.right
+        }
+        horizontalAlignment: Qt.AlignHCenter
+    }
+
     property Context context
     property int server_index
     property int team_index
@@ -213,7 +222,7 @@ BackgroundItem {
 
             Image {
                 id: emojiIcon
-                source: context.mattermost.emojiPath() + "/svg/1f642.svg"
+                source: Qt.resolvedUrl("qrc:/resources/icons/emoji_picker.svg")
                 anchors.fill: parent
                 visible: opacity > 0
                 opacity: emojiButton.checked ? 0 : 1
@@ -546,7 +555,7 @@ BackgroundItem {
 
     Image {
         id: image_menu
-        source: "image://theme/icon-m-menu?" + (menupressed
+        source: "image://theme/icon-m-attach?" + (menupressed
                                                 ? Theme.highlightColor
                                                 : Theme.primaryColor)
         width: Theme.iconSizeMedium

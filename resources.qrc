@@ -8,5 +8,16 @@
         <file>resources/status/status_offline.svg</file>
         <file>resources/status/status_online.svg</file>
         <file>resources/status/status_mask.svg</file>
+        <file>resources/icons/10.svg</file>
+        <file>resources/icons/8.svg</file>
+        <file>resources/icons/7.svg</file>
+        <file>resources/icons/6.svg</file>
+        <file>resources/icons/5.svg</file>
+        <file>resources/icons/4.svg</file>
+        <file>resources/icons/3.svg</file>
+        <file>resources/icons/2.svg</file>
+        <file>resources/icons/1.svg</file>
+        <file>resources/icons/emoji_picker.svg</file>
+        <file>resources/icons/9.svg</file>
     </qresource>
 </RCC>

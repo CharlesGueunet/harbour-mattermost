@@ -106,10 +106,11 @@ QString EmojiModel::categoryIcon(QString category) const
 	IndexRange c = search->second;
 	if( c.begin >= m_items.size() )
 	{
-		return QStringLiteral("%0/svg/1f553.svg").arg(EMOJI_PATH);
+		return QStringLiteral("qrc:/resources/icons/1.svg");
+//		return QStringLiteral("%0/svg/1f553.svg").arg(EMOJI_PATH);
 		//m_usedItems[c.begin - m_items.size()]->image;
 	}
-	return m_items[c.begin]->image;
+	return m_items[c.begin - 1]->image;
 }
 
 EmojiModel::ItemPtr EmojiModel::getItem(int row) const
@@ -224,6 +225,7 @@ void EmojiModel::loadEmoji()
 		}
 		c.end = m_items.size();
 		m_categories.push_back( QPair<QString,IndexRange>(category, c) );
+		item->image = QStringLiteral("qrc:/resources/icons/%0.svg").arg(m_categories.size() + 1);
 		delete emoji;
 	}
 	endResetModel();

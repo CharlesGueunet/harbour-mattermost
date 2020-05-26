@@ -56,16 +56,16 @@ Item {
 
                     Image {
                         id: iconButton
-                        source: emojiModel.categoryIcon(modelData);
+                        source: Qt.resolvedUrl( emojiModel.categoryIcon(modelData) );
                         anchors.centerIn: parent
-                        width: panel.buttonSize - Theme.paddingSmall
-                        height: panel.buttonHeight - Theme.paddingSmall
+                        width: panel.buttonSize - Theme.paddingMedium
+                        height: panel.buttonHeight - Theme.paddingMedium
                         fillMode: Image.PreserveAspectFit
                         layer.enabled: true
                         layer.effect: ShaderEffect {
                             // grayscale effect
                             property variant src: iconButton
-                            property color highlight: emojiCategoryView.currentIndex == index ? Theme.highlightColor : "white"
+                            property color highlight: emojiCategoryView.currentIndex == index ? Theme.highlightColor : Theme.primaryColor
                             vertexShader: "
                                         uniform highp mat4 qt_Matrix;
                                         attribute highp vec4 qt_Vertex;

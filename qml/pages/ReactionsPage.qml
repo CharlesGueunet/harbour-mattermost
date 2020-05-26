@@ -145,14 +145,17 @@ Page {
         anchors.bottom: parent.bottom
         anchors.left: parent.left
         anchors.right: parent.right
-        leftMargin: Theme.paddingLarge
-        rightMargin: Theme.paddingLarge
+        leftMargin: Theme.paddingSmall
+        rightMargin: leftMargin
 
-        property real buttonSize : Theme.iconSizeMedium
+//        property real buttonSize : Theme.iconSizeMedium
+
+        property real buttonSize : ( panel.width - leftMargin * 2 ) / emojiModel.categories.length
+        property real buttonHeight : Math.min(Theme.iconSizeMedium * 0.8, buttonSize)
 
         Row {
             id: buttonsRow
-            spacing: Theme.paddingMedium
+//            spacing: Theme.paddingMedium
             anchors.verticalCenter: parent.verticalCenter
 
             Repeater {
@@ -160,22 +163,22 @@ Page {
 
                 MouseArea {
                     id: mouseArea
-                    anchors.margins: -Theme.paddingSmall
+//                    anchors.margins: -Theme.paddingSmall
                     width: panel.buttonSize
-                    height: panel.buttonSize
+                    height: panel.buttonHeight
 
                     Image {
                         id: iconButton
                         source: emojiModel.categoryIcon(modelData);
                         anchors.centerIn: parent
-                        width: panel.buttonSize - Theme.paddingSmall * 2
-                        height: panel.buttonSize - Theme.paddingSmall * 2
-
+                        width: mouseArea.height - Theme.paddingMedium
+                        height: width
+                        fillMode: Image.PreserveAspectFit
                         layer.enabled: true
                         layer.effect: ShaderEffect {
                             // grayscale effect
                             property variant src: iconButton
-                            property color highlight: mouseArea.pressed ? Theme.highlightColor : "white"
+                            property color highlight: mouseArea.pressed ? Theme.highlightColor : Theme.primaryColor
                             vertexShader: "
                                         uniform highp mat4 qt_Matrix;
                                         attribute highp vec4 qt_Vertex;
