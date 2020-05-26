@@ -6,7 +6,7 @@ import ru.sashikknox 1.0
 import "../../model"
 import ".."
 
-BackgroundItem {
+Item {
     id: messageeditor
 
     Separator {
@@ -34,8 +34,8 @@ BackgroundItem {
     property string root_post_username
 
     property bool showToolBar: false
-    property alias text: textedit.text
-    height: textedit.height + replyPostArea.height
+    property alias text: textEdit.text
+    height: textEdit.height + replyPostArea.height
     property int    attachCount: 0
 
     property real iconSize: Theme.iconSizeMedium - Theme.paddingSmall
@@ -51,8 +51,8 @@ BackgroundItem {
     signal hideEmoji
 
     property alias emojiPanelChecked: emojiButton.checked
-    property alias softwareInputPanelEnabled: textedit.softwareInputPanelEnabled
-    property alias textFocus: textedit.focus
+    property alias softwareInputPanelEnabled: textEdit.softwareInputPanelEnabled
+    property alias textFocus: textEdit.focus
 
     Component {
         id: imagepicker
@@ -131,11 +131,11 @@ BackgroundItem {
 
     onEditmodeChanged: {
         if(editmode) {
-            textedit.text = edittext
+            textEdit.text = edittext
             opacity_one = 1.0
             opacity_two = 0.0
             animation.restart()
-            textedit.focus = true
+            textEdit.focus = true
         }
         else
         {
@@ -143,11 +143,6 @@ BackgroundItem {
             opacity_two = 1.0
             animation.restart()
         }
-    }
-
-    TouchBlocker {
-        id: messagetext_area
-        anchors.fill: parent
     }
 
     // Reply Post Area
@@ -180,34 +175,36 @@ BackgroundItem {
 
     function insertEmoji(emoji)
     {
-        var c_text = textedit.text.slice(0,textedit.cursorPosition)
+        var c_text = textEdit.text.slice(0,textEdit.cursorPosition)
         if( c_text.length > 0 && c_text.charAt(c_text.length - 1) != " " && c_text.charAt(c_text.length - 1) != "\n" ) {
             c_text = " :"
         }
         else
             c_text= ":"
         c_text += emoji + ":"
-        textedit.text = insert_text(textedit.cursorPosition, 0, textedit.text, c_text )
-        textedit.cursorPosition += c_text.length
+        textEdit.text = insert_text(textEdit.cursorPosition, 0, textEdit.text, c_text )
+        textEdit.cursorPosition += c_text.length
         // add emji to last used  list
         Settings.addUsedReaction(emoji)
     }
 
-    TouchBlocker {
+    Item {
         id: textarea
         anchors {
             left: parent.left
             bottom: parent.bottom
+            right: attachButton.left
+            leftMargin: Settings.pageMargin
+            rightMargin: Theme.paddingMedium
         }
-        height: textedit.height
-        width: messageeditor.width - menu.width
-        layer.enabled: true
+        height: textEdit.height
 
         MouseArea {
             id: emojiButton
-            anchors.left: parent.left
-            anchors.leftMargin: Settings.pageMargin
-            anchors.verticalCenter: parent.verticalCenter
+            anchors {
+                left: parent.left
+                verticalCenter: parent.verticalCenter
+            }
             width: messageeditor.iconSize
             height: messageeditor.iconSize
             property bool checked: false
@@ -273,34 +270,31 @@ BackgroundItem {
 
             onClicked: {
                 emojiButton.checked = !emojiButton.checked
-                if ( emojiButton.checked ) {
-//                    textedit.focus = false
-                    textedit.softwareInputPanelEnabled = false
-                } else {
-//                    textedit.focus = true
-                    textedit.softwareInputPanelEnabled = true
-                }
+//                if ( emojiButton.checked ) {
+//                    textedit.softwareInputPanelEnabled = false
+//                } else {
+//                    textedit.softwareInputPanelEnabled = true
+//                }
             } // onClicked
         } // MouseArea emojiButton
 
         TextArea  {
-            id: textedit
+            id: textEdit
 
             property int lastCursorPosition : 0
             anchors {
-                left: emojiButton.right
                 bottom: parent.bottom
-                right: button.left
+                left: emojiButton.right
+                right: btnSendMsg.left
                 leftMargin: Theme.paddingMedium
+                rightMargin: Theme.paddingMedium
             }
-
-            //label: qsTr("Message...") // need timestamp here, its better
+            height: Math.min(Theme.itemSizeHuge,implicitHeight)
+            Behavior on height { NumberAnimation { duration : 200 } }
 
             font.pixelSize: Theme.fontSizeSmall
             placeholderText: qsTr("Message...")
             textMargin: Theme.paddingSmall
-            height: Math.min(Theme.itemSizeHuge,implicitHeight)
-            Behavior on height { NumberAnimation { duration : 200 } }
 
             onFocusChanged: {
                 if(focus) {
@@ -314,92 +308,32 @@ BackgroundItem {
             }
 
             onTextChanged: {
-                // send signal "user write"
+                // TODO: send signal "user write"
             }
+
         }
 
-        IconButton {
-            id: button
-            anchors {
-                right: menu.left
-                verticalCenter: textedit.verticalCenter
-            }
-            width: messageeditor.iconSize
-            height: messageeditor.iconSize
-            x: messageeditor.width - menu.width - Settings.pageMargin - width
-            icon.source: "image://theme/" + (Settings.sendIcon === true ? "icon-m-send" : "icon-m-mail")
-            onClicked: {
-                if( textedit.text.length === 0 && attachCount === 0 )
-                    textedit.focus = true;
-                else {
-                    if(editmode)
-                    {
-                        context.mattermost.put_message_edit
-                                (textedit.text,
-                                 server_index,
-                                 team_index,
-                                 channel_type,
-                                 channel_index,
-                                 message_index)
-                        editmode = false;
-                    }
-                    else
-                    {
-                        context.mattermost.post_send_message
-                                (textedit.text,
-                                 server_index,
-                                 team_index,
-                                 channel_type,
-                                 channel_index,
-                                 root_post_id)
-                        root_post_id = ""
-                        root_post_message = ""
-                        root_post_index = -1
-                        attachCount = 0
-                    }
-                    text = ""
-                }
-            }// onClicked
+        Item { // Text under TextArea row
+            id: underTextEdit
 
-            Rectangle {
-                id: filescountrect
-                visible: attachCount > 0
-                anchors.left: parent.left
-                anchors.bottom: parent.bottom
-                anchors.leftMargin: Theme.paddingSmall
-                anchors.bottomMargin: Theme.paddingSmall
-                width: Theme.iconSizeSmall
-                height: width
-                radius: width
-                color: Theme.rgba(Theme.primaryColor,0.8)
-                Label {
-                    text: attachCount
-                    font.pixelSize: Theme.fontSizeTiny
-                    font.bold: true
-                    color: "black"
-                    anchors {
-                        verticalCenter: parent.verticalCenter
-                        horizontalCenter: parent.horizontalCenter
-                    }
-                }
-            }
-        }// send message button
-
-        Row { // Text under TextArea row
-            spacing: Theme.paddingMedium
             anchors {
-                leftMargin: textedit.anchors.leftMargin
+                leftMargin: Theme.paddingSmall
                 bottomMargin: Theme.paddingMedium
-                left: emojiButton.right
+                left: textEdit.left
+                right: textEdit.right
                 bottom: parent.bottom
-                //right: button.left
             }
+
+//            height: timestamp.contentHeight + anchors.bottomMargin
 
             Label {
                 id: timestamp
-                color: textedit.color
+                color: textEdit.color
                 font.pixelSize:  Theme.fontSizeTiny
                 font.bold: true
+
+                anchors.bottom: parent.bottom
+                anchors.left: parent.left
 
                 function updateTimestamp() {
                     var date = new Date();
@@ -421,44 +355,114 @@ BackgroundItem {
                 property bool uploaded : true
                 property int progress: 0
 
-                color: textedit.color
+                anchors.bottom: parent.bottom
+                anchors.left: timestamp.right
+                anchors.leftMargin: Theme.paddingMedium
+
+                color: textEdit.color
                 font.pixelSize:  Theme.fontSizeTiny
                 font.bold: true
                 visible: !uploaded
                 text: qsTr("Uploading ") + progress + "%"
             }
-        }
-    }// TouchBlocker textarea
+        } // Item: underTextEdit
 
+        IconButton {
+            id: btnSendMsg
+            anchors {
+                right: parent.right
+                verticalCenter: textEdit.verticalCenter
+            }
+            width: messageeditor.iconSize
+            height: messageeditor.iconSize
+            icon.source: "image://theme/" + (Settings.sendIcon === true ? "icon-m-send" : "icon-m-mail")
 
+            onClicked: {
+                if( textEdit.text.length === 0 && attachCount === 0 )
+                    textEdit.focus = true;
+                else {
+                    if(editmode)
+                    {
+                        context.mattermost.put_message_edit
+                                (textEdit.text,
+                                 server_index,
+                                 team_index,
+                                 channel_type,
+                                 channel_index,
+                                 message_index)
+                        editmode = false;
+                    }
+                    else
+                    {
+                        context.mattermost.post_send_message
+                                (textEdit.text,
+                                 server_index,
+                                 team_index,
+                                 channel_type,
+                                 channel_index,
+                                 root_post_id)
+                        root_post_id = ""
+                        root_post_message = ""
+                        root_post_index = -1
+                        attachCount = 0
+                    }
+                    text = ""
+                }
+            }// onClicked
 
-    property real buttons_row_w1: 0
-    property real buttons_row_w2: messageeditor.width - menu.width
+            Rectangle {
+                id: filescountrect
+                visible: attachCount > 0
+                anchors.left: parent.left
+                anchors.bottom: parent.bottom
+                anchors.leftMargin: -Theme.paddingSmall
+                anchors.bottomMargin: -Theme.paddingSmall
+                width: Theme.iconSizeSmall
+                height: width
+                radius: width
+                color: Theme.rgba(Theme.primaryColor,0.8)
+                Label {
+                    text: attachCount
+                    font.pixelSize: Theme.fontSizeTiny
+                    font.bold: true
+                    color: "black"
+                    anchors {
+                        verticalCenter: parent.verticalCenter
+                        horizontalCenter: parent.horizontalCenter
+                    }
+                }
+            }
+        }// send message button
 
-    NumberAnimation {
-        id: buttonrow_animation
-        target: buttons_row
-        property: "width"
-        from: buttons_row_w1
-        to: buttons_row_w2
-        duration: 200
+    }// Row textarea
+
+    OpacityRampEffect {
+        sourceItem: textarea
+        direction: OpacityRamp.LeftToRight
+        offset : (textarea.width - buttons_row.width)/textarea.width
+        slope: Math.max( 1.0, buttons_row.width / Theme.paddingMedium )
+        enabled: buttons_row.width > 0
     }
 
-
-    TouchBlocker {
+    Item {
         id: buttons_row
-        anchors.right: menu.left
+        anchors.right: attachButton.left
         anchors.verticalCenter: textarea.verticalCenter
         height: messageeditor.iconSize
         width: 0
+        visible: width > 0
         layer.enabled: true
 
         onWidthChanged: {
             textarea.width = messageeditor.width - Theme.iconSizeMedium - width
         }
 
+        Behavior on width {
+            NumberAnimation { duration: 200 }
+        }
+
         Row{
-            id: btnrow
+            id: attachButtonsRow
             anchors.fill: parent
             spacing: Theme.paddingMedium
             anchors.leftMargin: Theme.paddingMedium
@@ -508,9 +512,10 @@ BackgroundItem {
         }
     }
 
-    property alias menupressed: menu.pressed
+    property alias menupressed: attachButton.pressed
+
     MouseArea {
-        id: menu
+        id: attachButton
         visible: true
         enabled: true
         width: messageeditor.iconSize
@@ -520,11 +525,36 @@ BackgroundItem {
             rightMargin: Settings.pageMargin
             verticalCenter: textarea.verticalCenter
         }
-//        icon.source: "image://theme/icon-m-menu"
+
+        Image {
+            id: image_menu
+            source: "image://theme/icon-m-attach?" + (menupressed
+                                                    ? Theme.highlightColor
+                                                    : Theme.primaryColor)
+            anchors.fill: parent
+            visible: (opacity > 0)
+            Behavior on opacity {
+                NumberAnimation { duration: 200 }
+            }
+        }
+
+        Image {
+            id: image_cancel
+            source: "image://theme/icon-m-clear"
+            width: Theme.iconSizeMedium
+            height: Theme.iconSizeMedium
+            anchors.fill: parent
+            opacity: 0
+            visible: (opacity > 0)
+            Behavior on opacity {
+                NumberAnimation { duration: 200 }
+            }
+        }
+
         onClicked: {
             if(editmode)
             {
-                textedit.text = ""
+                textEdit.text = ""
                 editmode = false
             }
             else
@@ -537,74 +567,15 @@ BackgroundItem {
     onShowToolBarChanged: {
         if( showToolBar )
         {
-            buttons_row_w1 = 0
-            buttons_row_w2 = (Theme.iconSizeMedium + btnrow.spacing)*4 + Theme.paddingLarge
-            opacity_one = 1.0
-            opacity_two = 0.0
+            buttons_row.width = (Theme.iconSizeMedium + attachButtonsRow.spacing)*4 + Theme.paddingLarge
+            image_menu.opacity = 0
+            image_cancel.opacity = 1
         }
         else
         {
-            buttons_row_w1 = buttons_row.width
-            buttons_row_w2 = 0
-            opacity_one = 0.0
-            opacity_two = 1.0
-        }
-        animation.restart()
-        buttonrow_animation.restart()
-    }
-
-    Image {
-        id: image_menu
-        source: "image://theme/icon-m-attach?" + (menupressed
-                                                ? Theme.highlightColor
-                                                : Theme.primaryColor)
-        width: Theme.iconSizeMedium
-        height: Theme.iconSizeMedium
-        anchors {
-//            right: parent.right
-            verticalCenter: menu.verticalCenter
-            horizontalCenter: menu.horizontalCenter
-        }
-        visible: (opacity > 0)
-    }
-
-    Image {
-        id: image_cancel
-        source: "image://theme/icon-m-clear"
-        width: Theme.iconSizeMedium
-        height: Theme.iconSizeMedium
-        anchors {
-//            right: parent.right
-            verticalCenter: menu.verticalCenter
-            horizontalCenter: menu.horizontalCenter
-        }
-        opacity: 0
-        visible: (opacity > 0)
-    }
-
-
-    ParallelAnimation {
-        id: animation
-        NumberAnimation {
-            id: animation_menu
-            running: false
-            target: image_menu
-            property: "opacity"
-            easing.type: Easing.InExpo
-            from: opacity_one
-            to: opacity_two
-            duration: 200
-        }
-
-        NumberAnimation {
-            id: animation_cancel
-            running: false
-            target: image_cancel
-            property: "opacity"
-            easing.type: Easing.InExpo
-            from: opacity_two
-            to: opacity_one
-            duration: 200
+            image_menu.opacity = 1
+            image_cancel.opacity = 0
+            buttons_row.width = 0
         }
     }
 
