@@ -107,8 +107,6 @@ QString EmojiModel::categoryIcon(QString category) const
 	if( c.begin >= m_items.size() )
 	{
 		return QStringLiteral("qrc:/resources/icons/1.svg");
-//		return QStringLiteral("%0/svg/1f553.svg").arg(EMOJI_PATH);
-		//m_usedItems[c.begin - m_items.size()]->image;
 	}
 	return m_items[c.begin - 1]->image;
 }

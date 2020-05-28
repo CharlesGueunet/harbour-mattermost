@@ -16,11 +16,11 @@ Name:       harbour-mattermost
 %{?qtc_builddir:%define _builddir %qtc_builddir}
 Summary:    Mattermost Sailfish client
 Version:    0.1.4
-Release:    36
+Release:    42
 Group:      Qt/Qt
 License:    LICENSE
 Source0:    %{name}-%{version}.tar.bz2
-Source100:  harbour-mattermost.yaml
+# Source100:  harbour-mattermost.yaml
 Requires:   sailfishsilica-qt5 >= 0.10.9
 Requires:   qt5-qtwebsockets
 BuildRequires:  pkgconfig(sailfishapp) >= 1.0.2

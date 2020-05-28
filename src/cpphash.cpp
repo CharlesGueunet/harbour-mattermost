@@ -77,7 +77,7 @@ bool CppHashPrivate::parse_emoji_json(QString path)
 	{
 		QJsonObject current = ar[i].toObject();
 		QString image_name = current["image"].toString();
-		if( image_name.indexOf(QStringLiteral("00")) == 0 ) // if name bgins with 00, just remove it
+		if( image_name.indexOf(QStringLiteral("00")) == 0 ) // if name begins with 00, just remove it
 			image_name = image_name.mid(2);
 		QString image = QStringLiteral("svg/") + image_name.replace(".png",".svg");
 		QRegExp re(".*[a-z]+\\-[a-z]+.*");

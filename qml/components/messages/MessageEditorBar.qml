@@ -108,7 +108,16 @@ Item {
     Component {
         id: camerapicker
         CameraPicker {
-
+            onUploadImage: {
+                console.log("Upload image from CameraPicker " + capturedImagePath)
+                context.mattermost.post_file_upload(
+                            server_index,
+                            team_index,
+                            channel_type,
+                            channel_index,
+                            capturedImagePath
+                    )
+            }
         }
     }
 
@@ -473,7 +482,7 @@ Item {
                 icon.source: "image://theme/icon-m-imaging"
                 width: messageeditor.iconSize
                 height: messageeditor.iconSize
-                enabled: false
+                enabled: true
                 onClicked: {
                     showToolBar = false
                     takePhoto()

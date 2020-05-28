@@ -23,7 +23,7 @@ FullscreenContentPage {
         anchors.right: parent.right
         anchors.top: parent.top
         anchors.margins: Theme.paddingMedium
-        icon.source: "image://theme/icon-m-dismiss"
+        icon.source: "image://theme/icon-m-close"
         opacity: buttonsRow.opacity
         visible: opacity > 0
         onClicked: {
