@@ -390,6 +390,14 @@
         <source>Messages view</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Enable send photo</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Enable send Photo in attach menu</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>QObject</name>

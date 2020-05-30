@@ -390,6 +390,14 @@
         <source>Messages view</source>
         <translation>Окно чата</translation>
     </message>
+    <message>
+        <source>Enable send photo</source>
+        <translation>Вкл &quot;Добавить фото&quot;</translation>
+    </message>
+    <message>
+        <source>Enable send Photo in attach menu</source>
+        <translation>Вкл кнопку Добавить фото в меню Прикрепить</translation>
+    </message>
 </context>
 <context>
     <name>QObject</name>

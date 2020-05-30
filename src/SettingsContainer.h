@@ -45,6 +45,7 @@ private:
 	MT_PROPERTY(QStringList,  usedReactions);
 	MT_PROPERTY_DEF(int, usedReactionsCount, 21);
 	MT_PROPERTY(bool,    searchInChannels); // show or not search field in channels view
+	MT_PROPERTY(bool,    useCameraPicker);
 public:
 	explicit SettingsContainer(QObject *parent = nullptr);
 

@@ -158,6 +158,14 @@ Page {
                             messageEditor.root_post_username = role_user_name
                         }
                     }
+
+                    Icon {
+                        anchors {
+                            left: parent.left
+                            verticalCenter: parent.verticalCenter
+                        }
+                        source: "image://theme/icon-m-rotate-right"
+                    }
                 }
 
                 MenuItem {
@@ -168,11 +176,27 @@ Page {
                         messageEditor.editmode = true
                         messageEditor.message_index = role_row_index
                     }
+
+                    Icon {
+                        anchors {
+                            left: parent.left
+                            verticalCenter: parent.verticalCenter
+                        }
+                        source: "image://theme/icon-m-edit"
+                    }
                 }
 
                 MenuItem {
                     text: qsTr("Copy")
                     onClicked: Clipboard.text = plainText
+
+                    Icon {
+                        anchors {
+                            left: parent.left
+                            verticalCenter: parent.verticalCenter
+                        }
+                        source: "image://theme/icon-m-clipboard"
+                    }
                 }
 
                 MenuItem {
@@ -194,6 +218,16 @@ Page {
                         pageStack.push( reactinsPage,
                                        {}/*, PageStackAction.Immediate*/)
                     }
+
+                    Icon {
+                        anchors {
+                            left: parent.left
+                            verticalCenter: parent.verticalCenter
+                        }
+                        source: Qt.resolvedUrl("qrc:/resources/icons/emoji_picker.svg")
+                        width: Theme.iconSizeMedium
+                        height: Theme.iconSizeMedium
+                    }
                 }
 
                 MenuItem {
@@ -213,6 +247,14 @@ Page {
                                             console.log( "mi = " + String(mi) + "; role_row_index = " + String(role_row_index)  )
                                         context.mattermost.delete_message(si,ti,ct,ci,mi,mid)
                                     })
+                    }
+
+                    Icon {
+                        anchors {
+                            left: parent.left
+                            verticalCenter: parent.verticalCenter
+                        }
+                        source: "image://theme/icon-m-delete"
                     }
                 }
             }
@@ -243,44 +285,31 @@ Page {
             if( visibleSize < height && open ) {
                 isCloseBySwipe = true;
             }
-
-//            debugLabel.text = "height = " + String(visibleSize)
-//            console.log( "height = " + String(height) )
-//            if( x < Screen.height - emojiDock.height )
-//                x = Screen.height - emojiDock.height
-//            if( visibleSize == 0 )
-//            {
-//                if( open == false ) {
-//                    if( isCloseByButton )
-//                        console.log("It close by button")
-//                    else
-//                        console.log("it close by swipe or lost focus")
-//                    isCloseByButton = false;
-//                    messageEditor.softwareInputPanelEnabled = true
-//                    messageEditor.emojiPanelChecked = false
-//                }
-//            }
         }
 
         property real top_x : -1
 
         onOpenChanged: {
             if( !open ) {
-                messageEditor.softwareInputPanelEnabled = true
                 if( isCloseByButton ) {
                     console.log("Is close by button")
-                    messageEditor.forceActiveFocus()
-                    messageEditor.textFocus = true
                 }
                 else if ( isCloseBySwipe ) {
-                    console.log("Is close by swipe")
+//                    console.log("Is close by swipe")
+                    messageEditor.softwareInputPanelEnabled = true
+//                    console.log("Disable focus")
+                    messageEditor.textFocus = false
                 }
-                else {
-                    console.log("Is close by focus out")
-                }
+//                else {
+//                    console.log("Is close by focus out")
+//                }
+                messageEditor.emojiPanelChecked = false
                 isCloseByButton = false
                 isCloseBySwipe = false
-                messageEditor.emojiPanelChecked = false
+            }
+            else {
+                isCloseByButton = false
+                isCloseBySwipe = false
             }
         }
     }
@@ -299,15 +328,17 @@ Page {
         } //an
 
         onHideEmoji: {
-            messageEditor.emojiPanelChecked = false
+//            messageEditor.emojiPanelChecked = false
+//            if(!emojiDock.isCloseBySwipe)
             emojiDock.isCloseByButton = true;
             emojiDock.hide()
         }
 
         onShowEmoji: {
-            messageEditor.softwareInputPanelEnabled = false
-            messageEditor.emojiPanelChecked = true
+//            messageEditor.softwareInputPanelEnabled = false
+//            messageEditor.emojiPanelChecked = true
             emojiDock.show()
+//            messageEditor.textFocus = true;
         }
     } // MessageEditorBar
 

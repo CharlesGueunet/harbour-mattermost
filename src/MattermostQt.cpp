@@ -3284,7 +3284,7 @@ void MattermostQt::reply_get_user_info(QNetworkReply *reply)
 				QVectorInt roles;
 				roles << ChannelsModel::DisplayName << ChannelsModel::AvatarPath;
 				emit updateChannel(channel, roles);
-				qDebug() << QString("direct_channel \"%0\" id: '%1'").arg(channel->m_display_name).arg(channel->m_id) ;
+//				qDebug() << QString("direct_channel \"%0\" id: '%1'").arg(channel->m_display_name).arg(channel->m_id) ;
 				break;
 			}
 		}
@@ -5769,7 +5769,7 @@ bool MattermostQt::MessageContainer::removeReaction(const ReactionContainer &rea
 
 bool MattermostQt::MessageContainer::updateRootMessage( MattermostQt *mattermost )
 {
-	qInfo() << "MattermostQt::MessageContainer::updateRootMessage";
+//	qInfo() << "MattermostQt::MessageContainer::updateRootMessage";
 	if(m_root_ptr.isNull())
 	{
 		return false;
@@ -5801,7 +5801,7 @@ bool MattermostQt::MessageContainer::updateRootMessage( MattermostQt *mattermost
 			m_root_user_index = -1;
 		}
 	}
-	qInfo() << "MattermostQt::MessageContainer::updateRootMessage end";
+//	qInfo() << "MattermostQt::MessageContainer::updateRootMessage end";
 	return true;
 }
 

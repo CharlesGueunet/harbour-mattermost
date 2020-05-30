@@ -16,6 +16,7 @@ SET_SETTINGS_PROPERTY(ReactionSize, reactionSize)
 SET_SETTINGS_PROPERTY(QStringList, usedReactions)
 SET_SETTINGS_PROPERTY(int,         usedReactionsCount)
 SET_SETTINGS_PROPERTY(bool,  searchInChannels)
+SET_SETTINGS_PROPERTY(bool,  useCameraPicker)
 
 SettingsContainer::SettingsContainer(QObject *parent) : QObject(parent)
 {
@@ -49,6 +50,7 @@ void SettingsContainer::resetToDefault()
 	m_sendIcon              = true;
 	m_usedReactionsCount    = 21;
 	m_searchInChannels      = true;
+	m_useCameraPicker       = true;
 }
 
 #define ADD_VALUE(x) settings[#x] = x
@@ -84,6 +86,7 @@ QJsonObject SettingsContainer::asJsonObject() const
 	ADD_LIST(m_usedReactions);
 	ADD_VALUE(m_usedReactionsCount);
 	ADD_VALUE(m_searchInChannels);
+	ADD_VALUE(m_useCameraPicker);
 	return settings;
 }
 
@@ -99,6 +102,7 @@ void SettingsContainer::fromJsonObject(const QJsonObject &settings)
 	FROM_LIST (m_usedReactions);
 	FROM_VALUE(m_usedReactionsCount, toInt());
 	FROM_VALUE(m_searchInChannels, toBool());
+	FROM_VALUE(m_useCameraPicker, toBool());
 
 	if( m_usedReactionsCount == 0 )
 		m_usedReactionsCount = 21;

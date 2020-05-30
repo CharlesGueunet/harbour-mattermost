@@ -53,6 +53,10 @@ Item {
     property alias emojiPanelChecked: emojiButton.checked
     property alias softwareInputPanelEnabled: textEdit.softwareInputPanelEnabled
     property alias textFocus: textEdit.focus
+    property string stateString: "text_focus"
+
+//    property string stateTextFocus : "text_focus"
+//    property string stateTextFocus : "text_focus"
 
     Component {
         id: imagepicker
@@ -184,6 +188,8 @@ Item {
 
     function insertEmoji(emoji)
     {
+//        console.log("begin: cursorPosition = " + textEdit.cursorPosition)
+//        console.log("    emoji len = " + emoji.length )
         var c_text = textEdit.text.slice(0,textEdit.cursorPosition)
         if( c_text.length > 0 && c_text.charAt(c_text.length - 1) != " " && c_text.charAt(c_text.length - 1) != "\n" ) {
             c_text = " :"
@@ -191,8 +197,13 @@ Item {
         else
             c_text= ":"
         c_text += emoji + ":"
-        textEdit.text = insert_text(textEdit.cursorPosition, 0, textEdit.text, c_text )
-        textEdit.cursorPosition += c_text.length
+//        console.log( "    before insert cursorPosition = " + textEdit.cursorPosition )
+        var insert_pos = textEdit.cursorPosition
+        textEdit.text = insert_text(insert_pos, 0, textEdit.text, c_text )
+//        console.log( "    after cursorPosition = " + textEdit.cursorPosition + " and insert_pos = " + insert_pos)
+//        console.log( "    c_text.length = " + c_text.length )
+        textEdit.cursorPosition = insert_pos + c_text.length
+//        console.log( "    cursorPosition = " + textEdit.cursorPosition )
         // add emji to last used  list
         Settings.addUsedReaction(emoji)
     }
@@ -279,10 +290,18 @@ Item {
 
             onClicked: {
                 emojiButton.checked = !emojiButton.checked
-//                if ( emojiButton.checked ) {
-//                    textedit.softwareInputPanelEnabled = false
-//                } else {
-//                    textedit.softwareInputPanelEnabled = true
+                if ( emojiButton.checked ) {
+                    textEdit.softwareInputPanelEnabled = false
+                    Qt.inputMethod.hide()
+                } else {
+                    textEdit.softwareInputPanelEnabled = true
+                    Qt.inputMethod.show()
+                }
+//                console.log("Active focus from EmojiButton")
+//                if(!textEdit.focus) {
+                    textEdit.forcedFocus = true
+                    textEdit.focus = true
+                    textEdit.forceActiveFocus()
 //                }
             } // onClicked
         } // MouseArea emojiButton
@@ -291,6 +310,7 @@ Item {
             id: textEdit
 
             property int lastCursorPosition : 0
+            property bool forcedFocus : false
             anchors {
                 bottom: parent.bottom
                 left: emojiButton.right
@@ -306,13 +326,29 @@ Item {
             textMargin: Theme.paddingSmall
 
             onFocusChanged: {
+//                console.log("textEdit.focus = " + focus)
                 if(focus) {
                     showToolBar = false
-                    emojiButton.checked = false
-                    cursorPosition = lastCursorPosition
                 }
-                else {
-                    lastCursorPosition = cursorPosition
+                if( focus != forcedFocus && !softwareInputPanelEnabled ) {
+//                    console.log("Forced focus is detect")
+                    focus = forcedFocus
+                }
+            }
+
+//            onActiveFocusChanged: {
+//                console.log("activeFocus changed " + activeFocus)
+//            }
+
+            onSoftwareInputPanelEnabledChanged: {
+                console.log("SoftwareInputPanelEnabled = " + softwareInputPanelEnabled)
+//                if(softwareInputPanelEnabled && focus)
+//                {
+//                    forceActiveFocus()
+//                }
+                if(!softwareInputPanelEnabled) {
+//                    console.log("AActive focus from onSoftwareInputPanelEnabledChanged")
+                    focus = true
                 }
             }
 
@@ -482,7 +518,7 @@ Item {
                 icon.source: "image://theme/icon-m-imaging"
                 width: messageeditor.iconSize
                 height: messageeditor.iconSize
-                enabled: true
+                enabled: Settings.useCameraPicker
                 onClicked: {
                     showToolBar = false
                     takePhoto()
