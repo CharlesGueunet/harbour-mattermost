@@ -81,17 +81,6 @@ Page {
                 Component.onCompleted: checked = Settings.showBlobs
             }
 
-            TextSwitch {
-                id: useCameraPicker
-                text: qsTr("Enable send photo")
-                description: qsTr("Enable send Photo in attach menu")
-                onCheckedChanged: {
-                    Settings.useCameraPicker = checked;
-                }
-
-                Component.onCompleted: checked = Settings.useCameraPicker
-            }
-
             Slider {
                 id: blobOpacity
                 width: optionsPage.width
@@ -110,6 +99,17 @@ Page {
                 Behavior on height {
                     NumberAnimation { duration: 200 }
                 }
+            }
+
+            TextSwitch {
+                id: useCameraPicker
+                text: qsTr("Enable send photo")
+                description: qsTr("Enable send Photo in attach menu")
+                onCheckedChanged: {
+                    Settings.useCameraPicker = checked;
+                }
+
+                Component.onCompleted: checked = Settings.useCameraPicker
             }
 
             TextSwitch {
