@@ -234,7 +234,7 @@ void EmojiModel::onUsedReactionsChanged()
 {
 	QStringList short_names = SettingsContainer::getInstance()->usedReactions();
 	int maxAliases = SettingsContainer::getInstance()->usedReactionsCount();
-
+	int out_from = 0, out_to = 0;
 	if(!short_names.isEmpty())
 	{
 		bool isInsert = true;
@@ -264,8 +264,11 @@ void EmojiModel::onUsedReactionsChanged()
 		}
 		if( isInsert )
 			beginInsertRows( QModelIndex(), m_items.size(), m_items.size() + short_names.size() );
-		else
-			beginMoveRows( QModelIndex(), m_items.size() + from, m_items.size() + from, QModelIndex(), 0 );
+		else {
+			beginMoveRows( index(m_items.size() + from,0).parent(), m_items.size() + from, m_items.size() + from, index(m_items.size() + 1,0).parent(), m_items.size() + 1 );
+			out_from = from;
+			out_to = 0;
+		}
 		m_usedItems.clear();
 		ItemPtr categoryItem(new Item);
 		categoryItem->category = lastUsed;
@@ -288,9 +291,12 @@ void EmojiModel::onUsedReactionsChanged()
 			endInsertRows();
 		else
 			endMoveRows();
+
 	}
-	if(m_usedItems.isEmpty())
+	if(m_usedItems.isEmpty()) {
+		emit lastUsedChanged(out_from,out_to);
 		return;
+	}
 
 	auto search = std::find_if(m_categories.begin(), m_categories.end(), [=](QPair<QString,IndexRange> current){
 		if( current.first == lastUsed ) {
@@ -309,6 +315,7 @@ void EmojiModel::onUsedReactionsChanged()
 	{
 		m_categories[0].second.end = m_categories[0].second.begin + (m_usedItems.size() - 1);
 	}
+	emit lastUsedChanged(out_from,out_to);
 }
 
 EmojiProxyCategory::EmojiProxyCategory(QObject *parent)
@@ -348,6 +355,9 @@ QModelIndex EmojiProxyCategory::mapFromSource(const QModelIndex &sourceIndex) co
 void EmojiProxyCategory::setSourceModel(QAbstractItemModel *sourceModel)
 {
 	m_emojiModel = qobject_cast<EmojiModel*>(sourceModel);
+
+	connect(m_emojiModel, &EmojiModel::lastUsedChanged, this, &EmojiProxyCategory::lastUsedChanged );
+
 	QAbstractProxyModel::setSourceModel(sourceModel);
 
 	updateCategoryIndex();
@@ -409,6 +419,20 @@ void EmojiProxyCategory::updateCategoryIndex()
 			return false;
 		});
 		m_categoryIndex = search->second;
+	}
+}
+
+void EmojiProxyCategory::lastUsedChanged(int from, int to)
+{
+	if( m_category != lastUsed )
+		return;
+	if( from == to ) {
+		beginResetModel();
+		endResetModel();
+	}
+	else {
+		beginMoveRows(QModelIndex(), from - 1, from - 1, QModelIndex(), to);
+		endMoveRows();
 	}
 }
 

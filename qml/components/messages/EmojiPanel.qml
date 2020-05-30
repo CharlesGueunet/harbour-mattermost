@@ -127,7 +127,11 @@ Item {
                 cellHeight: emojiPanel.emojiItemSize
 
                 move: Transition {
-                    NumberAnimation { properties: "x,y"; duration: 300 }
+                    NumberAnimation { properties: "x,y"; duration: 200 }
+                }
+
+                displaced: Transition {
+                    NumberAnimation { properties: "x,y"; duration: 200 }
                 }
 
                 model: EmojiCategoryProxy {

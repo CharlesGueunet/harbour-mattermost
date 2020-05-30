@@ -33,8 +33,27 @@ FullscreenContentPage {
             flash.mode: Camera.FlashRedEyeReduction
 
             focus {
-                focusMode: Camera.FocusHyperfocal
-                focusPointMode: Camera.FocusPointCustom
+                focusMode: Camera.FocusAuto
+                focusPointMode: Camera.FocusPointAuto
+            }
+
+            viewfinder {
+                onResolutionChanged: {
+                    console.log("viewfinder resolution is " + camera.viewfinder.resolution )
+                }
+
+            }
+
+            onLockStatusChanged: {
+                if( lockStatus == Camera.Locked ) {
+                    console.log("Camera Locked")
+                }
+                else if( lockStatus == Camera.Unlocked ) {
+                    console.log("Camera Unlocked")
+                }
+                else if( lockStatus == Camera.Searching ) {
+                    console.log("Camera Searching")
+                }
             }
 
             imageCapture {
@@ -64,8 +83,15 @@ FullscreenContentPage {
             }
 
             Component.onCompleted: {
-                start();
-                unlock();
+//                camera.viewfinder.resolution = Qt.size(1280, 720)
+//                var resolutions = supportedViewfinderResolutions(camera.viewfinder.maximumFrameRate, camera.viewfinder.maximumFrameRate)
+//                for( var res = 0; res < resolutions.length; res++ ) {
+//                    console.log(" Resolution: " + resolutions[res] )
+//                }
+
+                start()
+                unlock()
+                searchAndLock()
                 console.log("Qt.Key_CameraFocus" + String(Qt.Key_CameraFocus))
                 console.log("Qt.Key_Camera" + String(Qt.Key_Camera))
             }
@@ -197,25 +223,39 @@ FullscreenContentPage {
         visible: buttonsPanel.visible
 
         onClicked:  {
-            camera.focus.focusMode = CameraFocus.FocusPointCustom
+            camera.unlock();
+            camera.focus.focusMode = CameraFocus.FocusManual
             camera.focus.focusPointMode = CameraFocus.FocusPointCustom
-            camera.focus.customFocusPoint = Qt.point(mouseX,mouseY)
+            camera.focus.customFocusPoint = Qt.point(mouseX/videoOutput.width,mouseY/videoOutput.height)
+
+            camera.focus.focusMode = Camera.FocusAuto
+            camera.focus.focusPointMode = CameraFocus.FocusPointCenter
+
             camera.searchAndLock();
 
             focusRect.visible = true
-            focusRect.x = mouseX - focusRect.radius
-            focusRect.y = mouseY - focusRect.radius
+            focusRect.x = mouseX
+            focusRect.y = mouseY
         }
 
         Rectangle {
             id: focusRect
             visible: false
-            width: Theme.iconSizeLarge * 2
+            width: camera.lockStatus == Camera.Locked ? Theme.iconSizeLarge * 1.75 :Theme.iconSizeLarge * 2
             height: width
             radius: width * 0.5
             color: Qt.rgba(0,0,0,0)
-            border.color: Theme.highlightColor
+            border.color: camera.lockStatus == Camera.Locked ? Theme.highlightColor : Theme.primaryColor
             border.width: Theme.paddingSmall * 0.5
+
+            Behavior on width {
+                NumberAnimation { duration: 200; easing: Easing.InOutQuart }
+            }
+
+            transform: Translate {
+                x: -focusRect.radius
+                y: -focusRect.radius
+            }
         }
     }
 
@@ -315,12 +355,22 @@ FullscreenContentPage {
         } // Rectangle shotButton
     }// Item buttonsPanel
 
-    Keys.enabled: true
+    property bool focusKeyPressed : false
+    Keys.enabled: false
     Keys.priority: Keys.BeforeItem
+
+    Keys.onReleased: {
+        if( event.key == Qt.Key_CameraFocus && focusKeyPressed ) {
+            focusKeyPressed = false
+            console.log("Key Focus Released")
+        }
+    }
+
     Keys.onPressed: {
-        if( event.key == Qt.Key_CameraFocus )
+        if( event.key == Qt.Key_CameraFocus && !focusKeyPressed )
         {
-            camera.focus.focusMode = Camera.FocusHyperfocal//CameraFocus.FocusManual
+            focusKeyPressed = true
+            camera.focus.focusMode = Camera.FocusAuto//CameraFocus.FocusManual
             camera.focus.focusPointMode = CameraFocus.FocusPointCenter
             //camera.focus.customFocusPoint = Qt.point(parent.width*0.5,parent.height * 0.5)
             camera.searchAndLock();
@@ -343,6 +393,10 @@ FullscreenContentPage {
 //                }
 //            }
 //            console.log("CameraFocus")
+        }
+        else if( event.key == Qt.Key_Camera ) {
+            camera.imageCapture.capture()
+            console.log("Key Camera")
         }
         else
             console.log("Key is " + event.key)
@@ -470,4 +524,5 @@ FullscreenContentPage {
             }
         }
     ]// states
+
 }

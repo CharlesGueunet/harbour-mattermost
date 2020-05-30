@@ -77,6 +77,7 @@ private Q_SLOTS:
 
 Q_SIGNALS:
 	void categoriesChanged();
+	void lastUsedChanged(int from, int to);
 
 private:
 //	MattermostQt *m_mattermost = nullptr;
@@ -111,8 +112,12 @@ public:
 
 private :
 	void updateCategoryIndex();
+
 Q_SIGNALS:
 	void categoryChanged();
+
+private Q_SLOTS:
+	void lastUsedChanged(int from, int to);
 
 private:
 	EmojiModel           *m_emojiModel = nullptr;
