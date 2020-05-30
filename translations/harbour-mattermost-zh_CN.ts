@@ -51,6 +51,14 @@
         <source>Using Emoji from</source>
         <translation>使来自以下的Emoji</translation>
     </message>
+    <message>
+        <source>Emoji categories icon design - </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source> from Junnxy studio (links below):</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>AccountsPage</name>

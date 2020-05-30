@@ -51,6 +51,14 @@
         <source>Using Emoji from</source>
         <translation>Emoji взяты отсюда:</translation>
     </message>
+    <message>
+        <source>Emoji categories icon design - </source>
+        <translation>Дизайн значков категорий эмоджи - </translation>
+    </message>
+    <message>
+        <source> from Junnxy studio (links below):</source>
+        <translation>из Junnxy studio (ссылки ниже)</translation>
+    </message>
 </context>
 <context>
     <name>AccountsPage</name>

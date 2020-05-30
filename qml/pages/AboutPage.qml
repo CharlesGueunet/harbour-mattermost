@@ -10,67 +10,80 @@ Page {
         versionlabel.text = qsTr("Version: ") + context.mattermost.getVersion()
     }
 
-    Column {
-        spacing: Theme.paddingLarge
+    SilicaFlickable {
         anchors.fill: parent
-        anchors {
-            leftMargin: Theme.paddingLarge
-            rightMargin: Theme.paddingLarge
-            topMargin: Theme.paddingLarge
-            bottomMargin: Theme.paddingLarge
-            horizontalCenter: parent.horizontalCenter
-        }
+        VerticalScrollDecorator {}
+        contentHeight: columnI.height
+        Column {
+            id: columnI
+            spacing: Theme.paddingLarge
+            anchors.fill: parent
+            anchors {
+                leftMargin: Theme.paddingLarge
+                rightMargin: Theme.paddingLarge
+                topMargin: Theme.paddingLarge
+                bottomMargin: Theme.paddingLarge
+                horizontalCenter: parent.horizontalCenter
+                left: parent.left
+                right: parent.right
+            }
 
-        Image {
-            id: appicon
-            source: "qrc:/resources/mattermost_icon.svg"
-            width: 0.3*((parent.width>parent.height)?parent.height:parent.width)
-            height: width
-            anchors.horizontalCenter: parent.horizontalCenter
-        }
+            Image {
+                id: appicon
+                source: "qrc:/resources/mattermost_icon.svg"
+                width: 0.3*((parent.width>parent.height)?parent.height:parent.width)
+                height: width
+                anchors.horizontalCenter: parent.horizontalCenter
+            }
 
-        Label {
-            id: versionlabel
-            width: parent.width
-            horizontalAlignment: Text.AlignHCenter
-            text : qsTr("Version: ") + (context !== null)?context.mattermost.getVersion():"0.0.0"
-        }
+            Label {
+                id: versionlabel
+                width: parent.width
+                horizontalAlignment: Text.AlignHCenter
+                text : qsTr("Version: ") + (context !== null)?context.mattermost.getVersion():"0.0.0"
+            }
 
-        LinkedLabel {
-            id: sourceslink
-            text: qsTr("Sources: ") + "<a href=\"https://gitlab.com/sashikknox/harbour-mattermost\">GitLab</a><br>"
-                + qsTr("Using Emoji from") + " <a href=\"https://twemoji.twitter.com/\">Twemoji</a>"
-            width: parent.width
-            wrapMode: Text.Wrap
-            horizontalAlignment: Text.AlignLeft
-        }
+            LinkedLabel {
+                id: sourceslink
+                text: qsTr("Sources: ") + "<a href=\"https://gitlab.com/sashikknox/harbour-mattermost\">GitLab</a><br>"
+                      + qsTr("Using Emoji from") + " <a href=\"https://twemoji.twitter.com/\">Twemoji</a>"
+                width: parent.width
+                wrapMode: Text.Wrap
+                horizontalAlignment: Text.AlignLeft
+            }
 
-        LinkedLabel {
-            id: donatelink
-            text: qsTr("If you want to donate, you can do that by:")
-                  + " <br> <a href=\"http://yasobe.ru/na/sashikknox\">"
-                  + qsTr("Yandex Money") + "</a>"
-            width: parent.width
-            wrapMode: Text.Wrap
-            horizontalAlignment: Text.AlignLeft
-        }
+            LinkedLabel {
+                id: donatelink
+                text: qsTr("If you want to donate, you can do that by:")
+                      + " <br> <a href=\"http://yasobe.ru/na/sashikknox\">"
+                      + qsTr("Yandex Money") + "</a>"
+                width: parent.width
+                wrapMode: Text.Wrap
+                horizontalAlignment: Text.AlignLeft
+            }
 
-        LinkedLabel {
-            id: aboutlabel
-            text: qsTr("This is unofficial client for")
-                  + " <a href=\"https://www.mattermost.org/licensing/\">Mattermost</a> "
-                  + qsTr("server.") + " "
-                  + qsTr("Thanks to")
-                  + " <a href=\"https://t.me/sailfishos/\">"
-                  + qsTr("Russian SailfishOS Community channel")
-                  + "</a> " + qsTr("in Telegram for their help.") + "<br>"
-                  + qsTr("And to users:")
-                  + "<br>< a href=\"https://gitlab.com/alexus230\">Alexey Kovalev</a> "
-                  + "<br>< a href=\"https://gitlab.com/dashinfantry\">dashinfantry</a>"
-                  + "<br>< a href=\"https://gitlab.com/SlavaMonich\">Slava Monich</a>"
-            width: parent.width
-            wrapMode: Text.Wrap
-            horizontalAlignment: Text.AlignLeft
+            LinkedLabel {
+                id: aboutlabel
+                text: qsTr("This is unofficial client for")
+                      + " <a href=\"https://www.mattermost.org/licensing/\">Mattermost</a> "
+                      + qsTr("server.") + " "
+                      + qsTr("Thanks to")
+                      + " <a href=\"https://t.me/sailfishos/\">"
+                      + qsTr("Russian SailfishOS Community channel")
+                      + "</a> " + qsTr("in Telegram for their help.")
+                      + "<br>" + qsTr("Emoji categories icon design - ") + "<a href=\"https://t.me/timxez\">@timxez</a>"
+                      + qsTr(" from Junnxy studio (links below):")
+                      + "<br><a href=\"https://instagram.com/junnxystudio\">Junnxy on Instagram</a>"
+                      + "<br><a href=\"https://www.behance.net/timxez\">Timxez on Behance</a>"
+                      + "<br>" + qsTr("And to users:")
+                      + "<br>< a href=\"https://gitlab.com/alexus230\">Alexey Kovalev</a> "
+                      + "<br>< a href=\"https://gitlab.com/dashinfantry\">dashinfantry</a>"
+                      + "<br>< a href=\"https://gitlab.com/SlavaMonich\">Slava Monich</a>"
+
+                width: parent.width
+                wrapMode: Text.Wrap
+                horizontalAlignment: Text.AlignLeft
+            }
         }
     }
 }
