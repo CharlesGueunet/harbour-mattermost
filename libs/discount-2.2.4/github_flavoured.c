@@ -23,57 +23,57 @@ typedef int (*getc_func)(void*);
 Document *
 gfm_populate(getc_func getc, void* ctx, int flags)
 {
-    Cstring line;
-    Document *a = __mkd_new_Document();
-    int c;
-    int pandoc = 0;
+	Cstring line;
+	Document *a = __mkd_new_Document();
+	int c;
+	int pandoc = 0;
 
-    if ( !a ) return 0;
+	if ( !a ) return 0;
 
-    a->tabstop = (flags & MKD_TABSTOP) ? 4 : TABSTOP;
+	a->tabstop = (flags & MKD_TABSTOP) ? 4 : TABSTOP;
 
-    CREATE(line);
+	CREATE(line);
 
-    while ( (c = (*getc)(ctx)) != EOF ) {
-	if ( c == '\n' ) {
-	    if ( pandoc != EOF && pandoc < 3 ) {
-		if ( S(line) && (T(line)[0] == '%') )
-		    pandoc++;
-		else
-		    pandoc = EOF;
-	    }
-            
-            if (pandoc == EOF) {
-		EXPAND(line) = ' ';
-		EXPAND(line) = ' ';
-	    }
-	    __mkd_enqueue(a, &line);
-	    S(line) = 0;
+	while ( (c = (*getc)(ctx)) != EOF ) {
+		if ( c == '\n' ) {
+			if ( pandoc != EOF && pandoc < 3 ) {
+				if ( S(line) && (T(line)[0] == '%') )
+					pandoc++;
+				else
+					pandoc = EOF;
+			}
+
+			if (pandoc == EOF) {
+				EXPAND(line) = ' ';
+				EXPAND(line) = ' ';
+			}
+			__mkd_enqueue(a, &line);
+			S(line) = 0;
+		}
+		else if ( isprint(c) || isspace(c) || (c & 0x80) )
+			EXPAND(line) = c;
 	}
-	else if ( isprint(c) || isspace(c) || (c & 0x80) )
-	    EXPAND(line) = c;
-    }
 
-    if ( S(line) )
-	__mkd_enqueue(a, &line);
+	if ( S(line) )
+		__mkd_enqueue(a, &line);
 
-    DELETE(line);
+	DELETE(line);
 
-    if ( (pandoc == 3) && !(flags & (MKD_NOHEADER|MKD_STRICT)) ) {
+	if ( (pandoc == 3) && !(flags & (MKD_NOHEADER|MKD_STRICT)) ) {
 	/* the first three lines started with %, so we have a header.
 	 * clip the first three lines out of content and hang them
 	 * off header.
 	 */
-	Line *headers = T(a->content);
+		Line *headers = T(a->content);
 
-	a->title = headers;             __mkd_trim_line(a->title, 1);
-	a->author= headers->next;       __mkd_trim_line(a->author, 1);
-	a->date  = headers->next->next; __mkd_trim_line(a->date, 1);
+		a->title = headers;             __mkd_trim_line(a->title, 1);
+		a->author= headers->next;       __mkd_trim_line(a->author, 1);
+		a->date  = headers->next->next; __mkd_trim_line(a->date, 1);
 
-	T(a->content) = headers->next->next->next;
-    }
+		T(a->content) = headers->next->next->next;
+	}
 
-    return a;
+	return a;
 }
 
 
@@ -82,12 +82,12 @@ gfm_populate(getc_func getc, void* ctx, int flags)
 Document *
 gfm_string(const char *buf, int len, DWORD flags)
 {
-    struct string_stream about;
+	struct string_stream about;
 
-    about.data = buf;
-    about.size = len;
+	about.data = buf;
+	about.size = len;
 
-    return gfm_populate((getc_func)__mkd_io_strget, &about, flags & INPUT_MASK);
+	return gfm_populate((getc_func)__mkd_io_strget, &about, flags & INPUT_MASK);
 }
 
 
@@ -96,5 +96,5 @@ gfm_string(const char *buf, int len, DWORD flags)
 Document *
 gfm_in(FILE *f, DWORD flags)
 {
-    return gfm_populate((getc_func)fgetc, f, flags & INPUT_MASK);
+	return gfm_populate((getc_func)fgetc, f, flags & INPUT_MASK);
 }

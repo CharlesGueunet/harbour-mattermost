@@ -1,15 +1,3 @@
-# NOTICE:
-#
-# Application name defined in TARGET has a corresponding QML filename.
-# If name defined in TARGET is changed, the following needs to be done
-# to match new name:
-#   - corresponding QML filename must be changed
-#   - desktop icon filename must be changed
-#   - desktop filename must be changed
-#   - icon definition filename in desktop file must be changed
-#   - translation filenames have to be changed
-
-# The name of your application
 TARGET = harbour-mattermost
 
 # get version from yaml file
@@ -40,14 +28,20 @@ dbus.path = /usr/share/dbus-1/services/
 
 CONFIG += sailfishapp warnoff
 CONFIG += qt
-QT += gui qml quick network dbus svg websockets
+QT += gui qml quick network dbus svg
 PKGCONFIG += nemonotifications-qt5 sailfishsilica
 #PKGCONFIG += libgcrypt
 
-LIBS += -Llibs #-lqt5websockets
+LIBS += -Llibs
 INCLUDEPATH += src/
-#INCLUDEPATH += libs/qtwebsockets/include
-#INCLUDEPATH += libs/qtwebsockets/src/websockets
+
+contains($$CONFIG,static_websocket) : {
+    LIBS += lqt5websockets
+    INCLUDEPATH += libs/qtwebsockets/include
+    INCLUDEPATH += libs/qtwebsockets/src/websockets
+} else : {
+    QT += websockets
+}
 
 include(libs/discount.pri);
 
