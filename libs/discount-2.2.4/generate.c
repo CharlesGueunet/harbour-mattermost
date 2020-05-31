@@ -918,7 +918,7 @@ codespan(MMIOT *f, int size)
 	if ( size > 1 && peek(f, size-1) == ' ' ) --size;
 	if ( peek(f,i) == ' ' ) ++i, --size;
 	// TODO here need remove <br/> from previus end line of string
-	Qstring("<table style=\"background-color:#222222\"><tr><td><span style=\"font-family:monospace; white-space: pre-wrap\">", f);
+	Qstring("<table style=\"background-color:#222222\"><tr><td><span style=\"font-family:monospace; white-space: pre-wrap; color: #ffffff;\">", f);
 	//	Qstring("<code style=\"font-family:monospace\"><pre>", f);
 	code(f, cursor(f)+(i-1), size);
 //	mmiotseek(f,mmiottell(f)-1); // try remove last EOL escape
@@ -1720,9 +1720,9 @@ printcode(Line *t, char *lang, MMIOT *f)
 {
 	int blanks;
 
-	Qstring("<pre><code", f);
+	Qstring("<table style=\"background-color:#222222\"><tr><td><code", f);
 	if (lang) {
-		Qstring(" class=\"", f);
+		Qstring(" style=\"font-family:monospace; white-space: pre-wrap; color: #ffffff;\" class=\"", f);
 		Qstring(lang, f);
 		Qstring("\"", f);
 	}
@@ -1738,7 +1738,7 @@ printcode(Line *t, char *lang, MMIOT *f)
 		}
 		else blanks++;
 	}
-	Qstring("</code></pre>", f);
+	Qstring("</code></td></tr></table>", f);
 }
 
 

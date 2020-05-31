@@ -57,7 +57,7 @@
     </message>
     <message>
         <source> from Junnxy studio (links below):</source>
-		<translation> из Junnxy studio (ссылки ниже)</translation>
+        <translation> из Junnxy studio (ссылки ниже)</translation>
     </message>
 </context>
 <context>

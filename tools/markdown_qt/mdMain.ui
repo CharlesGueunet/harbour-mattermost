@@ -89,18 +89,25 @@
              <string notr="true">font: 10pt &quot;Monospace&quot;;</string>
             </property>
             <property name="plainText">
-             <string>:man_office_worker:
-# Hello
-## Second level
-### Another level
-:smile: - try smile
+             <string>:smile: - try smile
 **bold**
 *italic*
-***bold italic***
+***bold italic*** с русским текстом:
+Вышел gcc 10. Теперь и в C можно писать так:
 ```c++
 void main(int argc, char **argv) {
     printf(&quot;Hello world \n&quot;);
     return 0;
+}
+```
+https://www.opennet.ru/opennews/art.shtml?num=52903
+Вышел gcc 10. Теперь и в C можно писать так:
+```с++
+static const int π = 3;
+
+int get_naïve_pi(void)
+{
+        return π;
 }
 ```
 ![my image](https://external-content.duckduckgo.com/iu/?u=http%3A%2F%2Fwww.pngpix.com%2Fwp-content%2Fuploads%2F2016%2F07%2FPNGPIX-COM-Dahlia-Flower-PNG-Transparent-Image-250x238.png)
@@ -202,7 +209,7 @@ need table and something like that later</string>
              <number>3</number>
             </property>
             <item>
-             <widget class="QQuickWidget" name="quickArea" native="true"/>
+             <widget class="QQuickWidget" name="quickArea"/>
             </item>
            </layout>
           </widget>
@@ -220,7 +227,7 @@ need table and something like that later</string>
      <x>0</x>
      <y>0</y>
      <width>810</width>
-     <height>25</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
