@@ -910,16 +910,17 @@ delspan(MMIOT *f, int size)
 static void
 codespan(MMIOT *f, int size)
 {
+	// TODO find better code parser with colorize some special words
     int i=0;
 
     if ( size > 1 && peek(f, size-1) == ' ' ) --size;
     if ( peek(f,i) == ' ' ) ++i, --size;
 	// TODO here need remove <br/> from previus end line of string
-	Qstring("<span style=\"font-family:monospace\"><pre>", f);
+	Qstring("<span style=\"font-family:monospace; white-space: pre-wrap\">", f);
 //	Qstring("<code style=\"font-family:monospace\"><pre>", f);
     code(f, cursor(f)+(i-1), size);
 //	Qstring("</pre></code>", f);
-	Qstring("</pre></span>", f);
+	Qstring("</span>", f);
 } /* codespan */
 
 
