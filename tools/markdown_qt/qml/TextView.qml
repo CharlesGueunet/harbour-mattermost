@@ -3,15 +3,17 @@ import QtQuick.Controls 1.4
 //import ru.sashikknox 1.0;
 
 Item {
-//    property QuickObject object: QuickObject {}
-    
+
     TextArea {
         id: textObject
         textFormat: Text.RichText
         objectName: "textObject"
-        text: "object.text"
-        anchors.fill: parent
+        text: "Hello World!"
         anchors.margins: 0
+        visible: true
+        anchors.fill: parent
         font.pixelSize: 12
+        width: parent.width
     }
+
 }

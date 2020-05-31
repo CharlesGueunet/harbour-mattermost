@@ -32,6 +32,7 @@ mdMain::mdMain(QWidget *parent) :
 	ui->quickArea->setSource(QUrl("qrc:/qml/TextView.qml"));
 
 //	ui->quickArea->quickWindow()->
+	ui->quickArea->setResizeMode(QQuickWidget::SizeRootObjectToView);
 	quickText = ui->quickArea->rootObject()->findChild<QObject*>("textObject");
 	QQmlProperty(quickText, "text").write("Hello!");
 	//object->setProperty("text", QString("Ebana rot!"));
@@ -99,9 +100,9 @@ void mdMain::updateText()
 	if (size)
 	{
 		QString r = QString::fromUtf8(html_text, size);
-//		ui->textArea->setHtml(r);
+		ui->textArea->setHtml(r);
 		ui->htmlArea->setPlainText(r);
-//		QQmlProperty(quickText, "text").write(r);
+		QQmlProperty(quickText, "text").write(r);
 	}
 	mkd_cleanup(doc);
 }
@@ -146,8 +147,14 @@ void mdMain::generateFlags()
 	add_flag(MKD_GITHUBTAGS, "Allow dashes & underscores in element names", true)
 //	add_flag(MKD_HTML5ANCHOR,"Use the html5 namespace for anchor names",false)
 	add_flag(MKD_LATEX, "Enable embedded LaTeX (mathjax-style)", false)
-	add_flag(MKD_EXPLICITLIST, "Don’t merge adjacent numbered/bulleted lists", true)
+	        add_flag(MKD_EXPLICITLIST, "Don’t merge adjacent numbered/bulleted lists", true)
 }
+
+QString mdMain::currentHtml() const
+{
+	return mCurrentHtml;
+}
+
 void mdMain::changeEvent(QEvent *e)
 {
 	QMainWindow::changeEvent(e);
@@ -355,7 +362,7 @@ void mdMain::get_gemoji_json()
 				gemoji = QJsonDocument::fromJson(reply->readAll(), &error);
 
 				if( error.error != QJsonParseError::NoError ) {
-					qCritical() << QStringLiteral("%0: %1").arg(QVariant::fromValue<QJsonParseError>(error).toString()).arg(error.errorString());
+					qCritical() << QStringLiteral("%0: %1").arg(error.error).arg(error.errorString());
 				}
 				
 				parse_emoji_json();

@@ -16,6 +16,7 @@ class mdMain : public QMainWindow
 {
 	Q_OBJECT
 
+	Q_PROPERTY(QString currentHtml READ currentHtml NOTIFY currentHtmlChanged)
 public:
 	class emoji2unicode
 	{
@@ -32,6 +33,8 @@ public:
 	void updateText();
 
 	void generateFlags();
+
+	QString currentHtml() const;
 protected:
 	void changeEvent(QEvent *e);
 
@@ -54,6 +57,9 @@ private slots:
 	
 	void on_act_saveJson_triggered();
 
+Q_SIGNALS:
+	void currentHtmlChanged();
+
 private:
 	Ui::mdMain *ui;
 	QObject *quickText;
@@ -61,6 +67,7 @@ private:
 	QJsonDocument output;
 	QJsonDocument gemoji;
 	QNetworkAccessManager *mNetwork = nullptr;
+	QString mCurrentHtml;
 };
 
 #endif // MDMAIN_H

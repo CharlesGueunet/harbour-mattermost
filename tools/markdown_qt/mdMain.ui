@@ -103,7 +103,7 @@ void main(int argc, char **argv) {
     return 0;
 }
 ```
-![my image](http://192.168.10.133/share/designer/edit16.png)
+![my image](https://external-content.duckduckgo.com/iu/?u=http%3A%2F%2Fwww.pngpix.com%2Fwp-content%2Fuploads%2F2016%2F07%2FPNGPIX-COM-Dahlia-Flower-PNG-Transparent-Image-250x238.png)
 * first
 * second
 * third
@@ -220,7 +220,7 @@ need table and something like that later</string>
      <x>0</x>
      <y>0</y>
      <width>810</width>
-     <height>22</height>
+     <height>25</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
