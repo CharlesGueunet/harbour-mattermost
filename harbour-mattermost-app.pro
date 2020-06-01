@@ -35,8 +35,9 @@ PKGCONFIG += nemonotifications-qt5 sailfishsilica
 LIBS += -Llibs
 INCLUDEPATH += src/
 
-contains($$CONFIG,static_websocket) : {
-    LIBS += lqt5websockets
+static_websocket : {
+    message("Statically link with libqt5websockets")
+    LIBS += -lqt5websockets
     INCLUDEPATH += libs/qtwebsockets/include
     INCLUDEPATH += libs/qtwebsockets/src/websockets
 } else : {
