@@ -408,6 +408,17 @@
     </message>
 </context>
 <context>
+    <name>ParentMessageItem</name>
+    <message>
+        <source>Reply to</source>
+        <translation type="unfinished">回复</translation>
+    </message>
+    <message>
+        <source>Edit message from</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>QObject</name>
     <message>
         <source>Login failed because of invalid password</source>
@@ -467,17 +478,6 @@
     <message>
         <source>Reactions</source>
         <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>ReplyMessageItem</name>
-    <message>
-        <source>Reply to</source>
-        <translation>回复</translation>
-    </message>
-    <message>
-        <source>Answer to message from</source>
-        <translation>回消息给</translation>
     </message>
 </context>
 <context>

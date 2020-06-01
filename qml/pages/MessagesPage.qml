@@ -172,9 +172,14 @@ Page {
                     text: qsTr("Edit")
                     visible: isMessageEditable
                     onClicked: {
-                        messageEditor.edittext = role_message
-                        messageEditor.editmode = true
+                        messageEditor.editText = role_message
+                        messageEditor.editMode = true
                         messageEditor.message_index = role_row_index
+
+                        messageEditor.root_post_id = role_post_id
+                        messageEditor.root_post_index = role_row_index
+                        messageEditor.root_post_message = Settings.strToSingleLine(role_message)//role_formated_text
+                        messageEditor.root_post_username = role_user_name
                     }
 
                     Icon {

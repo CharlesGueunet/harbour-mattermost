@@ -23,9 +23,9 @@ Item {
     property int team_index
     property int channel_index
     property int channel_type
-
-    property bool   editmode: false
-    property string edittext
+    // Edit message info
+    property bool   editMode: false
+    property string editText
     property int    message_index
     // Reply info
     property string root_post_id    // use when we comment another post
@@ -35,7 +35,7 @@ Item {
 
     property bool showToolBar: false
     property alias text: textEdit.text
-    height: textEdit.height + replyPostArea.height
+    height: textEdit.height + parentPostArea.height
     property int    attachCount: 0
 
     property real iconSize: Theme.iconSizeMedium - Theme.paddingSmall
@@ -127,7 +127,7 @@ Item {
 
     onContextChanged: {
         context.mattermost.fileUploaded.connect( function fileUp(sindex,findex){
-            console.log(sindex + " " + findex)
+//            console.log(sindex + " " + findex)
             attachCount++
             uploadprogress.uploaded = true
         })
@@ -139,36 +139,27 @@ Item {
                 uploadprogress.progress = progress
             }
         )
-//        context.mattermost.fil
     }
 
-    onEditmodeChanged: {
-        if(editmode) {
-            textEdit.text = edittext
-            opacity_one = 1.0
-            opacity_two = 0.0
-            animation.restart()
+    onEditModeChanged: {
+        if(editMode) {
+            textEdit.text = editText
             textEdit.focus = true
-        }
-        else
-        {
-            opacity_one = 0.0
-            opacity_two = 1.0
-            animation.restart()
         }
     }
 
     // Reply Post Area
-    ReplyMessageItem {
-        id: replyPostArea
+    ParentMessageItem {
+        id: parentPostArea
         anchors.leftMargin: Settings.pageMargin
         anchors.rightMargin: Settings.pageMargin
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.bottom: textarea.top
-        height: root_post_id.length > 0 ? replyPostArea.defaultHeight: 0;
+        height: ( root_post_id.length > 0 ) ? parentPostArea.defaultHeight: 0;
 
-        button: true
+        isReply: !editMode
+        button: !editMode
         text: root_post_message
         username: root_post_username
 
@@ -188,8 +179,6 @@ Item {
 
     function insertEmoji(emoji)
     {
-//        console.log("begin: cursorPosition = " + textEdit.cursorPosition)
-//        console.log("    emoji len = " + emoji.length )
         var c_text = textEdit.text.slice(0,textEdit.cursorPosition)
         if( c_text.length > 0 && c_text.charAt(c_text.length - 1) != " " && c_text.charAt(c_text.length - 1) != "\n" ) {
             c_text = " :"
@@ -197,14 +186,9 @@ Item {
         else
             c_text= ":"
         c_text += emoji + ":"
-//        console.log( "    before insert cursorPosition = " + textEdit.cursorPosition )
         var insert_pos = textEdit.cursorPosition
         textEdit.text = insert_text(insert_pos, 0, textEdit.text, c_text )
-//        console.log( "    after cursorPosition = " + textEdit.cursorPosition + " and insert_pos = " + insert_pos)
-//        console.log( "    c_text.length = " + c_text.length )
         textEdit.cursorPosition = insert_pos + c_text.length
-//        console.log( "    cursorPosition = " + textEdit.cursorPosition )
-        // add emji to last used  list
         Settings.addUsedReaction(emoji)
     }
 
@@ -297,12 +281,9 @@ Item {
                     textEdit.softwareInputPanelEnabled = true
                     Qt.inputMethod.show()
                 }
-//                console.log("Active focus from EmojiButton")
-//                if(!textEdit.focus) {
-                    textEdit.forcedFocus = true
-                    textEdit.focus = true
-                    textEdit.forceActiveFocus()
-//                }
+                textEdit.forcedFocus = true
+                textEdit.focus = true
+                textEdit.forceActiveFocus()
             } // onClicked
         } // MouseArea emojiButton
 
@@ -326,28 +307,17 @@ Item {
             textMargin: Theme.paddingSmall
 
             onFocusChanged: {
-//                console.log("textEdit.focus = " + focus)
                 if(focus) {
                     showToolBar = false
                 }
                 if( focus != forcedFocus && !softwareInputPanelEnabled ) {
-//                    console.log("Forced focus is detect")
                     focus = forcedFocus
                 }
             }
 
-//            onActiveFocusChanged: {
-//                console.log("activeFocus changed " + activeFocus)
-//            }
-
             onSoftwareInputPanelEnabledChanged: {
                 console.log("SoftwareInputPanelEnabled = " + softwareInputPanelEnabled)
-//                if(softwareInputPanelEnabled && focus)
-//                {
-//                    forceActiveFocus()
-//                }
                 if(!softwareInputPanelEnabled) {
-//                    console.log("AActive focus from onSoftwareInputPanelEnabledChanged")
                     focus = true
                 }
             }
@@ -426,7 +396,7 @@ Item {
                 if( textEdit.text.length === 0 && attachCount === 0 )
                     textEdit.focus = true;
                 else {
-                    if(editmode)
+                    if(editMode)
                     {
                         context.mattermost.put_message_edit
                                 (textEdit.text,
@@ -435,7 +405,10 @@ Item {
                                  channel_type,
                                  channel_index,
                                  message_index)
-                        editmode = false;
+                        editMode = false;
+                        root_post_id = ""
+                        root_post_message = ""
+                        root_post_index = -1
                     }
                     else
                     {
@@ -565,6 +538,7 @@ Item {
         enabled: true
         width: messageeditor.iconSize
         height: messageeditor.iconSize
+
         anchors {
             right: parent.right
             rightMargin: Settings.pageMargin
@@ -577,6 +551,7 @@ Item {
                                                     ? Theme.highlightColor
                                                     : Theme.primaryColor)
             anchors.fill: parent
+            opacity: editMode ? 0 : 1
             visible: (opacity > 0)
             Behavior on opacity {
                 NumberAnimation { duration: 200 }
@@ -589,7 +564,7 @@ Item {
             width: Theme.iconSizeMedium
             height: Theme.iconSizeMedium
             anchors.fill: parent
-            opacity: 0
+            opacity: editMode ? 1 : 0
             visible: (opacity > 0)
             Behavior on opacity {
                 NumberAnimation { duration: 200 }
@@ -597,10 +572,14 @@ Item {
         }
 
         onClicked: {
-            if(editmode)
+            if(editMode)
             {
                 textEdit.text = ""
-                editmode = false
+                editMode = false
+                root_post_id = ""
+                root_post_index = -1
+                root_post_message = ""
+                root_post_username = ""
             }
             else
             {

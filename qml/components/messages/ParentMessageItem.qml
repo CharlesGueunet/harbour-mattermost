@@ -2,7 +2,7 @@ import QtQuick 2.6
 import Sailfish.Silica 1.0
 import ru.sashikknox 1.0
 
-BackgroundItem {
+Item {
     id: replyPostArea
     clip: true
     visible: height > 0
@@ -15,7 +15,7 @@ BackgroundItem {
     property color  textColor: Theme.secondaryColor
     property color  textHeaderColor: Theme.primaryColor
 
-    property bool isAnswer: false
+    property bool isReply: true
 
     signal denyReplyClicked
 
@@ -40,7 +40,7 @@ BackgroundItem {
 //                width: replyPostInnerArea.width - denyReply.width - replyPostInnerArea.anchors.rightMargin
             Label {
                 id: headerOfReply
-                text:  ((isAnswer)?qsTr("Answer to message from"):qsTr("Reply to")) + " <b> " + username +"</b> "
+                text:  ((isReply)?qsTr("Reply to"):qsTr("Edit message from")) + " <b> " + username +"</b> "
                 font.family: Theme.fontFamily
                 font.pixelSize: Theme.fontSizeTiny
                 textFormat: Text.RichText
@@ -67,10 +67,15 @@ BackgroundItem {
             anchors {
                 verticalCenter: replyPostInnerArea.verticalCenter
             }
-            width: visible?Theme.iconSizeMedium:0
+            width: visible ? Theme.iconSizeMedium : 0
             height: width
             //x: messageeditor.width - menu.width - replyLabelsColumn.spacing - width
             icon.source: "image://theme/icon-m-clear"
+            opacity: visible ? 1 : 0
+
+            Behavior on opacity {
+                NumberAnimation { duration: 200 }
+            }
 
             onClicked: {
                 //root_post_message = ""
