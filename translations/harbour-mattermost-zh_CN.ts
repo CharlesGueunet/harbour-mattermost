@@ -406,6 +406,26 @@
         <source>Enable send Photo in attach menu</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>System</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Use logging in to standart</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>output</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Log level (to stderr)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Use logging</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>ParentMessageItem</name>

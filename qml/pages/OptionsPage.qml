@@ -269,6 +269,11 @@ Page {
                 }
             }// Reaction size
 
+            SectionHeader {
+                text: qsTr("System")
+                height: contentHeight
+            }
+
             Label {
                 id: cacheLabel
                 text: qsTr("Cache size: ") + " " + String(cacheSize);
@@ -283,6 +288,76 @@ Page {
                 onClicked: {
                     context.mattermost.clearCache()
                     cacheSize = context.mattermost.cacheSize()
+                }
+            }
+
+            TextSwitch {
+                id: enableLogging
+                text: qsTr("Use logging")
+                description: qsTr("Use logging in to standart") + " stderr " + qsTr("output")
+                onCheckedChanged: {
+                    Settings.debug = checked
+                }
+
+                Component.onCompleted: {
+                    checked = Settings.debug
+                }
+            }
+
+            ComboBox {
+                id: logLevel
+
+                label: qsTr("Log level (to stderr)")
+
+//                height: Settings.logLevel == Settings.LogLevelDisable ? 0 : Theme.itemSizeMedium
+                opacity: Settings.logLevel == Settings.LogLevelDisable ? 0 : 1
+                visible: opacity > 0
+
+                Behavior on opacity {
+                    NumberAnimation { duration: 200 }
+                }
+
+                menu: ContextMenu {
+                    id: logLevelMenu
+
+                    MenuItem {
+                        text: "Debug"
+                        onClicked: {
+                            Settings.logLevel = Settings.LogLevelDebug;
+                        }
+                    }
+
+                    MenuItem {
+                        text: "Warning"
+                        onClicked: {
+                            Settings.logLevel = Settings.LogLevelWarning;
+                        }
+                    }
+
+                    MenuItem {
+                        text: "Critical"
+                        onClicked: {
+                            Settings.logLevel = Settings.LogLevelCritical;
+                        }
+                    }
+
+                    MenuItem {
+                        text: "Fatal"
+                        onClicked: {
+                            Settings.logLevel = Settings.LogLevelFatal;
+                        }
+                    }
+
+                    MenuItem {
+                        text: "Info"
+                        onClicked: {
+                            Settings.logLevel = Settings.LogLevelInfo;
+                        }
+                    }
+
+                    Component.onCompleted: {
+                        logLevel.currentIndex = Settings.logLevel;
+                    }
                 }
             }
 

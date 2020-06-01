@@ -17,9 +17,11 @@ SET_SETTINGS_PROPERTY(QStringList, usedReactions)
 SET_SETTINGS_PROPERTY(int,         usedReactionsCount)
 SET_SETTINGS_PROPERTY(bool,  searchInChannels)
 SET_SETTINGS_PROPERTY(bool,  useCameraPicker)
+SET_SETTINGS_PROPERTY(LogLevel,   logLevel)
 
 SettingsContainer::SettingsContainer(QObject *parent) : QObject(parent)
 {
+	connect(this, &SettingsContainer::logLevelChanged, this, &SettingsContainer::echoLogLevelChanged );
 	resetToDefault();
 }
 
@@ -46,9 +48,7 @@ void SettingsContainer::resetToDefault()
 	m_formatedText          = true;
 	m_pageMargin            = Silica::Theme::instance()->paddingMedium();
 	m_pageMarginEnum        = SettingsContainer::MarginMedium;
-	m_debug                 = false;
 	m_sendIcon              = true;
-	m_usedReactionsCount    = 21;
 	m_searchInChannels      = true;
 	m_useCameraPicker       = true;
 }
@@ -87,6 +87,8 @@ QJsonObject SettingsContainer::asJsonObject() const
 	ADD_VALUE(m_usedReactionsCount);
 	ADD_VALUE(m_searchInChannels);
 	ADD_VALUE(m_useCameraPicker);
+	ADD_VALUE(m_debug);
+	ADD_ENUM(m_logLevel, LogLevel);
 	return settings;
 }
 
@@ -103,6 +105,8 @@ void SettingsContainer::fromJsonObject(const QJsonObject &settings)
 	FROM_VALUE(m_usedReactionsCount, toInt());
 	FROM_VALUE(m_searchInChannels, toBool());
 	FROM_VALUE(m_useCameraPicker, toBool());
+	FROM_VALUE(m_debug, toBool());
+	FROM_ENUM(m_logLevel, LogLevel);
 
 	if( m_usedReactionsCount == 0 )
 		m_usedReactionsCount = 21;
@@ -138,4 +142,9 @@ void SettingsContainer::addUsedReaction(const QString reaction)
 	}
 	emit usedReactionsChanged();
 	emit settingsChanged();
+}
+
+void SettingsContainer::echoLogLevelChanged()
+{
+	qInfo() << QStringLiteral("Log level changed to: %0").arg( QVariant::fromValue<LogLevel>(m_logLevel).toString() );
 }

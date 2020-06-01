@@ -406,6 +406,26 @@
         <source>Enable send Photo in attach menu</source>
         <translation>Вкл кнопку Добавить фото в меню Прикрепить</translation>
     </message>
+    <message>
+        <source>System</source>
+        <translation>Система</translation>
+    </message>
+    <message>
+        <source>Use logging</source>
+        <translation>Использовать журнал отладки</translation>
+    </message>
+    <message>
+        <source>Use logging in to standart</source>
+        <translation>Выводить лог в</translation>
+    </message>
+    <message>
+        <source>output</source>
+        <translation>стандартный вывод</translation>
+    </message>
+    <message>
+        <source>Log level (to stderr)</source>
+        <translation>Уровень журналирования</translation>
+    </message>
 </context>
 <context>
     <name>ParentMessageItem</name>

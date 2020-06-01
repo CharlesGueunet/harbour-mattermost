@@ -31,6 +31,16 @@ public:
 	};
 	Q_ENUM(ReactionSize)
 
+	enum LogLevel {
+		LogLevelDebug = QtDebugMsg,
+		LogLevelWarning = QtWarningMsg,
+		LogLevelCritical = QtCriticalMsg,
+		LogLevelFatal = QtFatalMsg,
+		LogLevelInfo = QtInfoMsg,
+		LogLevelDefault =  LogLevelFatal,
+	};
+	Q_ENUM(LogLevel)
+
 private:
 	/** download image automaticly, when its size lower than autoDownloadImageSize */
 	MT_PROPERTY(int,     autoDownloadImageSize);
@@ -39,13 +49,14 @@ private:
 	MT_PROPERTY(float,   pageMargin);
 	MT_PROPERTY(int,     pageMarginEnum);
 	MT_PROPERTY(bool,    formatedText); // show Markdown text
-	MT_PROPERTY(bool,    debug);
+	MT_PROPERTY_DEF(bool,    debug, true);
 	MT_PROPERTY(bool,    sendIcon); // ability change send message icon to icon-m-send from icon-m-mail
 	MT_PROPERTY(ReactionSize, reactionSize); //set size of reactions
 	MT_PROPERTY(QStringList,  usedReactions);
 	MT_PROPERTY_DEF(int, usedReactionsCount, 21);
 	MT_PROPERTY(bool,    searchInChannels); // show or not search field in channels view
 	MT_PROPERTY(bool,    useCameraPicker);
+	MT_PROPERTY_DEF(LogLevel, logLevel, LogLevelDefault);
 public:
 	explicit SettingsContainer(QObject *parent = nullptr);
 
@@ -85,6 +96,9 @@ public:
 	 * @param reaction
 	 */
 	Q_INVOKABLE void addUsedReaction(const QString reaction);
+
+private Q_SLOTS:
+	void echoLogLevelChanged();
 Q_SIGNALS:
 	void settingsChanged();
 };

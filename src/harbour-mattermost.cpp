@@ -45,15 +45,14 @@
 void myMessageOutput(QtMsgType type, const QMessageLogContext &context, const QString &msg)
 {
 //	if(!SettingsContainer::getInstance()->debug())
-//		return; // TODO test no stdout
+	SettingsContainer::LogLevel ll = SettingsContainer::getInstance()->logLevel();
+	if( SettingsContainer::getInstance()->debug() == false || ll > (SettingsContainer::LogLevel)type )
+		return; // TODO test no stdout
 	// TODO write log to databse in separate thread
 	QByteArray localMsg = msg.toLocal8Bit();
 	switch (type) {
 	case QtDebugMsg:
 		fprintf(stderr, "Debug: %s (%s:%u, %s)\n", localMsg.constData(), context.file, context.line, context.function);
-		break;
-	case QtInfoMsg:
-		fprintf(stderr, "Info: %s (%s:%u, %s)\n", localMsg.constData(), context.file, context.line, context.function);
 		break;
 	case QtWarningMsg:
 		fprintf(stderr, "Warning: %s (%s:%u, %s)\n", localMsg.constData(), context.file, context.line, context.function);
@@ -64,6 +63,9 @@ void myMessageOutput(QtMsgType type, const QMessageLogContext &context, const QS
 	case QtFatalMsg:
 		fprintf(stderr, "Fatal: %s (%s:%u, %s)\n", localMsg.constData(), context.file, context.line, context.function);
 		//abort();
+	case QtInfoMsg:
+		fprintf(stderr, "Info: %s (%s:%u, %s)\n", localMsg.constData(), context.file, context.line, context.function);
+		break;
 	}
 }
 
@@ -79,7 +81,7 @@ int main(int argc, char *argv[])
 	QCoreApplication::setOrganizationDomain("harbour");
 	QCoreApplication::setOrganizationName("sashikknox");
 
-	qDebug() << "App version: " << MATTERMOSTQT_VERSION;
+	qInfo() << "App version: " << MATTERMOSTQT_VERSION;
 	// If you wish to publish your app on the Jolla harbour, it is recommended
 	// that you prefix your internal namespaces with "harbour.".
 	//
