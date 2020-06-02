@@ -158,7 +158,7 @@ Item {
         anchors.bottom: textarea.top
         height: ( root_post_id.length > 0 ) ? parentPostArea.defaultHeight: 0;
 
-        isReply: !editMode
+        messageType: editMode ? parentPostArea.typeEdit : parentPostArea.typeReply
         button: !editMode
         text: root_post_message
         username: root_post_username

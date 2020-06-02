@@ -262,13 +262,13 @@ ListItem {
                 property real realBlobContentWidth:
                     plainTextLablel.width
 
-                ReplyMessageItem {
+                ParentMessageItem {
                     id: replyMessage
                     visible: rootMessage.length > 0
                     text: rootMessage
                     username: rootUser
                     button: false
-                    isAnswer: true
+                    messageType: replyMessage.typeAnswer
                     width: (visible) ? inBlobContent.maxBlobContentWidth : 0
                     textColor: messageLabel.textColor
                     textHeaderColor: messageLabel.textColor

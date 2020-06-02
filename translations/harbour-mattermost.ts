@@ -437,6 +437,10 @@
         <source>Edit message from</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Answer to message from</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>QObject</name>

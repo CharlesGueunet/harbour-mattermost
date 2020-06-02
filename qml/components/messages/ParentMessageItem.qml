@@ -16,6 +16,11 @@ Item {
     property color  textHeaderColor: Theme.primaryColor
 
     property bool isReply: true
+    property string messageType: typeReply
+
+    readonly property string typeReply : qsTr("Reply to");
+    readonly property string typeEdit  : qsTr("Edit message from");
+    readonly property string typeAnswer: qsTr("Answer to message from")
 
     signal denyReplyClicked
 
@@ -40,7 +45,7 @@ Item {
 //                width: replyPostInnerArea.width - denyReply.width - replyPostInnerArea.anchors.rightMargin
             Label {
                 id: headerOfReply
-                text:  ((isReply)?qsTr("Reply to"):qsTr("Edit message from")) + " <b> " + username +"</b> "
+                text:  messageType + " <b> " + username +"</b> "
                 font.family: Theme.fontFamily
                 font.pixelSize: Theme.fontSizeTiny
                 textFormat: Text.RichText

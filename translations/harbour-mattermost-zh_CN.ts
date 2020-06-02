@@ -431,11 +431,15 @@
     <name>ParentMessageItem</name>
     <message>
         <source>Reply to</source>
-        <translation type="unfinished">回复</translation>
+        <translation>回复</translation>
     </message>
     <message>
         <source>Edit message from</source>
         <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Answer to message from</source>
+        <translation>回消息给</translation>
     </message>
 </context>
 <context>

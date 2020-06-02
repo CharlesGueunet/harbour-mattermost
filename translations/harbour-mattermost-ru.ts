@@ -437,6 +437,10 @@
         <source>Edit message from</source>
         <translation>Редактировать сообщение</translation>
     </message>
+    <message>
+        <source>Answer to message from</source>
+        <translation>Ответ на сообщение от</translation>
+    </message>
 </context>
 <context>
     <name>QObject</name>
