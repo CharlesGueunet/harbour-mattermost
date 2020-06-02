@@ -32,10 +32,6 @@
         <translation>в Telegram за их помощь.</translation>
     </message>
     <message>
-        <source>And to users:</source>
-        <translation>А так же:</translation>
-    </message>
-    <message>
         <source>Sources: </source>
         <translation>Исходный код: </translation>
     </message>
@@ -58,6 +54,10 @@
     <message>
         <source> from Junnxy studio (links below):</source>
         <translation> из Junnxy studio (ссылки ниже)</translation>
+    </message>
+    <message>
+        <source>Thanks to users (contribute and testing):</source>
+		<translation>А так же пользователям (тестирование и разработка):</translation>
     </message>
 </context>
 <context>

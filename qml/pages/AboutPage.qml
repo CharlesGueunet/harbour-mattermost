@@ -105,11 +105,100 @@ Page {
                       + " <a href=\"https://t.me/sailfishos/\">"
                       + qsTr("Russian SailfishOS Community channel")
                       + "</a> " + qsTr("in Telegram for their help.")
-                      + "<br><br>" + qsTr("Emoji categories icon design - ") + "<a href=\"https://t.me/timxez\">@timxez</a>"
+
+                width: parent.width
+                wrapMode: Text.Wrap
+                horizontalAlignment: Text.AlignLeft
+                anchors {
+                    leftMargin: Theme.paddingLarge
+                    rightMargin: Theme.paddingLarge
+                    topMargin: Theme.paddingMedium
+                    bottomMargin: Theme.paddingMedium
+                    //                horizontalCenter: parent.horizontalCenter
+                    left: parent.left
+                    right: parent.right
+                }
+            }
+
+            Item { height: Theme.paddingLarge }
+
+            Image {
+                id: junnxyLogo
+                source: Qt.resolvedUrl("qrc:/resources/junnxy.png")
+
+                anchors {
+                    topMargin: Theme.paddingMadium
+                    horizontalCenter: parent.horizontalCenter
+                }
+
+                layer.enabled: true
+                layer.effect: ShaderEffect {
+                    // grayscale effect
+                    property variant src: junnxyLogo
+                    property color highlight: Theme.highlightColor
+                    vertexShader: "
+                                uniform highp mat4 qt_Matrix;
+                                attribute highp vec4 qt_Vertex;
+                                attribute highp vec2 qt_MultiTexCoord0;
+                                varying highp vec2 coord;
+                                void main() {
+                                    coord = qt_MultiTexCoord0;
+                                    gl_Position = qt_Matrix * qt_Vertex;
+                                }"
+                    fragmentShader: "
+                                varying highp vec2 coord;
+                                uniform sampler2D src;
+                                uniform lowp vec4 highlight;
+                                uniform lowp float qt_Opacity;
+                                void main() {
+                                    lowp vec4 tex = texture2D(src, coord);
+                                    gl_FragColor = vec4(vec3(dot(tex.rgb,
+                                                        vec3(0.344, 0.5, 0.156))),
+                                                             tex.a) * qt_Opacity * highlight;
+                                }"
+                }
+
+            }
+
+            Label {
+                color: Theme.highlightColor
+                font.pixelSize: Theme.fontSizeSmall
+                font.bold: true
+//                    font.pixelSize: Theme.fontSizeSmall
+                font.family: Theme.fontFamily
+                text: "Junnxy"
+                anchors {
+                    topMargin: Theme.paddingSmall
+                    horizontalCenter: parent.horizontalCenter
+                }
+            }
+
+            LinkedLabel {
+                id: junnxyLabel
+                text: qsTr("Emoji categories icon design - ") + "<a href=\"https://t.me/timxez\">@timxez</a>"
                       + qsTr(" from Junnxy studio (links below):")
                       + "<br><a href=\"https://instagram.com/junnxystudio\">Junnxy on Instagram</a>"
                       + "<br><a href=\"https://www.behance.net/timxez\">Timxez on Behance</a>"
-                      + "<br><br>" + qsTr("And to users:")
+
+                width: parent.width
+                wrapMode: Text.Wrap
+                horizontalAlignment: Text.AlignLeft
+                anchors {
+                    leftMargin: Theme.paddingLarge
+                    rightMargin: Theme.paddingLarge
+                    topMargin: Theme.paddingMedium
+                    bottomMargin: Theme.paddingMedium
+                    //                horizontalCenter: parent.horizontalCenter
+                    left: parent.left
+                    right: parent.right
+                }
+            }
+
+            Item { height: Theme.paddingLarge }
+
+            LinkedLabel {
+                id: contributorsLabel
+                text: qsTr("Thanks to users (contribute and testing):")
                       + "<br>< a href=\"https://gitlab.com/alexus230\">Alexey Kovalev</a> "
                       + "<br>< a href=\"https://gitlab.com/dashinfantry\">dashinfantry</a>"
                       + "<br>< a href=\"https://gitlab.com/SlavaMonich\">Slava Monich</a>"

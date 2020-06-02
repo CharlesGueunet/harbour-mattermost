@@ -19,5 +19,6 @@
         <file>resources/icons/1.svg</file>
         <file>resources/icons/emoji_picker.svg</file>
         <file>resources/icons/9.svg</file>
+        <file>resources/junnxy.png</file>
     </qresource>
 </RCC>

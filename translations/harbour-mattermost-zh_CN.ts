@@ -44,10 +44,6 @@
         <translation>在电报感谢他们的帮助。</translation>
     </message>
     <message>
-        <source>And to users:</source>
-        <translation>致用户：</translation>
-    </message>
-    <message>
         <source>Using Emoji from</source>
         <translation>使来自以下的Emoji</translation>
     </message>
@@ -57,6 +53,10 @@
     </message>
     <message>
         <source> from Junnxy studio (links below):</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Thanks to users (contribute and testing):</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
