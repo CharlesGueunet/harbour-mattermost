@@ -296,11 +296,11 @@ Page {
                 text: qsTr("Use logging")
                 description: qsTr("Use logging in to standart") + " stderr " + qsTr("output")
                 onCheckedChanged: {
-                    Settings.debug = checked
+                    Settings.useLog = checked
                 }
 
                 Component.onCompleted: {
-                    checked = Settings.debug
+                    checked = Settings.useLog
                 }
             }
 

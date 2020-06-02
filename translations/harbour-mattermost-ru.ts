@@ -57,7 +57,7 @@
     </message>
     <message>
         <source>Thanks to users (contribute and testing):</source>
-		<translation>А так же пользователям (тестирование и разработка):</translation>
+        <translation>А так же пользователям (тестирование и разработка):</translation>
     </message>
 </context>
 <context>

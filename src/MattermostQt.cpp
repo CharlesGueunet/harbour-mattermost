@@ -1856,7 +1856,7 @@ bool MattermostQt::isImageFileInGallery(int server_index, int file_sc_index)
 	return !file->is_file_in_cache(server->m_cache_path);
 }
 
-bool MattermostQt::saveImageFileToGallery(int server_index, int file_sc_index)
+QString MattermostQt::saveImageFileToGallery(int server_index, int file_sc_index)
 {
 	if( server_index < 0 || server_index >= m_server.size() )
 		return false;
@@ -1868,7 +1868,7 @@ bool MattermostQt::saveImageFileToGallery(int server_index, int file_sc_index)
 	QDir dir(new_file_path);
 	if( !dir.exists() )
 		if( !dir.mkpath(new_file_path) )
-			return false;
+			return QString();
 
 	new_file_path += file->m_name;
 	if( QFile::rename( file->m_file_path, new_file_path ) ) {
@@ -1889,8 +1889,8 @@ bool MattermostQt::saveImageFileToGallery(int server_index, int file_sc_index)
 		}
 	}
 	else
-		return false;
-	return true;
+		return QString();
+	return new_file_path;
 }
 
 QString MattermostQt::getUserName(int server_index, int user_index)

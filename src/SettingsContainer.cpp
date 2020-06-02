@@ -18,6 +18,7 @@ SET_SETTINGS_PROPERTY(int,         usedReactionsCount)
 SET_SETTINGS_PROPERTY(bool,  searchInChannels)
 SET_SETTINGS_PROPERTY(bool,  useCameraPicker)
 SET_SETTINGS_PROPERTY(LogLevel,   logLevel)
+SET_SETTINGS_PROPERTY(bool,   useLog)
 
 SettingsContainer::SettingsContainer(QObject *parent) : QObject(parent)
 {
@@ -51,6 +52,8 @@ void SettingsContainer::resetToDefault()
 	m_sendIcon              = true;
 	m_searchInChannels      = true;
 	m_useCameraPicker       = true;
+	m_useLog                = true;
+	m_logLevel              = LogLevelFatal;
 }
 
 #define ADD_VALUE(x) settings[#x] = x
@@ -87,8 +90,9 @@ QJsonObject SettingsContainer::asJsonObject() const
 	ADD_VALUE(m_usedReactionsCount);
 	ADD_VALUE(m_searchInChannels);
 	ADD_VALUE(m_useCameraPicker);
-	ADD_VALUE(m_debug);
+//	ADD_VALUE(m_debug);
 	ADD_ENUM(m_logLevel, LogLevel);
+	ADD_VALUE(m_useLog);
 	return settings;
 }
 
@@ -105,8 +109,9 @@ void SettingsContainer::fromJsonObject(const QJsonObject &settings)
 	FROM_VALUE(m_usedReactionsCount, toInt());
 	FROM_VALUE(m_searchInChannels, toBool());
 	FROM_VALUE(m_useCameraPicker, toBool());
-	FROM_VALUE(m_debug, toBool());
+//	FROM_VALUE(m_debug, toBool());
 	FROM_ENUM(m_logLevel, LogLevel);
+	FROM_VALUE(m_useLog, toBool());
 
 	if( m_usedReactionsCount == 0 )
 		m_usedReactionsCount = 21;

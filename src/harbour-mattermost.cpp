@@ -44,9 +44,7 @@
 
 void myMessageOutput(QtMsgType type, const QMessageLogContext &context, const QString &msg)
 {
-//	if(!SettingsContainer::getInstance()->debug())
-	SettingsContainer::LogLevel ll = SettingsContainer::getInstance()->logLevel();
-	if( SettingsContainer::getInstance()->debug() == false || ll > (SettingsContainer::LogLevel)type )
+	if( SettingsContainer::getInstance()->useLog() == false || SettingsContainer::getInstance()->logLevel() > (SettingsContainer::LogLevel)type )
 		return; // TODO test no stdout
 	// TODO write log to databse in separate thread
 	QByteArray localMsg = msg.toLocal8Bit();

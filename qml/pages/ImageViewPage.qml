@@ -15,29 +15,9 @@ FullscreenContentPage {
     property bool   showOverlay: true
     property bool   isInGallery: false
     property int    selfScIndex
+    property int    serverIndex
 
     property real opacity_coef: 0.5
-
-    IconButton {
-        id: closeButton
-        anchors.right: parent.right
-        anchors.top: parent.top
-        anchors.margins: Theme.paddingMedium
-        icon.source: "image://theme/icon-m-close"
-        opacity: buttonsRow.opacity
-        visible: opacity > 0
-        onClicked: {
-            pageStack.pop()
-        }
-        z: 2
-        Rectangle {
-            anchors.fill: parent
-            radius: Theme.paddingMedium
-            color: Theme.darkPrimaryColor
-            opacity:  opacity_coef
-            z: 1
-        }
-    }
 
     Behavior on opacity {
         NumberAnimation { duration: 400 }
@@ -50,29 +30,29 @@ FullscreenContentPage {
             opacity = 1
     }
 
-    onSelfScIndexChanged: {
-        isInGallery = context.mattermost.isImageFileInGallery(server_index, selfScIndex)
+    Component.onCompleted: {
+        isInGallery = context.mattermost.isImageFileInGallery(serverIndex, selfScIndex)
     }
 
     allowedOrientations: Orientation.All
 
     property bool showBackground: true
 
-    Rectangle {
-        id: backgroundRect
-        visible: showBackground
-        color: Qt.rgba(0,0,0,1)
-        anchors.fill: parent
-//        opacity: 0
+//    Rectangle {
+//        id: backgroundRect
+//        visible: showBackground
+//        color: Qt.rgba(0,0,0,1)
+//        anchors.fill: parent
+////        opacity: 0
 
-//        Component.onCompleted: {
-//            opacity = 1.0
-//        }
+////        Component.onCompleted: {
+////            opacity = 1.0
+////        }
 
-//        Behavior on opacity {
-//            NumberAnimation { duration: 100 }
-//        }
-    }
+////        Behavior on opacity {
+////            NumberAnimation { duration: 100 }
+////        }
+//    }
 
     onImageSizeChanged: {
         if( imageSize.height > imageSize.width )
@@ -172,7 +152,12 @@ FullscreenContentPage {
                 source: previewPath
 //                visible: (opacity > 0 && previewPath.length != 0)
                 opacity: 1
-                Behavior on opacity { NumberAnimation{ duration: 300 } }
+
+                property int duration: 300
+                Behavior on opacity {
+                    id: image_previev_behavior
+                    NumberAnimation{ duration: image_preview.duration }
+                }
                 anchors.centerIn: parent
                 autoTransform: true
                 sourceSize: imageview.imageSize
@@ -331,12 +316,22 @@ FullscreenContentPage {
 
             onClicked: {
                 //TODO here we should save picture to gallery
-                var result = context.mattermost.saveImageFileToGallery(server_index,selfScIndex);
-                if( result === true )
+                image_preview.duration = 0
+                image_previev_behavior.enabled = false
+                image_preview.opacity = 1
+                image_preview.duration = 300
+                image_previev_behavior.enabled = true
+                var result = context.mattermost.saveImageFileToGallery(serverIndex,selfScIndex);
+                if( result.length != 0 )
                 {
-//                    opacity = 0
                     isInGallery = true;
+                    imagePath = result
+                    if( animatedImage )
+                        image_anim.source = imagePath
+                    else
+                        image_static.source = imagePath
                 }
+//                image_preview.opacity = 0
             }
         }
     }
@@ -397,5 +392,25 @@ FullscreenContentPage {
         }
     }
 
+    IconButton {
+        id: closeButton
+        anchors.right: parent.right
+        anchors.top: parent.top
+        anchors.margins: Theme.paddingMedium
+        icon.source: "image://theme/icon-m-close"
+        opacity: buttonsRow.opacity
+        visible: opacity > 0
+        onClicked: {
+            pageStack.pop()
+        }
+        z: 2
+        Rectangle {
+            anchors.fill: parent
+            radius: Theme.paddingMedium
+            color: Theme.darkPrimaryColor
+            opacity:  opacity_coef
+            z: 1
+        }
+    }
     // end of some debug data */
 }

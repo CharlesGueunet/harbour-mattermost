@@ -49,7 +49,7 @@ private:
 	MT_PROPERTY(float,   pageMargin);
 	MT_PROPERTY(int,     pageMarginEnum);
 	MT_PROPERTY(bool,    formatedText); // show Markdown text
-	MT_PROPERTY_DEF(bool,    debug, true);
+	MT_PROPERTY_DEF(bool,    debug, false);
 	MT_PROPERTY(bool,    sendIcon); // ability change send message icon to icon-m-send from icon-m-mail
 	MT_PROPERTY(ReactionSize, reactionSize); //set size of reactions
 	MT_PROPERTY(QStringList,  usedReactions);
@@ -57,6 +57,7 @@ private:
 	MT_PROPERTY(bool,    searchInChannels); // show or not search field in channels view
 	MT_PROPERTY(bool,    useCameraPicker);
 	MT_PROPERTY_DEF(LogLevel, logLevel, LogLevelDefault);
+	MT_PROPERTY_DEF(bool,     useLog, true);
 public:
 	explicit SettingsContainer(QObject *parent = nullptr);
 

@@ -56,13 +56,14 @@ MouseArea {
     }
 
     function openImageViewer() {
-        pageStack.push( imageViewPage,
+        pageStack.push( Qt.resolvedUrl("../../pages/ImageViewPage.qml"),
                        {
                            imagePath: filePath,
                            previewPath: filePreview,//fileThumbnail,
                            animatedImage: fileType === MattermostQt.FileAnimatedImage,
                            imageSize: imageSize,
-                           selfScIndex: selfScIndex
+                           selfScIndex: selfScIndex,
+                           serverIndex: server_index
                        }/*, PageStackAction.Immediate*/)
     }
 

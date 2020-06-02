@@ -6,8 +6,8 @@
 Name:       harbour-mattermost
 
 # >> macros
-#%define __requires_exclude ^libQt5Core.so.5(Qt_5_PRIVATE_API)|libQt5Core.so.*|libQt5WebSockets.so.5(Qt_5)|libgcrypt*$
-%define __requires_exclude ^|libQt5WebSockets.so.*$
+# % define __requires_exclude ^libQt5Core.so.5(Qt_5_PRIVATE_API)|libQt5Core.so.*|libQt5WebSockets.so.5(Qt_5)|libgcrypt*$
+# % define __requires_exclude ^|libQt5WebSockets.so.*$
 # << macros
 
 %{!?qtc_qmake:%define qtc_qmake %qmake}
@@ -22,7 +22,7 @@ License:    LICENSE
 Source0:    %{name}-%{version}.tar.bz2
 # Source100:  harbour-mattermost.yaml
 Requires:   sailfishsilica-qt5 >= 0.10.9
-Requires:   qt5-qtwebsockets
+# Requires:   qt5-qtwebsockets
 BuildRequires:  pkgconfig(sailfishapp) >= 1.0.2
 BuildRequires:  pkgconfig(sailfishsilica)
 BuildRequires:  pkgconfig(Qt5Core)

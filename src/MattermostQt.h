@@ -627,7 +627,7 @@ public:
 	 * @param file_sc_index  index of file in servers files list
 	 * @return  true if file saved succesfuly
 	 */
-	Q_INVOKABLE bool saveImageFileToGallery(int server_index, int file_sc_index);
+	Q_INVOKABLE QString saveImageFileToGallery(int server_index, int file_sc_index);
 
 	/** settings  fucntions */
 	bool save_settings();

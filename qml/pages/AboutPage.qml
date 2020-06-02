@@ -131,6 +131,9 @@ Page {
                     horizontalCenter: parent.horizontalCenter
                 }
 
+                width: Theme.iconSizeLarge
+                height: width
+
                 layer.enabled: true
                 layer.effect: ShaderEffect {
                     // grayscale effect
