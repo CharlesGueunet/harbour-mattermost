@@ -15,6 +15,8 @@ Item {
     property int columnCount: (emojiPanel.width - pagePadding * 2) / emojiPanel.emojiItemSize
     property real emojiItemWidth: emojiPanel.emojiItemSize + ((emojiPanel.width - pagePadding * 2) - columnCount * emojiPanel.emojiItemSize)/columnCount
 
+    signal emojiClicked
+
     PanelBackground {
         id: bg
         anchors.fill: panel
@@ -160,6 +162,7 @@ Item {
                     onClicked: {
                         console.log("Emoji choosed: " + role_name + " from category " + role_category)
                         emojiPanel.emoji = role_name
+                        emojiClicked()
                     }
                 }// delegate: BackgroundItem
             }// GridView emojiGridView

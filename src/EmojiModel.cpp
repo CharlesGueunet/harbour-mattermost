@@ -12,9 +12,10 @@
 
 #define lastUsed QStringLiteral("Last Used")
 
-QVector<EmojiModel::ItemPtr>  EmojiModel::m_items;
-//QVector<EmojiModel::ItemPtr>  EmojiModel::m_usedItems;
-QVector< QPair<QString, EmojiModel::IndexRange> > EmojiModel::m_categories;
+QVector<EmojiModel::ItemPtr>                       EmojiModel::m_items;
+QHash<QString, EmojiModel::ItemPtr>                EmojiModel::m_hashItems;
+//QVector<EmojiModel::ItemPtr>                       EmojiModel::m_usedItems;
+QVector< QPair<QString, EmojiModel::IndexRange> >  EmojiModel::m_categories;
 
 EmojiModel::EmojiModel(QObject *parent)
     : QAbstractListModel(parent)
@@ -131,6 +132,7 @@ void EmojiModel::loadEmoji()
 		return;
 	beginResetModel();
 	m_items.clear();
+	m_hashItems.clear();
 	m_categories.clear();
 
 	qDebug() << "Start parse emoji.json file";
@@ -220,6 +222,8 @@ void EmojiModel::loadEmoji()
 			ItemPtr current_emoji_item = emoji->at(i);
 			current_emoji_item->category_index = category_index;
 			m_items.push_back( current_emoji_item );
+			if( current_emoji_item->type == ItemTypeEmoji )
+				m_hashItems.insert( current_emoji_item->name, current_emoji_item );
 		}
 		c.end = m_items.size();
 		m_categories.push_back( QPair<QString,IndexRange>(category, c) );
@@ -252,47 +256,77 @@ void EmojiModel::onUsedReactionsChanged()
 					break;
 				}
 			}
-//			auto search = std::find_if(m_usedItems.begin(), m_usedItems.end(), [=](ItemPtr current) {
-//				if( categoryItem->type = ItemTypeEmoji && current->name == last_used ) {
-//					from = index;
-//					isInsert = false;
-//					return true;
-//				}
-//				index++;
-//				return false;
-//			});
-		}
-		if( isInsert )
-			beginInsertRows( QModelIndex(), m_items.size(), m_items.size() + short_names.size() );
-		else {
-			beginMoveRows( index(m_items.size() + from,0).parent(), m_items.size() + from, m_items.size() + from, index(m_items.size() + 1,0).parent(), m_items.size() + 1 );
-			out_from = from;
-			out_to = 0;
-		}
-		m_usedItems.clear();
-		ItemPtr categoryItem(new Item);
-		categoryItem->category = lastUsed;
-		categoryItem->category_index = 0;
-		categoryItem->image =  QStringLiteral("%0/svg/1f553.svg").arg(EMOJI_PATH);
-		categoryItem->name = lastUsed;
-		categoryItem->type = ItemTypeCategory;
-		m_usedItems.push_back( categoryItem );
-		for(auto name : short_names)
-		{
-			auto search = std::find_if(m_items.begin(), m_items.end(), [name](ItemPtr current) {
-			    if( current->name == name )
-			        return true;
-			    return false;
-		    });
-			if( search != m_items.end() )
-				m_usedItems.append(*search);
-		}
-		if( isInsert )
-			endInsertRows();
-		else
-			endMoveRows();
 
-	}
+			if( from == 1 ) // nothing move, leave it as is
+				return;
+
+			qDebug() << QStringLiteral("m_usedItems count %0").arg(m_usedItems.size());
+			qDebug() << QStringLiteral("isInsert = %0").arg(isInsert);
+
+			if( isInsert ) {
+				auto search = m_hashItems.find( short_names.first() );
+				if( search != m_hashItems.end() ) {
+					beginInsertRows( QModelIndex(), m_items.size() + 1, m_items.size() + 1 );
+//					m_usedItems.append(*search);
+					ItemPtr item_prev = m_usedItems[1];
+					m_usedItems[1] = *search;
+					for( int i = 2; i < m_usedItems.size(); i++ ) {
+						ItemPtr tmp = m_usedItems[i];
+						m_usedItems[i] = item_prev;
+						item_prev = tmp;
+					}
+					// TODO check m_usedItems size
+					if( m_usedItems.size() < SettingsContainer::getInstance()->usedReactionsCount() )
+						m_usedItems.append(item_prev);
+					endInsertRows();
+				}
+			} // isInsert
+			else {
+				int index_from = m_items.size() + from;
+				int index_to = m_items.size() + 1;
+				auto search = m_hashItems.find( short_names.first() );
+				if( search != m_hashItems.end() ) {
+					qDebug() << QStringLiteral("beginMoveRows %0 to %1").arg(from).arg(1);
+					beginMoveRows( index(index_from,0).parent(), index_from, index_from, index(index_to,0).parent(), index_to );
+					out_from = from;
+					out_to = 1;
+					ItemPtr item_prev = m_usedItems[1];
+					m_usedItems[1] = m_usedItems[from];
+					for( int i = 2; i < from; i++ ) {
+						ItemPtr tmp = m_usedItems[i];
+						m_usedItems[i] = item_prev;
+						item_prev = tmp;
+					}
+					m_usedItems[from] = item_prev;
+					endMoveRows();
+				}
+			} // !isInsert
+		} // !m_usedItems.isEmpty
+		else
+		{ // first time here, need first item - category item
+			ItemPtr categoryItem(new Item);
+			categoryItem->category = lastUsed;
+			categoryItem->category_index = 0;
+			categoryItem->image =  QStringLiteral("%0/svg/1f553.svg").arg(EMOJI_PATH);
+			categoryItem->name = lastUsed;
+			categoryItem->type = ItemTypeCategory;
+			m_usedItems.push_back( categoryItem );
+
+			QVector<ItemPtr> newUsedItems;
+			//---
+			for(auto name : short_names)
+			{
+				auto search = m_hashItems.find( name );
+				if( search != m_hashItems.end() )
+					newUsedItems.append(*search);
+			}
+			beginInsertRows( QModelIndex(), m_items.size(), m_items.size() + newUsedItems.size() + 1);
+			for(int i = 0; i < newUsedItems.size(); i++)
+				m_usedItems.push_back( newUsedItems[i] );
+			endInsertRows();
+		} // m_usedItems.isEmpty()
+	}// !short_names.isEmpty()
+
 	if(m_usedItems.isEmpty()) {
 		emit lastUsedChanged(out_from,out_to);
 		return;
@@ -306,6 +340,10 @@ void EmojiModel::onUsedReactionsChanged()
 	});
 	if( search == m_categories.end() )
 	{
+//		qDebug() << QStringLiteral("Categories: ");
+//		for(int i = 0; i < m_categories.size(); i++ ){
+//			qDebug() << QStringLiteral("[%0]: %1").arg(i).arg(m_categories[i].first);
+//		}
 		IndexRange c;
 		c.begin = m_items.size() + 1;
 		c.end = c.begin + m_usedItems.size() - 1;
@@ -431,7 +469,7 @@ void EmojiProxyCategory::lastUsedChanged(int from, int to)
 		endResetModel();
 	}
 	else {
-		beginMoveRows(QModelIndex(), from - 1, from - 1, QModelIndex(), to);
+		beginMoveRows(QModelIndex(), from - 1, from - 1, QModelIndex(), to -1);
 		endMoveRows();
 	}
 }

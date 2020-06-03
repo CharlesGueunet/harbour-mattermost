@@ -281,7 +281,7 @@ Page {
         EmojiPanel {
             anchors.fill: parent
 
-            onEmojiChanged: {
+            onEmojiClicked: {
                 messageEditor.insertEmoji( emoji )
             }
         }
