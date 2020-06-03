@@ -5,6 +5,15 @@
 # Add newest entries to the top of the list.
 # Separate entries from eachother with a blank line.
 #
+* Wed Jun 3   2020 sashikknox <sashikknox@gmail.com> - 0.1.6-6
+- Fix bug when MessageEditor Mar dont show cancel button when message is editing
+- Little bit fix categoies icons
+- Add LogLevel settings
+- ImageViewer bug : cant close image viewer when tap save to gallery button
+- crashing when tap on top of last used emoji or reaction
+- fix bug, when you cant add same emoji few times
+- fixes in spec file, and requirements for harbour-store
+
 * Sat May 31  2020 sashikknox <sashikknox@gmail.com> - 0.1.5-6
 - contribute #25 add reactions page
 - fix #35 show reactions under message
