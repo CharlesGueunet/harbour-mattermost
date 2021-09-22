@@ -1859,9 +1859,9 @@ bool MattermostQt::isImageFileInGallery(int server_index, int file_sc_index)
 QString MattermostQt::saveImageFileToGallery(int server_index, int file_sc_index)
 {
 	if( server_index < 0 || server_index >= m_server.size() )
-		return false;
+		return  QString();
 	if( file_sc_index < 0 || file_sc_index >= m_server[server_index]->m_file.size() )
-		return false;
+		return  QString();
 	FilePtr file = m_server[server_index]->m_file[file_sc_index];
 	QString new_file_path = m_pictures_path + QDir::separator();
 
