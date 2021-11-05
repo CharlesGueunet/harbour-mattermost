@@ -20,5 +20,7 @@
         <file>resources/icons/emoji_picker.svg</file>
         <file>resources/icons/9.svg</file>
         <file>resources/junnxy.png</file>
+        <file>resources/donate/liberapay.svg</file>
+        <file>resources/donate/liberapay.png</file>
     </qresource>
 </RCC>

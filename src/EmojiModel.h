@@ -45,11 +45,7 @@ private:
 		int begin = -1;
 		int end   = -1;
 
-		IndexRange& operator =(const IndexRange &other)
-		{
-			begin = other.begin;
-			end = other.end;
-		}
+		IndexRange& operator =(const IndexRange &other);
 	};
 
 public:

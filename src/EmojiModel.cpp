@@ -661,3 +661,10 @@ void EmojiProxyList::recalcCategories()
 		            .arg(m_proxyCategories[i].end);
 	}
 }
+
+EmojiModel::IndexRange &EmojiModel::IndexRange::operator =(const IndexRange &other)
+{
+	begin = other.begin;
+	end = other.end;
+	return *this;
+}

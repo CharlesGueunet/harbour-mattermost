@@ -78,8 +78,6 @@ Page {
             LinkedLabel {
                 id: donatelink
                 text: qsTr("If you want to donate, you can do that by:")
-                      + " <br> <a href=\"http://yasobe.ru/na/sashikknox\">"
-                      + qsTr("Yandex Money") + "</a>"
                 width: parent.width
                 wrapMode: Text.Wrap
                 horizontalAlignment: Text.AlignLeft
@@ -91,6 +89,43 @@ Page {
                     //                horizontalCenter: parent.horizontalCenter
                     left: parent.left
                     right: parent.right
+                }
+            }
+
+            Row
+            {
+                anchors {
+                    leftMargin: Theme.paddingLarge
+                    rightMargin: Theme.paddingLarge
+//                    topMargin: Theme.paddingMedium
+//                    bottomMargin: Theme.paddingMedium
+                    //                horizontalCenter: parent.horizontalCenter
+                    left: parent.left
+                    right: parent.right
+                }
+
+                spacing: Theme.paddingSmall
+
+                Label {
+                    text: "Liberapay:"
+                    verticalAlignment: Qt.AlignVCenter
+                    anchors.verticalCenter: lp_image.verticalCenter
+                }
+
+                Image {
+                    id: lp_image
+                    source: "qrc:/resources/donate/liberapay.png"
+                    fillMode: Image.PreserveAspectFit
+                    width: Theme.buttonWidthMedium
+                    height: Theme.fontSizeLarge * 1.6
+                    sourceSize.width: Theme.buttonWidthMedium
+//                    sourceSize.height: Theme.fontSizeMedium
+                    MouseArea {
+                        anchors.fill: parent
+                        onClicked: {
+                            Qt.openUrlExternally( "https://liberapay.com/sashikknox/donate" )
+                        }
+                    }
                 }
             }
 

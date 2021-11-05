@@ -1,7 +1,7 @@
 TARGET = harbour-mattermost
 
 # get version from yaml file
-VER_VERSION=0.1.4
+VER_VERSION=0.1.7
 VER_RELEASE=1
 
 LINES_ALL = $$cat($$PWD/rpm/harbour-mattermost.spec, lines)

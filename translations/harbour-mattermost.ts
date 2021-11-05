@@ -32,14 +32,6 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>If you want to donate, you can do that by:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Yandex Money</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>in Telegram for their help.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -57,6 +49,10 @@
     </message>
     <message>
         <source>Thanks to users (contribute and testing):</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>If you want to donate, you can do that by:</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

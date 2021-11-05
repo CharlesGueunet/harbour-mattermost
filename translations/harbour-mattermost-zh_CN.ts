@@ -32,14 +32,6 @@
         <translation>源：</translation>
     </message>
     <message>
-        <source>If you want to donate, you can do that by:</source>
-        <translation>如果你想捐赠，可以尝试以下方式</translation>
-    </message>
-    <message>
-        <source>Yandex Money</source>
-        <translation>Yandex Money</translation>
-    </message>
-    <message>
         <source>in Telegram for their help.</source>
         <translation>在电报感谢他们的帮助。</translation>
     </message>
@@ -58,6 +50,10 @@
     <message>
         <source>Thanks to users (contribute and testing):</source>
         <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>If you want to donate, you can do that by:</source>
+        <translation>如果你想捐赠，可以尝试以下方式</translation>
     </message>
 </context>
 <context>

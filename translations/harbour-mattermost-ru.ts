@@ -36,14 +36,6 @@
         <translation>Исходный код: </translation>
     </message>
     <message>
-        <source>If you want to donate, you can do that by:</source>
-        <translation>Пожертвования приветствуются:</translation>
-    </message>
-    <message>
-        <source>Yandex Money</source>
-        <translation>Яндекс Деньги</translation>
-    </message>
-    <message>
         <source>Using Emoji from</source>
         <translation>Emoji взяты отсюда:</translation>
     </message>
@@ -58,6 +50,10 @@
     <message>
         <source>Thanks to users (contribute and testing):</source>
         <translation>А так же пользователям (тестирование и разработка):</translation>
+    </message>
+    <message>
+        <source>If you want to donate, you can do that by:</source>
+        <translation>Если хотите сделать пожертвование, вы можене сделать это при помощи:</translation>
     </message>
 </context>
 <context>

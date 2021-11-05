@@ -5,8 +5,13 @@
 # Add newest entries to the top of the list.
 # Separate entries from eachother with a blank line.
 #
+* Fri Nov 5   2021 sashikknox <sashikknox@gmail.com> - 0.1.7-1
+- fix crash when loading emoji 
+- fix compability with Mattermost 6 server (cant send message) 
+- new donate link
+
 * Wed Jun 3   2020 sashikknox <sashikknox@gmail.com> - 0.1.6-6
-- Fix bug when MessageEditor Mar dont show cancel button when message is editing
+- Fix bug when MessageEditor dont show cancel button when message is editing
 - Little bit fix categoies icons
 - Add LogLevel settings
 - ImageViewer bug : cant close image viewer when tap save to gallery button

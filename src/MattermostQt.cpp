@@ -1080,7 +1080,7 @@ void MattermostQt::post_send_message(QString message, int server_index, int team
 	root["channel_id"] = channel->m_id;
 	root["message"] = message;
 	root["file_ids"] = files;
-	root["props"] = "";
+	root["props"] = QJsonObject();
 	if( !root_id.isEmpty() )
 		root["root_id"] = root_id;
 	json.setObject(root);
