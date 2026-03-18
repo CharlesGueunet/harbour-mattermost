@@ -2300,6 +2300,34 @@ int MattermostQt::messageUnread() const
 	return result;
 }
 
+QString MattermostQt::unreadChannels() const
+{
+	QStringList names;
+	for(ServerPtr server : m_server)
+	{
+		for(TeamPtr team : server->m_teams )
+		{
+			for(ChannelPtr channel : team->m_public_channels) {
+				if(channel->m_msg_unread > 0 || channel->m_mention_count > 0) {
+					names.append(channel->m_display_name.isEmpty() ? channel->m_name : channel->m_display_name);
+				}
+			}
+			for(ChannelPtr channel : team->m_private_channels) {
+				if(channel->m_msg_unread > 0 || channel->m_mention_count > 0) {
+					names.append(channel->m_display_name.isEmpty() ? channel->m_name : channel->m_display_name);
+				}
+			}
+		}
+		for(ChannelPtr channel : server->m_direct_channels )
+		{
+			if(channel->m_msg_unread > 0 || channel->m_mention_count > 0) {
+				names.append(channel->m_display_name.isEmpty() ? channel->m_name : channel->m_display_name);
+			}
+		}
+	}
+	return names.join(QLatin1String(", "));
+}
+
 void MattermostQt::websocket_connect(ServerPtr server)
 {
 	qDebug() << QStringLiteral("Configure WebSocket connetion for server[%0] %1").arg(server->m_self_index).arg(server->m_display_name);

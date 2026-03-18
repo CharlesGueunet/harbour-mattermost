@@ -1,4 +1,4 @@
-﻿#ifndef MATTERMOSTQT_H
+#ifndef MATTERMOSTQT_H
 #define MATTERMOSTQT_H
 
 #include <QObject>
@@ -506,6 +506,7 @@ public:
 	void bind_event_functions();
 
 	Q_PROPERTY(int messageUnread READ messageUnread NOTIFY messageUnreadChanged)
+	Q_PROPERTY(QString unreadChannels READ unreadChannels NOTIFY messageUnreadChanged)
 	Q_PROPERTY(ApplicationStatus applicationStatus READ getApplicationStatus WRITE setApplicationStatus NOTIFY onApplciationStatusChanged)
 public:
 	MattermostQt(QObject *parent = nullptr);
@@ -657,6 +658,7 @@ public:
 	 * @return unread count
 	 */
 	int messageUnread() const;
+	QString unreadChannels() const;
 
 Q_SIGNALS:
 	void onApplciationStatusChanged();

@@ -167,8 +167,26 @@ CoverBackground {
     }
 
     Label {
-        id: error_label
+        id: unreadChannelsLabel
         anchors.top: unreadRow.bottom
+        anchors.topMargin: Theme.paddingMedium
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.leftMargin: Theme.paddingMedium
+        anchors.rightMargin: Theme.paddingMedium
+        text: context.mattermost.unreadChannels
+        wrapMode: Text.Wrap
+        elide: Text.ElideMiddle
+        horizontalAlignment: Text.AlignHCenter
+        verticalAlignment: Text.AlignVCenter
+        font.pixelSize: Theme.fontSizeSmall
+        color: Theme.secondaryColor
+        visible: text.length > 0
+    }
+
+    Label {
+        id: error_label
+        anchors.top: unreadChannelsLabel.visible ? unreadChannelsLabel.bottom : unreadRow.bottom
         text: error
         anchors.left: parent.left
         anchors.right: parent.right
