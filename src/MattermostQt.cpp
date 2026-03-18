@@ -2308,24 +2308,30 @@ QString MattermostQt::unreadChannels() const
 		for(TeamPtr team : server->m_teams )
 		{
 			for(ChannelPtr channel : team->m_public_channels) {
-				if(channel->m_msg_unread > 0 || channel->m_mention_count > 0) {
-					names.append(channel->m_display_name.isEmpty() ? channel->m_name : channel->m_display_name);
+				int totalUnread = channel->m_msg_unread + channel->m_mention_count;
+				if(totalUnread > 0) {
+					QString name = channel->m_display_name.isEmpty() ? channel->m_name : channel->m_display_name;
+					names.append(QStringLiteral("%1 (%2)").arg(name).arg(totalUnread));
 				}
 			}
 			for(ChannelPtr channel : team->m_private_channels) {
-				if(channel->m_msg_unread > 0 || channel->m_mention_count > 0) {
-					names.append(channel->m_display_name.isEmpty() ? channel->m_name : channel->m_display_name);
+				int totalUnread = channel->m_msg_unread + channel->m_mention_count;
+				if(totalUnread > 0) {
+					QString name = channel->m_display_name.isEmpty() ? channel->m_name : channel->m_display_name;
+					names.append(QStringLiteral("%1 (%2)").arg(name).arg(totalUnread));
 				}
 			}
 		}
 		for(ChannelPtr channel : server->m_direct_channels )
 		{
-			if(channel->m_msg_unread > 0 || channel->m_mention_count > 0) {
-				names.append(channel->m_display_name.isEmpty() ? channel->m_name : channel->m_display_name);
+			int totalUnread = channel->m_msg_unread + channel->m_mention_count;
+			if(totalUnread > 0) {
+				QString name = channel->m_display_name.isEmpty() ? channel->m_name : channel->m_display_name;
+				names.append(QStringLiteral("%1 (%2)").arg(name).arg(totalUnread));
 			}
 		}
 	}
-	return names.join(QLatin1String(", "));
+	return names.join(QLatin1String("\n"));
 }
 
 void MattermostQt::websocket_connect(ServerPtr server)
