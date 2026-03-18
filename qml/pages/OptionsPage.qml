@@ -62,6 +62,17 @@ Page {
                 Component.onCompleted: checked = Settings.searchInChannels
             }
 
+            TextSwitch {
+                id: useChannelNames
+                text: qsTr("Use channel names on cover")
+                description: qsTr("Show unread channel names on Cover Page")
+                onCheckedChanged: {
+                    Settings.useChannelNames = checked
+                }
+
+                Component.onCompleted: checked = Settings.useChannelNames
+            }
+
 
             SectionHeader {
                 text: qsTr("Messages view")

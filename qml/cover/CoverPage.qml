@@ -137,6 +137,34 @@ CoverBackground {
         font.pixelSize: Theme.fontSizeLarge
     }
 
+    Row {
+        id: unreadRow
+        anchors.top: statusLabel.bottom
+        anchors.horizontalCenter: parent.horizontalCenter
+        anchors.topMargin: Theme.paddingLarge
+        anchors.leftMargin: Theme.paddingLarge
+        anchors.rightMargin: Theme.paddingLarge
+        spacing: Theme.paddingLarge
+        visible: !Settings.useChannelNames
+
+        Icon {
+            id: messageIcon
+            verticalAlignment: "AlignVCenter"
+            source: "image://theme/icon-m-message"
+        }
+
+        Label {
+            id: unreadLabel
+            anchors.verticalCenter: messageIcon.verticalCenter
+            text: context.mattermost.messageUnread
+            wrapMode: Text.Wrap
+            elide: Text.ElideMiddle
+            horizontalAlignment: Text.AlignHCenter
+            verticalAlignment: Text.AlignVCenter
+            font.pixelSize: Theme.fontSizeLarge
+        }
+    }
+
     Column {
         id: unreadChannelsColumn
         anchors.top: statusLabel.bottom
@@ -146,6 +174,7 @@ CoverBackground {
         anchors.leftMargin: Theme.paddingMedium
         anchors.rightMargin: Theme.paddingMedium
         spacing: Theme.paddingSmall
+        visible: Settings.useChannelNames
 
         Repeater {
             model: context.mattermost.unreadChannels
@@ -173,7 +202,7 @@ CoverBackground {
 
     Label {
         id: error_label
-        anchors.top: unreadChannelsColumn.bottom
+        anchors.top: Settings.useChannelNames ? unreadChannelsColumn.bottom : unreadRow.bottom
         text: error
         anchors.left: parent.left
         anchors.right: parent.right

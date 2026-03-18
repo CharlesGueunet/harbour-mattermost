@@ -56,6 +56,7 @@ private:
 	MT_PROPERTY_DEF(int, usedReactionsCount, 21);
 	MT_PROPERTY(bool,    searchInChannels); // show or not search field in channels view
 	MT_PROPERTY(bool,    useCameraPicker);
+	MT_PROPERTY_DEF(bool,    useChannelNames, true);
 	MT_PROPERTY_DEF(LogLevel, logLevel, LogLevelDefault);
 	MT_PROPERTY_DEF(bool,     useLog, true);
 public:

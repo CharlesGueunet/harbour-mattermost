@@ -422,6 +422,14 @@
         <source>Log level (to stderr)</source>
         <translation>Уровень журналирования</translation>
     </message>
+    <message>
+        <source>Use channel names on cover</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Show unread channel names on Cover Page</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>ParentMessageItem</name>
