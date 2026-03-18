@@ -137,56 +137,43 @@ CoverBackground {
         font.pixelSize: Theme.fontSizeLarge
     }
 
-    Row {
-        id: unreadRow
-
+    Column {
+        id: unreadChannelsColumn
         anchors.top: statusLabel.bottom
-        anchors.horizontalCenter: parent.horizontalCenter
-//        anchors.left: parent.left
         anchors.topMargin: Theme.paddingLarge
-        anchors.leftMargin: Theme.paddingLarge
-        anchors.rightMargin: Theme.paddingLarge
-        spacing: Theme.paddingLarge
-
-        Icon {
-            id: messageIcon
-            verticalAlignment: "AlignVCenter"
-            source: "image://theme/icon-m-message"
-        }
-
-        Label {
-            id: unreadLabel
-            anchors.verticalCenter: messageIcon.verticalCenter
-            text: context.mattermost.messageUnread
-            wrapMode: Text.Wrap
-            elide: Text.ElideMiddle
-            horizontalAlignment: Text.AlignHCenter
-            verticalAlignment: Text.AlignVCenter
-            font.pixelSize: Theme.fontSizeLarge
-        }
-    }
-
-    Label {
-        id: unreadChannelsLabel
-        anchors.top: unreadRow.bottom
-        anchors.topMargin: Theme.paddingMedium
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.leftMargin: Theme.paddingMedium
         anchors.rightMargin: Theme.paddingMedium
-        text: context.mattermost.unreadChannels
-        wrapMode: Text.Wrap
-        elide: Text.ElideMiddle
-        horizontalAlignment: Text.AlignHCenter
-        verticalAlignment: Text.AlignVCenter
-        font.pixelSize: Theme.fontSizeSmall
-        color: Theme.secondaryColor
-        visible: text.length > 0
+        spacing: Theme.paddingSmall
+
+        Repeater {
+            model: context.mattermost.unreadChannels
+            delegate: Row {
+                width: parent.width
+                spacing: Theme.paddingSmall
+
+                Icon {
+                    id: bulletIcon
+                    source: "image://theme/icon-s-message"
+                    anchors.verticalCenter: parent.verticalCenter
+                }
+
+                Label {
+                    text: modelData
+                    font.pixelSize: Theme.fontSizeSmall
+                    color: Theme.secondaryColor
+                    anchors.verticalCenter: parent.verticalCenter
+                    width: parent.width - bulletIcon.width - parent.spacing
+                    wrapMode: Text.Wrap
+                }
+            }
+        }
     }
 
     Label {
         id: error_label
-        anchors.top: unreadChannelsLabel.visible ? unreadChannelsLabel.bottom : unreadRow.bottom
+        anchors.top: unreadChannelsColumn.bottom
         text: error
         anchors.left: parent.left
         anchors.right: parent.right

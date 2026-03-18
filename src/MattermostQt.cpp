@@ -2300,7 +2300,7 @@ int MattermostQt::messageUnread() const
 	return result;
 }
 
-QString MattermostQt::unreadChannels() const
+QStringList MattermostQt::unreadChannels() const
 {
 	QStringList names;
 	for(ServerPtr server : m_server)
@@ -2331,7 +2331,7 @@ QString MattermostQt::unreadChannels() const
 			}
 		}
 	}
-	return names.join(QLatin1String("\n"));
+	return names;
 }
 
 void MattermostQt::websocket_connect(ServerPtr server)
