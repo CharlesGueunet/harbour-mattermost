@@ -76,8 +76,9 @@ int main(int argc, char *argv[])
 	QScopedPointer<SailNotify> notify(new SailNotify());
 
 	QCoreApplication::setApplicationVersion(MATTERMOSTQT_VERSION);
-	QCoreApplication::setOrganizationDomain("harbour");
-	QCoreApplication::setOrganizationName("sashikknox");
+	QCoreApplication::setOrganizationDomain("ru.sashikknox");
+	QCoreApplication::setOrganizationName("ru.sashikknox");
+	QCoreApplication::setApplicationName("mattermost");
 
 	qInfo() << "App version: " << MATTERMOSTQT_VERSION;
 	// If you wish to publish your app on the Jolla harbour, it is recommended

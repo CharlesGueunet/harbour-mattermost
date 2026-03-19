@@ -11,6 +11,11 @@
 #include <QtWebSockets/qwebsocket.h>
 #include "MarkdownParser.h"
 #include <MattermostQt_gobal.h>
+#include <Sailfish/Secrets/secretmanager.h>
+#include <Sailfish/Secrets/secret.h>
+#include <Sailfish/Secrets/storesecretrequest.h>
+#include <Sailfish/Secrets/storedsecretrequest.h>
+#include <Sailfish/Secrets/deletesecretrequest.h>
 //#include <QtWebSockets/QWebSocket>
 //#include <QWebSocket>
 
@@ -492,6 +497,7 @@ public:
 		QList<MessagePtr>           m_nouser_messages;/**< messages without user */
 		bool                        m_enabled; /**< is server is enabled */
 		QHash<QString,ChannelPtr>   m_channels_hash; /**< yfshed list of channels*/
+		bool                        m_token_saved_to_secrets = false;
 
 		QTimer                      m_ping_timer;
 		QVector<QString>            m_requested_users; /** requested users id's */
@@ -732,6 +738,11 @@ Q_SIGNALS:
 	 * @param request - type of request
 	 */
 	void requestFinished(ReplyType request);
+
+public Q_SLOTS:
+	void onTokenStored();
+	void onTokenFetched();
+
 protected:
 	/**
 	 * @brief prepare_direct_channel
@@ -842,6 +853,7 @@ protected Q_SLOTS:
 protected:
 	QVector<ServerPtr>    m_server;
 	QSharedPointer<QNetworkAccessManager>  m_networkManager;
+	Sailfish::Secrets::SecretManager *m_secretManager;
 //	QSharedPointer<SettingsContainer>    m_settings;
 	SettingsContainer    *m_settings;
 	MarkdownParser       *m_mdParser; /**< simple Markdown parser insterface */

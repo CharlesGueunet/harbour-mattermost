@@ -11,3 +11,8 @@ Name=Mattermost
 # a different app name in German locale (de).
 Name[de]=Mattermost
 Name[ru]=Mattermost
+
+[X-Sailjail]
+Permissions=Audio;Camera;Internet;Microphone;UserDirs;RemovableMedia;Passwords;Secrets
+OrganizationName=ru.sashikknox
+ApplicationName=mattermost

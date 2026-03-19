@@ -160,6 +160,7 @@ MattermostQt::MattermostQt(QObject *parent )
     : QObject(parent)
     , m_mdParser(nullptr)
     , m_settings(nullptr)
+    , m_secretManager(new Sailfish::Secrets::SecretManager(this))
 {
 	bind_reply_functions();
 	bind_event_functions();
@@ -186,55 +187,10 @@ MattermostQt::MattermostQt(QObject *parent )
 	connect(m_networkManager.data(),SIGNAL(sslErrors(QNetworkReply*,QList<QSslError>)),
 	        this, SLOT(replySSLErrors(QNetworkReply*,QList<QSslError>)));
 
-	m_config_path = QDir(QStandardPaths::writableLocation(QStandardPaths::ConfigLocation))
-	        .filePath(QCoreApplication::applicationName());
+	m_config_path = QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation);
 
 	m_data_path = QStandardPaths::writableLocation(QStandardPaths::DataLocation);
-	if( m_data_path.indexOf( QCoreApplication::organizationName()) != -1 )
-	{	// this wrong path, try fix it
-		// its /home/nemo/.local/share/sashikknox/harbour-mattermost
-
-		QString wrong_path = m_data_path + QStringLiteral("/");
-		QDir dataDir(wrong_path);
-		m_data_path.remove( QCoreApplication::organizationName().append("/") );
-
-		if( dataDir.exists() )
-		{ // try it move to right location
-			if( dataDir.rename(wrong_path, m_data_path) ) {
-				qInfo() << QStringLiteral("Data dir moved from '%0' to '%1'").arg(wrong_path).arg(m_data_path);
-				wrong_path.remove(QCoreApplication::applicationName().append("/"));
-				QDir removeDir( wrong_path );
-				if( removeDir.removeRecursively() )
-					qWarning() << QStringLiteral("Old data dir removed %0").arg(wrong_path);
-			}
-			else
-				qWarning() << QStringLiteral("Cant move dir from '%0' to '%1'").arg(wrong_path).arg(m_data_path);
-		}
-	}
-
 	m_cache_path = QStandardPaths::writableLocation(QStandardPaths::CacheLocation);
-	if( m_cache_path.indexOf( QCoreApplication::organizationName()) != -1 )
-	{	// this wrong path, try fix it
-// its /home/nemo/.local/share/sashikknox/harbour-mattermost
-
-		QString wrong_path = m_cache_path + QStringLiteral("/");
-		QDir cacheDir(wrong_path);
-		m_cache_path.remove( QCoreApplication::organizationName().append("/") );
-
-		if( cacheDir.exists() )
-		{ // try it move to right location
-			if( cacheDir.rename(wrong_path, m_cache_path) ) {
-				qInfo() << QStringLiteral("Cache dir moved from '%0' to '%1'").arg(wrong_path).arg(m_cache_path);
-//				dataDir.remove( wrong_path.remove(QCoreApplication::applicationName().append("/")) );
-				wrong_path.remove(QCoreApplication::applicationName().append("/"));
-				QDir removeDir( wrong_path );
-				if( removeDir.removeRecursively() )
-					qWarning() << QStringLiteral("Old cache dir removed %0").arg(wrong_path);
-			}
-			else
-				qWarning() << QStringLiteral("Cant cache move dir from '%0' to '%1'").arg(wrong_path).arg(m_cache_path);
-		}
-	}
 
 	if( m_cache_path.isEmpty() ) {
 		qCritical() << QStringLiteral("Cant get CacheLocation");
@@ -464,6 +420,17 @@ void MattermostQt::post_login(QString server, QString login, QString password,
 
 void MattermostQt::post_login_by_token(QString url, QString token, int api, QString display_name, bool trustCertificate, QString ca_cert_path, QString cert_path)
 {
+	for (int i = 0; i < m_server.size(); ++i) {
+		if (m_server[i]->m_url == url) {
+			m_server[i]->m_token = token;
+			m_server[i]->m_display_name = display_name;
+			m_server[i]->m_trust_cert = trustCertificate;
+			m_server[i]->m_ca_cert_path = ca_cert_path;
+			m_server[i]->m_cert_path = cert_path;
+			get_login(m_server[i]);
+			return;
+		}
+	}
 	//	QString url = QString("%0")
 	ServerPtr server( new ServerContainer(url,token,api) );
 	server->m_trust_cert = trustCertificate;
@@ -484,6 +451,7 @@ void MattermostQt::get_login(MattermostQt::ServerPtr sc)
 	if( sc->m_state == ServerLogin )
 		return;
 	sc->m_state = ServerLogin;
+	emit serverStateChanged(sc->m_self_index, ServerConnecting);
 	// fix api minimum version
 	if(sc->m_api <= 3)
 		sc->m_api = 4;
@@ -1939,7 +1907,36 @@ bool MattermostQt::save_settings()
 		server["user_id"] = sc->m_user_id;
 		server["url"] = sc->m_url;
 		server["api"] = (double)sc->m_api;
-		server["token"] = sc->m_token;
+		if (!sc->m_token.isEmpty() && !sc->m_user_id.isEmpty()) {
+			if (!sc->m_token_saved_to_secrets) {
+				Sailfish::Secrets::DeleteSecretRequest *delReq = new Sailfish::Secrets::DeleteSecretRequest(this);
+				delReq->setManager(m_secretManager);
+				delReq->setIdentifier(Sailfish::Secrets::Secret::Identifier(QString("MattermostToken_%1").arg(sc->m_user_id), QString(), Sailfish::Secrets::SecretManager::DefaultStoragePluginName));
+				delReq->setUserInteractionMode(Sailfish::Secrets::SecretManager::SystemInteraction);
+
+				connect(delReq, &Sailfish::Secrets::DeleteSecretRequest::statusChanged, this, [this, sc]() {
+					auto req = qobject_cast<Sailfish::Secrets::DeleteSecretRequest*>(sender());
+					if (req && req->status() == Sailfish::Secrets::Request::Finished) {
+						req->deleteLater();
+						
+						Sailfish::Secrets::Secret secret(Sailfish::Secrets::Secret::Identifier(QString("MattermostToken_%1").arg(sc->m_user_id), QString(), Sailfish::Secrets::SecretManager::DefaultStoragePluginName));
+						secret.setData(sc->m_token.toUtf8());
+						Sailfish::Secrets::StoreSecretRequest *storeReq = new Sailfish::Secrets::StoreSecretRequest(this);
+						storeReq->setManager(m_secretManager);
+						storeReq->setSecretStorageType(Sailfish::Secrets::StoreSecretRequest::StandaloneDeviceLockSecret);
+						storeReq->setDeviceLockUnlockSemantic(Sailfish::Secrets::SecretManager::DeviceLockKeepUnlocked);
+						storeReq->setAccessControlMode(Sailfish::Secrets::SecretManager::OwnerOnlyMode);
+						storeReq->setEncryptionPluginName(Sailfish::Secrets::SecretManager::DefaultEncryptionPluginName);
+						storeReq->setSecret(secret);
+						storeReq->setUserInteractionMode(Sailfish::Secrets::SecretManager::SystemInteraction);
+						connect(storeReq, &Sailfish::Secrets::StoreSecretRequest::statusChanged, this, &MattermostQt::onTokenStored);
+						storeReq->startRequest();
+					}
+				});
+				delReq->startRequest();
+				sc->m_token_saved_to_secrets = true;
+			}
+		}
 		server["name"] = sc->m_display_name;
 		server["trust_certificate"] = sc->m_trust_cert;
 		server["enabled"] = sc->m_enabled;
@@ -2048,7 +2045,7 @@ bool MattermostQt::load_settings()
 			is_server_enabled = object["enabled"].toBool();
 		bool trust_certificate = object["trust_certificate"].toBool();
 
-		if( user_id.isEmpty() || url.isEmpty() || token.isEmpty() )
+		if( user_id.isEmpty() || url.isEmpty() )
 			return false;
 
 		// create server container
@@ -2073,7 +2070,17 @@ bool MattermostQt::load_settings()
 		qDebug() << QStringLiteral("Server[%0] (%1) set ping timer interval to %2.").arg(server->m_self_index).arg(server->m_display_name).arg(m_ping_server_timeout);
 		server->m_enabled =is_server_enabled;
 		m_server.append(server);
-		get_login(server);
+		if (!token.isEmpty()) {
+			server->m_token = token;
+			get_login(server);
+		} else {
+			Sailfish::Secrets::StoredSecretRequest *request = new Sailfish::Secrets::StoredSecretRequest(this);
+			request->setManager(m_secretManager);
+			request->setIdentifier(Sailfish::Secrets::Secret::Identifier(QString("MattermostToken_%1").arg(user_id), QString(), Sailfish::Secrets::SecretManager::DefaultStoragePluginName));
+			request->setUserInteractionMode(Sailfish::Secrets::SecretManager::SystemInteraction);
+			connect(request, &Sailfish::Secrets::StoredSecretRequest::statusChanged, this, &MattermostQt::onTokenFetched);
+			request->startRequest();
+		}
 	}
 	// load settings
 	if(m_settings)
@@ -6015,3 +6022,42 @@ void MattermostQt::FileContainer::parse_from_json(QJsonObject object)
 	else
 		m_file_type = FileUnknown;
 }
+
+void MattermostQt::onTokenStored()
+{
+	Sailfish::Secrets::StoreSecretRequest *request = qobject_cast<Sailfish::Secrets::StoreSecretRequest*>(sender());
+	if (request && request->status() == Sailfish::Secrets::Request::Finished) {
+		if (request->result().errorMessage().isEmpty()) {
+			qDebug() << "Secret token securely stored.";
+		} else {
+			qWarning() << "Failed to store token:" << request->result().errorMessage();
+		}
+		request->deleteLater();
+	}
+}
+
+void MattermostQt::onTokenFetched()
+{
+	Sailfish::Secrets::StoredSecretRequest *request = qobject_cast<Sailfish::Secrets::StoredSecretRequest*>(sender());
+	if (request && request->status() == Sailfish::Secrets::Request::Finished) {
+		if (request->result().errorMessage().isEmpty()) {
+			if (!request->secret().data().isEmpty()) {
+				QString fetchedToken = QString::fromUtf8(request->secret().data());
+				QString identName = request->identifier().name();
+				QString user_id = identName.mid(16); // strip 'MattermostToken_'
+				for (ServerPtr server : m_server) {
+					if (server->m_user_id == user_id) {
+						server->m_token = fetchedToken;
+						server->m_token_saved_to_secrets = true;
+						get_login(server);
+						break;
+					}
+				}
+			}
+		} else {
+			qWarning() << "Failed to fetch token:" << request->result().errorMessage();
+		}
+		request->deleteLater();
+	}
+}
+

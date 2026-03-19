@@ -29,7 +29,7 @@ dbus.path = /usr/share/dbus-1/services/
 CONFIG += sailfishapp warnoff
 CONFIG += qt
 QT += gui qml quick network dbus svg
-PKGCONFIG += nemonotifications-qt5 sailfishsilica
+PKGCONFIG += nemonotifications-qt5 sailfishsilica sailfishsecrets
 #PKGCONFIG += libgcrypt
 
 LIBS += -Llibs
